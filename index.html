@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgerline RCM</title>
+<meta name="description" content="Multi-client revenue cycle dashboard for independent medical billers and RCM firms.">
+<script>try { const t = localStorage.getItem('ll-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Newsreader', 'Georgia', 'serif'],
+          sans: ['"Hanken Grotesk"', 'system-ui', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    color-scheme: light;
+    --bg: #eef2f8;                /* very light slate blue */
+    --surface: #fbfcfe;           /* base cards */
+    --elevated: #ffffff;          /* raised: popovers, active rows */
+    --sunken: #e6ebf3;
+    --line: #dce3ee;
+    --line-strong: #c4cedd;
+    --ink: #172030;
+    --ink-2: #4a5668;
+    --ink-3: #737f90;
+    --sidebar: linear-gradient(180deg, #cde8fb 0%, #b9def7 100%);  /* sky blue */
+    --sidebar-line: #a9d2f0;
+    --sidebar-ink-2: #2c4458;
+    --sidebar-ink-3: #4d6a82;
+    --brand: #163a6b;             /* deep ledger navy */
+    --brand-hover: #0f2c55;
+    --brand-soft: #dde7f5;
+    --brand-ink: #f4f8fe;
+    --accent: #b8662f;            /* copper — used only for highlights, never status */
+
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --seq1: #86b6ef; --seq2: #5598e7; --seq3: #2a78d6; --seq4: #1c5cab; --seq5: #104281;
+
+    --good: #0ca30c; --good-ink: #0b6e1f; --good-bg: #e3f2e1;
+    --warn: #fab219; --warn-ink: #8a5a00; --warn-bg: #fbf0d5;
+    --serious: #ec835a; --serious-ink: #9a4220; --serious-bg: #fbe6db;
+    --crit: #d03b3b; --crit-ink: #a42828; --crit-bg: #f8e1df;
+
+    --shadow-1: 0 1px 0 rgba(23,32,48,.04), 0 1px 2px rgba(22,58,107,.05), 0 4px 12px -6px rgba(22,58,107,.10);
+    --shadow-2: 0 1px 0 rgba(23,32,48,.04), 0 6px 16px -6px rgba(22,58,107,.14), 0 18px 40px -18px rgba(22,58,107,.22);
+    --shadow-3: 0 2px 4px rgba(22,58,107,.08), 0 16px 40px -10px rgba(22,58,107,.28), 0 40px 80px -30px rgba(23,32,48,.30);
+    --spring: cubic-bezier(.34, 1.36, .64, 1);
+    --ease-out: cubic-bezier(.22, 1, .36, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --bg: #0e131b; --surface: #151b24; --elevated: #1c232e; --sunken: #0b0f15;
+      --line: #263040; --line-strong: #344052;
+      --sidebar: linear-gradient(180deg, #12324a 0%, #0f2638 100%); --sidebar-line: #1d4562; --sidebar-ink-2: #b9d3e6; --sidebar-ink-3: #86a7bf;
+      --ink: #ecefe9; --ink-2: #b4bdb7; --ink-3: #849089;
+      --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
+      --accent: #e0915b;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
+      --good-ink: #5fd35f; --good-bg: #13301a; --warn-ink: #fac458; --warn-bg: #33290f;
+      --serious-ink: #f2a281; --serious-bg: #3a2016; --crit-ink: #f08080; --crit-bg: #3b1717;
+      --shadow-1: 0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.4);
+      --shadow-2: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -10px rgba(0,0,0,.6);
+      --shadow-3: 0 1px 0 rgba(255,255,255,.05) inset, 0 30px 70px -20px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e131b; --surface: #151b24; --elevated: #1c232e; --sunken: #0b0f15;
+    --line: #263040; --line-strong: #344052;
+    --sidebar: linear-gradient(180deg, #12324a 0%, #0f2638 100%); --sidebar-line: #1d4562; --sidebar-ink-2: #b9d3e6; --sidebar-ink-3: #86a7bf;
+    --ink: #ecefe9; --ink-2: #b4bdb7; --ink-3: #849089;
+    --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
+    --accent: #e0915b;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
+    --good-ink: #5fd35f; --good-bg: #13301a; --warn-ink: #fac458; --warn-bg: #33290f;
+    --serious-ink: #f2a281; --serious-bg: #3a2016; --crit-ink: #f08080; --crit-bg: #3b1717;
+    --shadow-1: 0 1px 0 rgba(255,255,255,.03) inset, 0 1px 2px rgba(0,0,0,.4);
+    --shadow-2: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 30px -10px rgba(0,0,0,.6);
+    --shadow-3: 0 1px 0 rgba(255,255,255,.05) inset, 0 30px 70px -20px rgba(0,0,0,.75);
+  }
+
+  /* ---------- Base ---------- */
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Hanken Grotesk', system-ui, sans-serif; line-height: 1.7; font-feature-settings: "tnum" 1, "ss01" 1; -webkit-font-smoothing: antialiased; }
+  .atmosphere {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(60rem 40rem at 8% -10%, color-mix(in oklab, var(--brand) 14%, transparent), transparent 60%),
+      radial-gradient(50rem 30rem at 100% 0%, color-mix(in oklab, #7cc4f2 18%, transparent), transparent 55%),
+      radial-gradient(40rem 40rem at 70% 110%, color-mix(in oklab, var(--brand) 8%, transparent), transparent 60%);
+  }
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .35; mix-blend-mode: multiply; }
+  :root[data-theme="dark"] .grain { mix-blend-mode: overlay; opacity: .25; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grain { mix-blend-mode: overlay; opacity: .25; } }
+
+  .font-display { font-family: 'Newsreader', Georgia, serif; letter-spacing: -0.03em; line-height: 1.05; }
+  .num { font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); line-height: 1.4; }
+  .muted { color: var(--ink-2); }
+  .faint { color: var(--ink-3); }
+
+  /* ---------- Surfaces (base → elevated → floating) ---------- */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-1); }
+  .card-raised { background: var(--elevated); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow-2); }
+  .floating { background: var(--elevated); border: 1px solid var(--line-strong); border-radius: 14px; box-shadow: var(--shadow-3); }
+
+  /* ---------- Controls ---------- */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 13.5px; font-weight: 600; line-height: 1;
+    transition: transform .35s var(--spring), opacity .2s, background-color .2s, color .2s, box-shadow .2s; cursor: pointer; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(.97); }
+  .btn:focus-visible, .focus-ring:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .btn-primary { background: var(--brand); color: var(--brand-ink); box-shadow: 0 1px 0 rgba(255,255,255,.18) inset, 0 6px 14px -6px color-mix(in oklab, var(--brand) 70%, transparent); }
+  .btn-primary:hover { background: var(--brand-hover); }
+  .btn-ghost { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+  .btn-ghost:hover { background: var(--elevated); border-color: var(--line-strong); }
+  .btn-sm { height: 30px; padding: 0 10px; font-size: 12.5px; border-radius: 8px; }
+
+  .seg { display: inline-flex; padding: 3px; background: var(--sunken); border-radius: 11px; border: 1px solid var(--line); }
+  .seg button { height: 28px; padding: 0 12px; border-radius: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); transition: transform .3s var(--spring), background-color .2s, color .2s; }
+  .seg button:hover { color: var(--ink); }
+  .seg button:active { transform: scale(.96); }
+  .seg button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .seg button[aria-pressed="true"], .seg button[aria-selected="true"] { background: var(--elevated); color: var(--ink); box-shadow: var(--shadow-1); }
+
+  .theme-switch { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; padding: 3px; background: var(--sunken); border: 1px solid var(--line); border-radius: 11px; }
+  .theme-switch .thumb { position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); border-radius: 8px; background: var(--elevated); box-shadow: var(--shadow-1); transition: transform .5s var(--spring); }
+  .theme-switch[data-on="dark"] .thumb { transform: translateX(100%); }
+  .theme-switch button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; font-size: 12.5px; font-weight: 600; line-height: 1; color: var(--ink-3); cursor: pointer; transition: transform .3s var(--spring), color .2s; }
+  .theme-switch button:hover { color: var(--ink); }
+  .theme-switch button:active { transform: scale(.94); }
+  .theme-switch button:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .theme-switch button[aria-checked="true"] { color: var(--ink); }
+  .theme-switch button svg { width: 15px; height: 15px; }
+  .select { appearance: none; height: 36px; padding: 0 34px 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%237b827d' stroke-width='1.8'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E") no-repeat right 12px center; font-size: 13.5px; font-weight: 600; color: var(--ink); cursor: pointer; transition: border-color .2s; }
+  .select:hover { border-color: var(--line-strong); }
+  .select:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+  #sidebar { --ink-2: var(--sidebar-ink-2); --ink-3: var(--sidebar-ink-3); --line: var(--sidebar-line); }
+  #sidebar .card { background: color-mix(in oklab, var(--surface) 70%, transparent); }
+  .nav-link { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 500; color: var(--ink-2); transition: transform .3s var(--spring), background-color .2s, color .2s; }
+  .nav-link:hover { background: color-mix(in oklab, var(--brand) 7%, transparent); color: var(--ink); transform: translateX(2px); }
+  .nav-link:active { transform: translateX(2px) scale(.98); }
+  .nav-link:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+  .nav-link[aria-current="page"] { background: var(--brand); color: var(--brand-ink); box-shadow: 0 6px 14px -8px color-mix(in oklab, var(--brand) 80%, transparent); }
+  .nav-link .count { margin-left: auto; font-size: 11px; font-weight: 700; padding: 0 7px; border-radius: 99px; background: var(--crit-bg); color: var(--crit-ink); line-height: 18px; }
+  .nav-link[aria-current="page"] .count { background: rgba(255,255,255,.18); color: inherit; }
+
+  /* status chips: always icon + label, never color alone */
+  .chip { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 99px; font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; }
+  .chip svg { width: 11px; height: 11px; flex: none; }
+  .chip-good { background: var(--good-bg); color: var(--good-ink); }
+  .chip-warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .chip-serious { background: var(--serious-bg); color: var(--serious-ink); }
+  .chip-crit { background: var(--crit-bg); color: var(--crit-ink); }
+  .chip-neutral { background: var(--sunken); color: var(--ink-2); }
+
+  .solves { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: var(--ink-3); line-height: 1.4; }
+  .solves b { color: var(--accent); font-weight: 600; }
+
+  /* tables */
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
+  .tbl th { text-align: left; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; font-weight: 600; color: var(--ink-3); padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl td { white-space: nowrap; padding: 11px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; line-height: 1.4; }
+  .tbl tr:last-child td { border-bottom: 0; }
+  .tbl .r { text-align: right; }
+  .tbl tbody tr { transition: background-color .15s; }
+  .tbl tbody tr:hover { background: color-mix(in oklab, var(--brand) 5%, transparent); }
+  .tbl tbody tr.expandable { cursor: pointer; }
+  .tbl tbody tr.expandable:focus-visible { outline: 2px solid var(--brand); outline-offset: -2px; }
+  .tbl tbody tr.expandable:active { background: color-mix(in oklab, var(--brand) 10%, transparent); }
+  .tbl tbody tr.is-open, .tbl tbody tr.is-open:hover, .tbl tbody tr.detail, .tbl tbody tr.detail:hover { background: color-mix(in oklab, var(--brand) 6%, transparent); }
+  .tbl tbody tr.is-open td { border-bottom-color: transparent; }
+  .tbl tbody tr.detail > td { padding: 0 12px 16px; white-space: normal; }
+  .chev { flex: none; color: var(--ink-3); transition: transform .4s var(--spring), color .2s; }
+  tr.expandable:hover .chev { color: var(--ink); }
+  tr.is-open .chev { transform: rotate(90deg); color: var(--brand); }
+  .detail-panel { background: var(--elevated); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow-2); animation: reveal .5s var(--spring) both; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 1023px) { .detail-panel { position: sticky; left: 12px; width: calc(100vw - 60px); } }
+  .tl { display: flex; flex-direction: column; gap: 14px; }
+  .tl li { position: relative; display: flex; gap: 12px; line-height: 1.4; }
+  .tl li:not(:last-child)::before { content: ''; position: absolute; left: 5px; top: 18px; bottom: -14px; width: 2px; background: var(--line-strong); }
+  .tl-dot { flex: none; width: 12px; height: 12px; margin-top: 3px; border-radius: 99px; background: var(--surface); border: 2px solid var(--line-strong); }
+  .tl li.done .tl-dot { background: var(--brand); border-color: var(--brand); }
+  .tl li.bad .tl-dot { background: var(--crit); border-color: var(--crit); }
+  .tl li.next .tl-dot { background: var(--warn-bg); border-color: var(--warn); }
+  .check-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .check-list li + li { margin-top: 8px; }
+  .check-list .n { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 6px; font-size: 11px; font-weight: 700; background: var(--brand-soft); color: var(--brand); }
+  .tile-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: left; transition: transform .35s var(--spring), border-color .2s, background-color .2s; }
+  .tile-btn:hover { border-color: var(--line-strong); background: var(--elevated); transform: translateX(2px); }
+  .tile-btn:active { transform: scale(.98); }
+  .tile-btn:hover .chev { color: var(--brand); }
+  .mini-bar { height: 6px; border-radius: 99px; background: var(--sunken); overflow: hidden; }
+  .mini-bar > i { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: growx .7s var(--ease-out) both; }
+
+  .phi { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+  .claim-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3); }
+
+  /* tooltip */
+  #tip { position: fixed; z-index: 60; pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .25s var(--spring); min-width: 160px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; }
+  #tip.on { opacity: 1; transform: translateY(0); }
+  #tip .tt-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  #tip .tt-key { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  #tip .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  /* charts */
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid line { stroke: var(--line); stroke-width: 1; }
+  .chart .axis text { fill: var(--ink-3); font-size: 11px; font-family: 'Hanken Grotesk', sans-serif; }
+  .chart .hit { fill: transparent; cursor: crosshair; }
+  .chart .hl { fill: color-mix(in oklab, var(--brand) 7%, transparent); opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  /* entrance */
+  @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .7s var(--ease-out) both; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .bar-anim { transform-box: fill-box; transform-origin: bottom; animation: grow .8s var(--ease-out) both; }
+  @keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .barx-anim { transform-origin: left; animation: growx .9s var(--ease-out) both; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  /* drawer + modal */
+  .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(10, 20, 18, .38); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .scrim.on { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; z-index: 55; top: 12px; right: 12px; bottom: 12px; width: min(440px, calc(100vw - 24px)); transform: translateX(110%); transition: transform .5s var(--spring); display: flex; flex-direction: column; }
+  .drawer.on { transform: none; }
+  .modal { position: fixed; z-index: 56; left: 50%; top: 50%; width: min(460px, calc(100vw - 32px)); transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .45s var(--spring), opacity .2s; }
+  .modal.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  .toast { position: fixed; z-index: 70; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; transition: transform .45s var(--spring), opacity .2s; pointer-events: none; }
+  .toast.on { transform: translate(-50%, 0); opacity: 1; }
+
+  .scroll-x { overflow-x: auto; scrollbar-width: thin; }
+  .ring-sync { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex: none; }
+  .kpi-delta svg { width: 12px; height: 12px; }
+  textarea, input[type="text"] { font: inherit; }
+</style>
+</head>
+<body class="min-h-screen">
+<div class="atmosphere" aria-hidden="true"></div>
+<svg class="grain" aria-hidden="true" width="100%" height="100%"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .22 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" class="absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-grid" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 2.5h6.5L15 6v11.5H5z"/><path d="M11 2.5V6.5h4M7.5 10h5M7.5 13h5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="m7.5 7.5 5 5m0-5-5 5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.2l2.8 1.8"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3v14M5 17h10M3 7h14M5 7l-2.5 5a2.6 2.6 0 0 0 5 0zM15 7l-2.5 5a2.6 2.6 0 0 0 5 0z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7" r="3"/><path d="M2 16.5c.6-2.8 2.8-4.5 5.5-4.5s4.9 1.7 5.5 4.5"/><path d="M13 4.2a3 3 0 0 1 0 5.6M14.5 12.3c1.8.6 3 2.1 3.5 4.2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h14M5.5 14V9M10 14V5M14.5 14v-3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5 16 5v5c0 3.8-2.6 6.5-6 7.5-3.4-1-6-3.7-6-7.5V5z"/><path d="m7.3 10 1.9 1.9 3.6-3.8"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.8 10S4.8 4.5 10 4.5 18.2 10 18.2 10 15.2 15.5 10 15.5 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.5"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l14 14M8.2 5a8.4 8.4 0 0 1 1.8-.5C15.2 4.5 18.2 10 18.2 10a14 14 0 0 1-2.4 3.1M12 15.2a7 7 0 0 1-2 .3C4.8 15.5 1.8 10 1.8 10a14.5 14.5 0 0 1 3.1-3.7"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 10V2M2.5 5.5 6 2l3.5 3.5"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="m2.5 6.2 2.3 2.3 4.7-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1.5 11 10.5H1z"/><path d="M6 5v2.4M6 8.9v.1"/></symbol>
+    <symbol id="i-dot" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.2" fill="currentColor"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 1.5h6M3 10.5h6M3.5 1.5c0 3 5 3 5 4.5S3.5 7.5 3.5 10.5M8.5 1.5c0 3-5 3-5 4.5s5 1.5 5 4.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M4.7 15.3l2.1-2.1M13.2 6.8l2.1-2.1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 4 4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m5 5 10 10M15 5 5 15"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h14M3 10h14M3 14h14"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M6.8 9V6.5a3.2 3.2 0 0 1 6.4 0V9"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 3.5 4.5 4.5L6 12.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3h3l1.5 4-2 1.3a9 9 0 0 0 5.2 5.2l1.3-2 4 1.5v3a1.5 1.5 0 0 1-1.5 1.5A14 14 0 0 1 2.5 4.5 1.5 1.5 0 0 1 4 3z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 4.5v4h-4M4 15.5v-4h4"/><path d="M15.4 8.5A6 6 0 0 0 4.8 6.6M4.6 11.5a6 6 0 0 0 10.6 1.9"/></symbol>
+  </defs>
+</svg>
+
+<div class="relative z-10 flex min-h-screen">
+  <!-- ============ Sidebar ============ -->
+  <aside id="sidebar" class="fixed lg:sticky top-0 z-40 h-screen w-[264px] shrink-0 -translate-x-full lg:translate-x-0 flex flex-col gap-6 px-4 py-5 border-r" style="background: var(--sidebar); border-color: var(--sidebar-line); transition: transform .45s var(--spring);">
+    <div class="flex items-center gap-3 px-2">
+      <div class="grid place-items-center w-9 h-9 rounded-[11px]" style="background: var(--brand); color: var(--brand-ink); box-shadow: 0 8px 18px -8px color-mix(in oklab, var(--brand) 80%, transparent);">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4v16h14"/><path d="M9 15l3-4 3 2 4-6"/></svg>
+      </div>
+      <div class="leading-tight">
+        <div class="font-display text-[21px] font-medium">Ledgerline</div>
+        <div class="text-[11px] faint tracking-wide">Revenue cycle workspace</div>
+      </div>
+      <button class="lg:hidden ml-auto btn btn-ghost btn-sm px-2" data-close-sidebar aria-label="Close menu"><svg width="16" height="16"><use href="#i-close"/></svg></button>
+    </div>
+
+    <nav class="flex flex-col gap-1" aria-label="Primary">
+      <a href="#" class="nav-link" aria-current="page"><svg width="18" height="18"><use href="#i-grid"/></svg>Overview</a>
+      <a href="#queue" class="nav-link"><svg width="18" height="18"><use href="#i-x"/></svg>Denials &amp; appeals<span class="count num" id="navDenials">0</span></a>
+      <a href="#queue" class="nav-link"><svg width="18" height="18"><use href="#i-file"/></svg>Claims</a>
+      <a href="#aging" class="nav-link"><svg width="18" height="18"><use href="#i-clock"/></svg>A/R aging</a>
+      <a href="#queue" class="nav-link"><svg width="18" height="18"><use href="#i-scale"/></svg>Underpayments</a>
+      <a href="#clients" class="nav-link"><svg width="18" height="18"><use href="#i-users"/></svg>Clients</a>
+      <a href="#" class="nav-link" data-open-report><svg width="18" height="18"><use href="#i-chart"/></svg>Client reports</a>
+      <a href="#" class="nav-link" data-open-audit><svg width="18" height="18"><use href="#i-shield"/></svg>Audit log</a>
+    </nav>
+
+    <!-- Fragmented systems → one feed -->
+    <div class="card p-4">
+      <div class="flex items-center justify-between">
+        <div class="eyebrow">Data sources</div>
+        <button class="btn btn-ghost btn-sm px-2 h-7" id="resync" aria-label="Re-sync all sources"><svg width="14" height="14"><use href="#i-refresh"/></svg></button>
+      </div>
+      <ul class="mt-3 flex flex-col gap-2.5 text-[12.5px]" id="sources"></ul>
+      <p class="solves mt-3"><b>Solves</b> claims &amp; payments split across PM systems</p>
+    </div>
+
+    <div class="mt-auto flex items-center gap-3 px-2">
+      <div class="grid place-items-center w-9 h-9 rounded-full text-[13px] font-semibold" style="background: var(--brand-soft); color: var(--brand);">DR</div>
+      <div class="leading-tight min-w-0">
+        <div class="text-[13.5px] font-semibold truncate">Dana Reyes</div>
+        <div class="text-[11.5px] faint">Billing lead · MFA verified</div>
+      </div>
+    </div>
+  </aside>
+  <div class="scrim lg:hidden" id="sideScrim" data-close-sidebar></div>
+
+  <!-- ============ Main ============ -->
+  <main class="flex-1 min-w-0 px-4 sm:px-6 lg:px-10 pb-16">
+    <!-- Top bar -->
+    <header class="sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-3 border-b" style="background: color-mix(in oklab, var(--bg) 82%, transparent); backdrop-filter: blur(14px); border-color: var(--line);">
+      <button class="lg:hidden btn btn-ghost px-2.5" id="openSidebar" aria-label="Open menu"><svg width="18" height="18"><use href="#i-menu"/></svg></button>
+      <label class="relative hidden md:flex items-center flex-1 max-w-[380px]">
+        <svg width="16" height="16" class="absolute left-3 faint"><use href="#i-search"/></svg>
+        <input type="text" placeholder="Search claim #, payer, client…" class="focus-ring w-full h-9 pl-9 pr-12 rounded-[10px] text-[13.5px] border" style="background: var(--surface); border-color: var(--line); color: var(--ink);">
+        <kbd class="absolute right-2.5 text-[10.5px] faint font-mono px-1.5 rounded border" style="border-color: var(--line);">⌘K</kbd>
+      </label>
+      <div class="ml-auto flex items-center gap-2">
+        <span class="hidden sm:inline-flex chip chip-neutral" title="Session auto-locks after inactivity"><svg><use href="#i-lock"/></svg><span>Locks in <span id="session" class="num">15:00</span></span></span>
+        <button class="btn btn-ghost px-2.5" id="phiToggle" aria-pressed="false" aria-label="Reveal patient identifiers">
+          <svg width="16" height="16" id="phiIcon"><use href="#i-eye-off"/></svg><span class="hidden sm:inline" id="phiLabel">PHI masked</span>
+        </button>
+        <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-label="Color theme">
+          <span class="thumb" aria-hidden="true"></span>
+          <button role="radio" data-theme-set="light" aria-checked="false" aria-label="Light mode"><svg><use href="#i-sun"/></svg><span class="hidden sm:inline">Light</span></button>
+          <button role="radio" data-theme-set="dark" aria-checked="false" aria-label="Dark mode"><svg><use href="#i-moon"/></svg><span class="hidden sm:inline">Dark</span></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Title + filters -->
+    <section class="pt-8 pb-6 flex flex-col xl:flex-row xl:items-end gap-5 rise">
+      <div class="min-w-0">
+        <div class="eyebrow" id="dateLine">Monday, October 19, 2026</div>
+        <h1 class="font-display text-[40px] sm:text-[52px] mt-2 font-normal">Revenue at a <em class="italic" style="color: var(--brand);">glance</em></h1>
+        <p class="muted mt-2 text-[15px] max-w-[60ch]" id="subLine">Seven practices. One queue. Everything sorted by the dollars you can still recover.</p>
+      </div>
+      <div class="xl:ml-auto flex flex-wrap items-center gap-2">
+        <label class="sr-only" for="clientSelect">Client</label>
+        <select id="clientSelect" class="select"></select>
+        <div class="seg" role="group" aria-label="Period">
+          <button data-period="6" aria-pressed="false">6M</button>
+          <button data-period="12" aria-pressed="true">12M</button>
+        </div>
+        <button class="btn btn-primary" data-open-report><svg width="16" height="16"><use href="#i-download"/></svg>Client report</button>
+      </div>
+    </section>
+
+    <!-- KPI row -->
+    <section class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4" id="kpis" aria-label="Key metrics"></section>
+
+    <!-- Pipeline + revenue -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
+      <div class="card p-5 sm:p-6 xl:col-span-4 rise" style="animation-delay:.12s">
+        <div class="flex items-start justify-between gap-3">
+          <div>
+            <div class="eyebrow">Claims this month</div>
+            <h2 class="font-display text-[26px] mt-1"><span id="pipeTotal" class="num">0</span> <span class="text-[17px] muted font-sans tracking-normal">submitted</span></h2>
+          </div>
+          <span class="chip chip-neutral" id="pipeRejected"></span>
+        </div>
+        <div class="mt-5 flex h-3 rounded-full overflow-hidden gap-[2px]" id="pipeBar" role="img"></div>
+        <ul class="mt-5 grid grid-cols-1 gap-3" id="pipeList"></ul>
+        <p class="solves mt-5 pt-4 border-t" style="border-color: var(--line);"><b>Solves</b> rejections caught at the clearinghouse, before they age into denials</p>
+      </div>
+
+      <div class="card p-5 sm:p-6 xl:col-span-8 rise" style="animation-delay:.18s">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <div class="eyebrow">Monthly revenue</div>
+            <h2 class="font-display text-[26px] mt-1">Collections vs. charges</h2>
+          </div>
+          <div class="legend mt-1" id="revLegend"></div>
+        </div>
+        <div class="chart mt-4" id="revChart"></div>
+        <div class="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-[12.5px] muted" id="revFoot"></div>
+      </div>
+    </section>
+
+    <!-- Work queue + denial trends -->
+    <section class="mt-4" id="queue">
+      <div class="card-raised overflow-hidden rise" style="animation-delay:.24s">
+        <div class="p-5 sm:p-6 pb-4 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <div class="eyebrow flex items-center gap-2"><svg width="13" height="13" style="color: var(--accent)"><use href="#i-spark"/></svg>Today's work queue</div>
+            <h2 class="font-display text-[26px] mt-1">Recoverable dollars, ranked</h2>
+            <p class="text-[13px] muted mt-1 max-w-[62ch]" id="queueBlurb"></p>
+          </div>
+          <div class="seg" role="tablist" aria-label="Work queue">
+            <button role="tab" data-tab="denials" aria-selected="true">Appeals due</button>
+            <button role="tab" data-tab="filing" aria-selected="false">Filing limits</button>
+            <button role="tab" data-tab="under" aria-selected="false">Underpaid</button>
+          </div>
+        </div>
+        <div class="scroll-x">
+          <table class="tbl min-w-[760px]" id="queueTable"></table>
+        </div>
+        <div class="px-5 sm:px-6 py-4 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--line); background: color-mix(in oklab, var(--sunken) 45%, transparent);">
+          <p class="solves" id="queueSolves"></p>
+          <button class="btn btn-ghost btn-sm" id="queueAll">View all <span class="num" id="queueCount"></span></button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Denial trends + aging -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-4 mt-4">
+      <div class="card p-5 sm:p-6 xl:col-span-4 flex flex-col rise" style="animation-delay:.3s">
+        <div class="eyebrow">Denial trends</div>
+        <h2 class="font-display text-[26px] mt-1">Why claims come back</h2>
+        <div class="legend mt-3" id="denLegend"></div>
+        <div class="chart mt-3" id="denChart"></div>
+        <div class="mt-4 rounded-[14px] p-4 border" style="background: color-mix(in oklab, var(--accent) 8%, var(--surface)); border-color: color-mix(in oklab, var(--accent) 25%, var(--line));" id="denInsight"></div>
+        <p class="solves mt-4"><b>Solves</b> fixing denial causes upstream instead of re-working them</p>
+      </div>
+    <div class="card p-5 sm:p-6 xl:col-span-8 rise min-w-0" id="aging" style="animation-delay:.36s">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div class="eyebrow">Aging report</div>
+          <h2 class="font-display text-[26px] mt-1">Outstanding A/R by payer</h2>
+        </div>
+        <div class="legend" id="ageLegend"></div>
+      </div>
+      <div class="mt-5">
+        <div class="flex h-9 rounded-[10px] overflow-hidden gap-[2px]" id="ageBar"></div>
+        <div class="grid grid-cols-5 gap-[2px] mt-2 text-[12px]" id="ageBarLabels"></div>
+      </div>
+      <div class="scroll-x mt-6 -mx-5 sm:-mx-6">
+        <table class="tbl min-w-[700px]" id="ageTable"></table>
+      </div>
+      <p class="solves mt-4"><b>Solves</b> balances that go unnoticed until they pass 90 days</p>
+    </div>
+    </section>
+
+    <!-- Client performance -->
+    <section class="card p-5 sm:p-6 mt-4 rise" id="clients" style="animation-delay:.42s">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <div class="eyebrow">Client-by-client</div>
+          <h2 class="font-display text-[26px] mt-1">Billing performance</h2>
+        </div>
+        <p class="text-[12.5px] faint">Click a practice for payer mix, open work and account details</p>
+      </div>
+      <div class="scroll-x mt-4 -mx-5 sm:-mx-6">
+        <table class="tbl min-w-[920px]" id="clientTable"></table>
+      </div>
+      <p class="solves mt-4"><b>Solves</b> proving your value to each practice without building reports by hand</p>
+    </section>
+
+    <!-- Compliance strip -->
+    <footer class="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] faint">
+      <span class="inline-flex items-center gap-2"><svg width="15" height="15" style="color: var(--brand)"><use href="#i-shield"/></svg>HIPAA mode: minimum necessary</span>
+      <span>PHI masked by default · reveals require a reason and are logged</span>
+      <span>Encrypted at rest &amp; in transit</span>
+      <span>BAA on file: <span class="num">7/7</span> clients</span>
+      <button class="underline underline-offset-4 decoration-dotted focus-ring rounded hover:opacity-80 active:opacity-60" style="color: var(--ink-2)" data-open-audit>Open audit log</button>
+      <span class="ml-auto">Demo data · no real patient information</span>
+    </footer>
+  </main>
+</div>
+
+<!-- Tooltip -->
+<div id="tip" class="floating" role="tooltip"></div>
+
+<!-- Reveal-PHI modal -->
+<div class="scrim" id="modalScrim"></div>
+<div class="modal floating p-6" id="phiModal" role="dialog" aria-modal="true" aria-labelledby="phiTitle">
+  <div class="flex items-center gap-3">
+    <div class="grid place-items-center w-10 h-10 rounded-[12px]" style="background: var(--brand-soft); color: var(--brand);"><svg width="20" height="20"><use href="#i-lock"/></svg></div>
+    <div>
+      <h3 id="phiTitle" class="font-display text-[24px]">Reveal patient identifiers?</h3>
+      <p class="text-[12.5px] faint">Access is recorded to the audit log under your name.</p>
+    </div>
+  </div>
+  <fieldset class="mt-5 flex flex-col gap-2 text-[14px]">
+    <legend class="eyebrow mb-2">Reason for access</legend>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Working an appeal" checked> Working an appeal</label>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Patient balance inquiry"> Patient balance inquiry</label>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Eligibility / coverage check"> Eligibility / coverage check</label>
+  </fieldset>
+  <p class="text-[12.5px] muted mt-4">Identifiers re-mask automatically after 5 minutes.</p>
+  <div class="mt-5 flex justify-end gap-2">
+    <button class="btn btn-ghost" data-close-modal>Cancel</button>
+    <button class="btn btn-primary" id="phiConfirm">Reveal for 5 min</button>
+  </div>
+</div>
+
+<!-- Audit / report drawer -->
+<div class="scrim" id="drawerScrim"></div>
+<aside class="drawer floating" id="drawer" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
+  <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--line);">
+    <h3 class="font-display text-[24px]" id="drawerTitle">Audit log</h3>
+    <button class="btn btn-ghost btn-sm px-2 ml-auto" data-close-drawer aria-label="Close"><svg width="16" height="16"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="p-5 overflow-y-auto flex-1" id="drawerBody"></div>
+</aside>
+
+<div class="toast floating px-4 py-3 text-[13.5px] font-medium flex items-center gap-2" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  /* ================= Demo data ================= */
+  let seed = 20261019;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const between = (a, b) => a + rnd() * (b - a);
+
+  const MONTHS = ['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+  const YEARS  = [2025,2025,2026,2026,2026,2026,2026,2026,2026,2026,2026,2026];
+
+  const CLIENTS = [
+    { id: 'cedar',   name: 'Cedar Ridge Family Medicine', short: 'Cedar Ridge',  spec: 'Primary care',      pm: 'athenaOne',     base: 182000, den: .062, ar: 34, auth: .9 },
+    { id: 'harbor',  name: 'Harbor Orthopedics',          short: 'Harbor Ortho', spec: 'Orthopedics',       pm: 'ModMed',        base: 341000, den: .118, ar: 47, auth: 2.4 },
+    { id: 'lumen',   name: 'Lumen Pediatrics',            short: 'Lumen Peds',   spec: 'Pediatrics',        pm: 'Office Ally',   base: 126000, den: .048, ar: 29, auth: .6 },
+    { id: 'north',   name: 'Northgate Cardiology',        short: 'Northgate',    spec: 'Cardiology',        pm: 'eClinicalWorks',base: 288000, den: .094, ar: 44, auth: 2.0 },
+    { id: 'sierra',  name: 'Sierra Physical Therapy',     short: 'Sierra PT',    spec: 'Physical therapy',  pm: 'WebPT',         base: 98000,  den: .081, ar: 38, auth: 1.5 },
+    { id: 'willow',  name: 'Willow Behavioral Health',    short: 'Willow BH',    spec: 'Behavioral health', pm: 'SimplePractice',base: 74000,  den: .132, ar: 58, auth: 1.3 },
+    { id: 'bayview', name: 'Bayview Dermatology',         short: 'Bayview Derm', spec: 'Dermatology',       pm: 'ModMed',        base: 156000, den: .057, ar: 31, auth: .8 },
+  ];
+  const PAYERS = [
+    { n: 'Medicare',          tf: 365, appeal: 120, dtp: 14 },
+    { n: 'Medicaid (state)',  tf: 180, appeal: 90,  dtp: 31 },
+    { n: 'BCBS',              tf: 180, appeal: 180, dtp: 19 },
+    { n: 'UnitedHealthcare',  tf: 90,  appeal: 180, dtp: 24 },
+    { n: 'Aetna',             tf: 120, appeal: 180, dtp: 22 },
+    { n: 'Cigna',             tf: 90,  appeal: 180, dtp: 21 },
+    { n: 'Humana',            tf: 180, appeal: 60,  dtp: 27 },
+  ];
+  const REASONS = [
+    { k: 'auth',  label: 'Prior authorization', code: 'CO-197' },
+    { k: 'nec',   label: 'Medical necessity',   code: 'CO-50'  },
+    { k: 'elig',  label: 'Eligibility',         code: 'CO-27'  },
+    { k: 'code',  label: 'Coding & bundling',   code: 'CO-97'  },
+    { k: 'info',  label: 'Missing info',        code: 'CO-16'  },
+  ];
+
+  // Monthly series per client
+  CLIENTS.forEach(c => {
+    c.months = MONTHS.map((m, i) => {
+      const season = 1 + .06 * Math.sin((i + 2) / 12 * Math.PI * 2);
+      const growth = 1 + i * .008;
+      const charges = c.base * season * growth * between(.93, 1.07);
+      const allowed = charges * between(.5, .56);
+      const collected = allowed * between(.93, .985) * (i === 11 ? .62 : 1);  // Oct is month-to-date
+      const claims = Math.round(charges / between(310, 360));
+      const trend = i >= 6 ? 1 + (i - 6) * .04 * (c.auth > 1.4 ? 1 : .2) : 1;
+      const denRate = c.den * between(.88, 1.12) * trend;
+      const denied = Math.round(claims * denRate);
+      const w = { auth: c.auth * trend * (i > 7 ? 1.15 : 1), nec: 1.1, elig: 1, code: .9, info: .8 };
+      const tot = Object.values(w).reduce((a, b) => a + b, 0);
+      const byReason = {}; let used = 0;
+      REASONS.forEach((r, j) => { const v = j === REASONS.length - 1 ? denied - used : Math.round(denied * w[r.k] / tot); byReason[r.k] = Math.max(0, v); used += byReason[r.k]; });
+      return { charges, allowed, collected, claims, denied, byReason };
+    });
+    const total = c.base * c.ar / 30 * between(.95, 1.05);
+    const mix = c.ar > 45 ? [.36, .21, .14, .11, .18] : c.ar > 35 ? [.46, .22, .12, .08, .12] : [.55, .23, .1, .06, .06];
+    c.aging = mix.map(f => total * f);
+    c.payerAging = PAYERS.map(() => c.aging.map(v => v / PAYERS.length * between(.5, 1.5)));
+    c.clean = 1 - c.den * between(.7, .9) - .02;
+    c.ncr = between(.945, .985) - (c.den > .1 ? .02 : 0);
+    c.sync = c.id === 'willow' ? { ok: false, ago: '3 h' } : { ok: true, ago: Math.round(between(2, 18)) + ' min' };
+    c.underpaid = c.base * between(.008, .022);
+  });
+
+  // Work-queue items
+  const FIRST = ['Maria','James','Aisha','Robert','Linh','David','Grace','Omar','Elena','Marcus','Priya','Thomas','Hannah','Luis','Nora','Kevin','Sofia','Andre','Ruth','Felix'];
+  const LAST  = ['Alvarez','Brooks','Chen','Delgado','Evans','Fitzgerald','Garcia','Hughes','Ibrahim','Jensen','Kowalski','Lopez','Moreno','Nakamura','Okafor','Patel','Quinn','Russo','Sato','Thompson'];
+  const PROVIDERS = ['Dr. A. Okoye, MD', 'Dr. S. Lindqvist, DO', 'Dr. R. Mehta, MD', 'K. Alder, PA-C', 'Dr. J. Whitfield, MD', 'M. Torres, NP'];
+  const ICD = ['M17.11', 'I10', 'E11.9', 'F41.1', 'L57.0', 'M54.50', 'R07.9', 'Z00.129', 'M75.101', 'I48.91'];
+  const mkItem = (type, i) => {
+    const c = pick(CLIENTS), p = pick(PAYERS), r = type === 'denials' ? pick(REASONS) : null;
+    const amt = Math.round(between(180, type === 'under' ? 1400 : 6200));
+    const daysLeft = type === 'denials' ? Math.round(between(2, 55)) : type === 'filing' ? Math.round(between(3, 40)) : null;
+    const deniedAgo = type === 'denials' ? Math.max(4, p.appeal - daysLeft) : null;
+    const dosAgo = type === 'filing' ? p.tf - daysLeft : type === 'denials' ? deniedAgo + Math.round(between(18, 40)) : Math.round(between(24, 70));
+    const contracted = type === 'under' ? amt : null;
+    const paid = type === 'under' ? Math.round(amt * between(.62, .9)) : null;
+    const winByReason = { auth: .48, nec: .57, elig: .41, code: .74, info: .88 };
+    return {
+      type, client: c, payer: p, reason: r,
+      patient: pick(FIRST) + ' ' + pick(LAST),
+      dob: `${String(Math.ceil(between(0, 12))).padStart(2,'0')}/${String(Math.ceil(between(0, 28))).padStart(2,'0')}/${Math.round(between(1945, 2018))}`,
+      claim: 'CLM-' + (480000 + Math.round(rnd() * 99999)),
+      amt, daysLeft, contracted, paid,
+      win: r ? Math.min(.95, winByReason[r.k] * between(.85, 1.15)) : null,
+      status: type === 'filing' ? pick(['Rejected — not resubmitted', 'Never submitted', 'Held: missing auth #', 'Rejected — invalid NPI']) : null,
+      cpt: pick(['99214','99215','27447','93306','97110','90837','11102','29881','93000','99204']),
+      id: type + i, deniedAgo, dosAgo,
+      memberId: pick(['W', 'XJ', 'H', 'ZG', 'M']) + Math.round(between(1e8, 9e8)),
+      provider: pick(PROVIDERS), icd: pick(ICD),
+      priorAppeals: rnd() < .25 ? 1 : 0,
+      paidAgo: Math.round(between(2, 20)),
+      pattern: Math.round(between(3, 14)),
+    };
+  };
+  const CONTACTS = ['Dr. Ellen Park', 'Marisol Vega', 'Tom Haverford', 'Priscilla Moon', 'Gabe Ortiz', 'Dr. Naomi Burke', 'Ines Kowal'];
+  CLIENTS.forEach((c, i) => {
+    c.contact = CONTACTS[i]; c.contactRole = i % 2 ? 'Practice manager' : 'Owner / physician';
+    c.fee = [6.0, 5.5, 7.0, 5.0, 7.5, 8.0, 6.5][i]; c.since = [2019, 2021, 2022, 2020, 2023, 2024, 2021][i];
+    c.lastReport = ['Oct 2', 'Oct 1', 'Oct 3', 'Oct 1', 'Oct 6', 'Sep 4', 'Oct 2'][i];
+  });
+  const QUEUE = { denials: [], filing: [], under: [] };
+  for (let i = 0; i < 46; i++) QUEUE.denials.push(mkItem('denials', i));
+  for (let i = 0; i < 22; i++) QUEUE.filing.push(mkItem('filing', i));
+  for (let i = 0; i < 31; i++) QUEUE.under.push(mkItem('under', i));
+
+  /* ================= State ================= */
+  const state = { client: 'all', period: 12, tab: 'denials', phi: false, openQ: null, openC: null };
+  const audit = [
+    { t: '08:02', who: 'Dana Reyes', what: 'Signed in (MFA: authenticator app)' },
+    { t: '08:04', who: 'System', what: 'Nightly 835/ERA import completed — 1,284 remittances' },
+    { t: '08:15', who: 'Jordan Pike', what: 'Exported Harbor Orthopedics month-end report' },
+    { t: '08:31', who: 'System', what: 'SimplePractice sync failed for Willow BH — retrying' },
+  ];
+
+  /* ================= Helpers ================= */
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const money = (v, d = 0) => '$' + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : Math.abs(v) >= 1e4 ? (v / 1e3).toFixed(d || 0) + 'K' : Math.round(v).toLocaleString());
+  const moneyFull = v => '$' + Math.round(v).toLocaleString();
+  const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const sel = () => state.client === 'all' ? CLIENTS : CLIENTS.filter(c => c.id === state.client);
+  const sumMonths = (cs, key, i) => cs.reduce((a, c) => a + (typeof key === 'function' ? key(c.months[i]) : c.months[i][key]), 0);
+  const chip = (kind, icon, text) => `<span class="chip chip-${kind}"><svg><use href="#i-${icon}"/></svg>${text}</span>`;
+  const mask = name => state.phi ? name : name.split(' ').map(w => w[0] + '•••').join(' ');
+  const maskDob = d => state.phi ? d : '••/••/' + d.slice(-4);
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // Tooltip
+  const tip = $('#tip');
+  const showTip = (html, e) => {
+    tip.innerHTML = html; tip.classList.add('on');
+    const r = tip.getBoundingClientRect();
+    let x = e.clientX + 14, y = e.clientY + 14;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  };
+  const hideTip = () => tip.classList.remove('on');
+  document.addEventListener('mousemove', e => {
+    const t = e.target.closest('[data-tip]');
+    if (t) showTip(decodeURIComponent(t.dataset.tip), e); else hideTip();
+  });
+  const tipRow = (sw, k, v) => `<div class="tt-row"><span class="tt-key">${sw ? `<i class="sw" style="background:${sw}"></i>` : ''}${k}</span><b class="num">${v}</b></div>`;
+  const enc = s => encodeURIComponent(s);
+
+  const toast = msg => { const t = $('#toast'); t.innerHTML = `<svg width="16" height="16" style="color: var(--good)"><use href="#i-check"/></svg>${msg}`; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2600); };
+
+  /* ================= Renderers ================= */
+  function renderSources() {
+    $('#sources').innerHTML = CLIENTS.map(c => `
+      <li class="flex items-center gap-2.5">
+        <span class="ring-sync" style="background:${c.sync.ok ? 'var(--good)' : 'var(--crit)'}"></span>
+        <span class="truncate">${c.short}</span>
+        <span class="ml-auto faint whitespace-nowrap">${c.sync.ok ? c.sync.ago : `<span style="color: var(--crit-ink)">failed · ${c.sync.ago}</span>`}</span>
+      </li>`).join('');
+  }
+
+  function renderKpis() {
+    const cs = sel(), L = 11, P = 10;
+    const coll = sumMonths(cs, 'collected', L), collPrev = sumMonths(cs, 'collected', P) * .62;
+    const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
+    const daily = cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
+    const days = ar / daily, daysPrev = days * 1.06;
+    const den = sumMonths(cs, 'denied', L) / sumMonths(cs, 'claims', L), denPrev = sumMonths(cs, 'denied', P) / sumMonths(cs, 'claims', P);
+    const clean = cs.reduce((a, c) => a + c.clean * c.base, 0) / cs.reduce((a, c) => a + c.base, 0);
+    const over90 = cs.reduce((a, c) => a + c.aging[3] + c.aging[4], 0) / ar;
+
+    const tiles = [
+      { label: 'Collections · MTD', value: money(coll, 1), delta: coll / collPrev - 1, good: 'up', note: 'vs. same point last month', spark: cs.length && MONTHS.map((_, i) => sumMonths(cs, 'collected', i)).slice(0, 11) },
+      { label: 'Outstanding A/R', value: money(ar, 2), sub: `${pct(over90, 0)} over 90 days`, status: over90 > .2 ? ['serious', 'alert', 'Aged'] : ['good', 'check', 'Healthy'] },
+      { label: 'Days in A/R', value: days.toFixed(1), delta: days / daysPrev - 1, good: 'down', note: 'Target ≤ 40 days', status: days > 45 ? ['serious','alert','Above target'] : days > 40 ? ['warn','alert','Near target'] : ['good','check','On target'] },
+      { label: 'Denial rate', value: pct(den), delta: den / denPrev - 1, good: 'down', note: 'Target ≤ 5% initial', status: den > .1 ? ['crit','alert','High'] : den > .05 ? ['warn','alert','Watch'] : ['good','check','On target'] },
+      { label: 'Clean claim rate', value: pct(clean), sub: 'Accepted on first pass', status: clean >= .9 ? ['good','check','On target'] : ['warn','alert','Below 90%'] },
+    ];
+    $('#kpis').innerHTML = tiles.map((t, i) => {
+      let delta = '';
+      if (t.delta !== undefined) {
+        const up = t.delta >= 0, isGood = (t.good === 'up') === up;
+        delta = `<span class="kpi-delta inline-flex items-center gap-1 text-[12.5px] font-semibold" style="color: var(${isGood ? '--good-ink' : '--crit-ink'})"><svg><use href="#i-arrow-${up ? 'up' : 'down'}"/></svg>${pct(Math.abs(t.delta))}</span>`;
+      }
+      return `
+      <article class="card p-5 rise ${i === 4 ? 'col-span-2 md:col-span-1' : ''}" style="animation-delay:${.04 * i}s">
+        <div class="eyebrow">${t.label}</div>
+        <div class="font-display text-[34px] sm:text-[40px] mt-2 num">${t.value}</div>
+        <div class="mt-1 flex items-center gap-2 text-[12.5px] faint">${delta}<span>${t.note || t.sub}</span></div>
+        ${t.status ? `<div class="mt-3">${chip(...t.status)}</div>` : ''}
+      </article>`;
+    }).join('');
+  }
+
+  function renderPipeline() {
+    const cs = sel();
+    const sub = sumMonths(cs, 'claims', 11), den = sumMonths(cs, 'denied', 11);
+    const paid = Math.round(sub * .63), pend = sub - paid - den, rej = Math.round(sub * .031);
+    const avg = sumMonths(cs, 'charges', 11) / sub;
+    $('#pipeTotal').textContent = sub.toLocaleString();
+    $('#pipeRejected').innerHTML = `<svg><use href="#i-alert"/></svg>${rej} clearinghouse rejects`;
+    $('#pipeRejected').className = 'chip chip-serious';
+    const segs = [
+      { k: 'Paid', n: paid, c: 'var(--good)', icon: 'check', cls: 'good', note: 'avg ' + Math.round(cs.reduce((a,c)=>a+c.ar,0)/cs.length * .55) + ' days to pay' },
+      { k: 'Pending', n: pend, c: 'var(--warn)', icon: 'hourglass', cls: 'warn', note: Math.round(pend * .18) + ' with no payer response > 30 days' },
+      { k: 'Denied', n: den, c: 'var(--crit)', icon: 'x', cls: 'crit', note: Math.round(den * .41) + ' not yet worked' },
+    ];
+    $('#pipeBar').setAttribute('aria-label', segs.map(s => `${s.k} ${s.n}`).join(', '));
+    $('#pipeBar').innerHTML = segs.map((s, i) => `<div class="barx-anim h-full" style="flex:${s.n}; background:${s.c}; animation-delay:${.1 + i * .08}s" data-tip="${enc(`<b>${s.k}</b>${tipRow('', 'Claims', s.n.toLocaleString())}${tipRow('', 'Share', pct(s.n / sub))}${tipRow('', 'Est. value', money(s.n * avg))}`)}"></div>`).join('');
+    $('#pipeList').innerHTML = segs.map(s => `
+      <li class="flex items-center gap-3">
+        <span class="chip chip-${s.cls} w-[88px] justify-start"><svg><use href="#i-${s.icon === 'x' ? 'alert' : s.icon}"/></svg>${s.k}</span>
+        <span class="text-[12.5px] faint truncate">${s.note}</span>
+        <span class="ml-auto text-right leading-tight"><b class="num text-[15px]">${s.n.toLocaleString()}</b><br><span class="num text-[12px] faint">${money(s.n * avg)}</span></span>
+      </li>`).join('');
+  }
+
+  function renderRevenue() {
+    const cs = sel(), n = state.period, start = 12 - n;
+    const idx = [...Array(n)].map((_, i) => start + i);
+    const coll = idx.map(i => sumMonths(cs, 'collected', i));
+    const chg = idx.map(i => sumMonths(cs, 'allowed', i));
+    const W = Math.max(340, $('#revChart').clientWidth || 760), H = W < 600 ? 220 : 250, pl = 44, pr = 8, pt = 10, pb = 28;
+    const max = Math.max(...chg, ...coll) * 1.1;
+    const step = niceStep(max / 4), top = step * 4;
+    const x = i => pl + (W - pl - pr) * (i + .5) / n, bw = Math.min(30, (W - pl - pr) / n * .5);
+    const y = v => pt + (H - pt - pb) * (1 - v / top);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly collections and allowed charges"><g class="grid">`;
+    for (let k = 0; k <= 4; k++) s += `<line x1="${pl}" x2="${W - pr}" y1="${y(step * k)}" y2="${y(step * k)}"/>`;
+    s += `</g><g class="axis">`;
+    for (let k = 0; k <= 4; k++) s += `<text x="${pl - 8}" y="${y(step * k) + 4}" text-anchor="end">${money(step * k)}</text>`;
+    idx.forEach((m, i) => s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${MONTHS[m]}</text>`);
+    s += `</g>`;
+    // hover highlight bands sit beneath the marks
+    const cw = (W - pl - pr) / n;
+    idx.forEach((m, i) => s += `<rect class="hl" data-i="${i}" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" rx="6"/>`);
+    // bars
+    idx.forEach((m, i) => {
+      const h = H - pb - y(coll[i]), r = Math.min(4, h);
+      const mtd = m === 11;
+      s += `<path class="bar-anim" style="animation-delay:${i * .03}s" d="M${x(i) - bw/2},${H - pb} V${y(coll[i]) + r} q0,-${r} ${r},-${r} H${x(i) + bw/2 - r} q${r},0 ${r},${r} V${H - pb} Z" fill="var(--s1)" ${mtd ? 'fill-opacity=".45"' : ''}/>`;
+    });
+    // line (allowed charges, same $ axis)
+    s += `<path d="${chg.map((v, i) => (i ? 'L' : 'M') + x(i) + ',' + y(v)).join(' ')}" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round"/>`;
+    chg.forEach((v, i) => s += `<circle cx="${x(i)}" cy="${y(v)}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>`);
+    // hover columns
+    idx.forEach((m, i) => {
+      const t = `<b>${MONTHS[m]} ${YEARS[m]}${m === 11 ? ' · MTD' : ''}</b>${tipRow('var(--s1)', 'Collections', moneyFull(coll[i]))}${tipRow('var(--s2)', 'Allowed charges', moneyFull(chg[i]))}${tipRow('', 'Collected / allowed', pct(coll[i] / chg[i]))}`;
+      s += `<rect class="hit" data-i="${i}" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" data-tip="${enc(t)}"/>`;
+    });
+    s += `</svg>`;
+    $('#revChart').innerHTML = s;
+    const svg = $('#revChart svg');
+    svg.querySelectorAll('.hit').forEach(h => h.addEventListener('mouseenter', () => svg.querySelectorAll('.hl').forEach(b => b.style.opacity = b.dataset.i === h.dataset.i ? 1 : 0)));
+    svg.addEventListener('mouseleave', () => svg.querySelectorAll('.hl').forEach(h => h.style.opacity = 0));
+
+    $('#revLegend').innerHTML = `<span><i style="background: var(--s1)"></i>Collections</span><span><i style="background: var(--s2); height: 3px; border-radius: 2px;"></i>Allowed charges</span>`;
+    const full = coll.slice(0, -1), ytd = idx.reduce((a, m, i) => a + (YEARS[m] === 2026 ? coll[i] : 0), 0);
+    const ncr = full.reduce((a, b) => a + b, 0) / chg.slice(0, -1).reduce((a, b) => a + b, 0);
+    $('#revFoot').innerHTML = `<span>2026 YTD <b class="num" style="color: var(--ink)">${money(ytd, 2)}</b></span><span>Net collection rate <b class="num" style="color: var(--ink)">${pct(ncr)}</b></span><span>Best month <b style="color: var(--ink)">${MONTHS[idx[full.indexOf(Math.max(...full))]]}</b></span><span class="faint">October is month-to-date</span>`;
+  }
+
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  }
+
+  function renderDenials() {
+    const cs = sel(), n = 6, idx = [6,7,8,9,10,11];
+    const data = idx.map(m => REASONS.map(r => cs.reduce((a, c) => a + c.months[m].byReason[r.k], 0)));
+    const totals = data.map(d => d.reduce((a, b) => a + b, 0));
+    const W = Math.max(300, $('#denChart').clientWidth || 360), H = 210, pl = 30, pr = 4, pt = 8, pb = 26;
+    const step = niceStep(Math.max(...totals) * 1.1 / 4), top = step * 4;
+    const y = v => pt + (H - pt - pb) * (1 - v / top);
+    const cw = (W - pl - pr) / n, bw = Math.min(30, cw * .52);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Denials by root cause, last six months"><g class="grid">`;
+    for (let k = 0; k <= 4; k++) s += `<line x1="${pl}" x2="${W - pr}" y1="${y(step * k)}" y2="${y(step * k)}"/>`;
+    s += `</g><g class="axis">`;
+    for (let k = 0; k <= 4; k++) s += `<text x="${pl - 6}" y="${y(step * k) + 4}" text-anchor="end">${step * k}</text>`;
+    idx.forEach((m, i) => s += `<text x="${pl + cw * (i + .5)}" y="${H - 8}" text-anchor="middle">${MONTHS[m]}</text>`);
+    s += `</g>`;
+    data.forEach((d, i) => {
+      const cx = pl + cw * (i + .5);
+      let acc = 0;
+      s += `<g class="bar-anim" style="animation-delay:${i * .05}s">`;
+      d.forEach((v, j) => {
+        if (!v) return;
+        const y0 = y(acc), y1 = y(acc + v); acc += v;
+        const isTop = d.slice(j + 1).every(z => !z), h = y0 - y1 - (isTop ? 0 : 2), r = isTop ? Math.min(4, h) : 0;
+        s += `<path d="M${cx - bw/2},${y0} V${y1 + r + (isTop ? 0 : 2)} ${r ? `q0,-${r} ${r},-${r} H${cx + bw/2 - r} q${r},0 ${r},${r}` : `H${cx + bw/2}`} V${y0} Z" fill="var(--s${j + 1})" transform="translate(0,${isTop ? 0 : 0})"/>`;
+      });
+      s += `</g>`;
+      const t = `<b>${MONTHS[idx[i]]} ${YEARS[idx[i]]} · ${totals[i]} denials</b>` + REASONS.map((r, j) => tipRow(`var(--s${j + 1})`, r.label, d[j])).reverse().join('');
+      s += `<rect class="hit" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" data-tip="${enc(t)}"/>`;
+    });
+    s += `</svg>`;
+    $('#denChart').innerHTML = s;
+    $('#denLegend').innerHTML = REASONS.map((r, j) => `<span><i style="background: var(--s${j + 1})"></i>${r.label}</span>`).join('');
+
+    // insight: biggest growing cause
+    const first = data.slice(0, 3).reduce((a, d) => a.map((v, j) => v + d[j]), REASONS.map(() => 0));
+    const last = data.slice(3).reduce((a, d) => a.map((v, j) => v + d[j]), REASONS.map(() => 0));
+    const growth = REASONS.map((r, j) => ({ r, g: last[j] / Math.max(1, first[j]) - 1, j }));
+    const worst = growth.sort((a, b) => b.g - a.g)[0];
+    const driver = cs.slice().sort((a, b) => b.months[11].byReason[worst.r.k] - a.months[11].byReason[worst.r.k])[0];
+    const fix = { auth: 'Turn on the pre-submission auth check for MRI, surgery and DME codes', nec: 'Attach LCD/NCD diagnosis crosswalk to high-risk CPTs', elig: 'Run real-time eligibility 48h before every visit', code: 'Add NCCI edit scrub before claims leave the queue', info: 'Block submission when NPI, modifier or referral is missing' }[worst.r.k];
+    $('#denInsight').innerHTML = `
+      <div class="flex items-center gap-2 text-[12px] font-semibold" style="color: var(--accent)"><svg width="14" height="14"><use href="#i-spark"/></svg>Root-cause alert</div>
+      <p class="text-[13.5px] mt-2 leading-[1.55]"><b>${worst.r.label}</b> denials are ${worst.g >= 0 ? 'up' : 'down'} <b class="num">${pct(Math.abs(worst.g), 0)}</b> quarter over quarter${cs.length > 1 ? `, led by <b>${driver.short}</b>` : ''} (${worst.r.code}).</p>
+      <p class="text-[12.5px] muted mt-1.5 leading-[1.55]">${fix}.</p>
+      <button class="btn btn-ghost btn-sm mt-3" data-toast="Prevention rule queued for review">Create prevention rule</button>`;
+  }
+
+  const QUEUE_META = {
+    denials: { blurb: 'Denied claims sorted by expected recovery (amount × likelihood to overturn). Payer appeal windows are tracked per contract, so nothing quietly expires.', solves: '<b>Solves</b> the majority of denied claims that are never resubmitted' },
+    filing:  { blurb: 'Rejected, held or never-sent claims approaching each payer\'s timely filing limit. Once a limit passes, that revenue is almost never recoverable.', solves: '<b>Solves</b> write-offs from missed timely filing limits that vary by payer' },
+    under:   { blurb: 'Payments posted below the contracted rate. Variances are flagged when the ERA posts, before they flow through to the patient\'s statement.', solves: '<b>Solves</b> underpayments that go undetected and get billed wrong to patients' },
+  };
+
+  function deadlineChip(d) {
+    if (d <= 7) return chip('crit', 'alert', `${d}d left`);
+    if (d <= 21) return chip('serious', 'clock', `${d}d left`);
+    if (d <= 35) return chip('warn', 'clock', `${d}d left`);
+    return chip('neutral', 'clock', `${d}d left`);
+  }
+
+  /* ---------- Expandable row details ---------- */
+  const TODAY = new Date(2026, 9, 19);
+  const dayStr = off => { const d = new Date(TODAY); d.setDate(d.getDate() + off); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+  const sec = (title, body) => `<div class="eyebrow mb-3">${title}</div>${body}`;
+  const kv = pairs => `<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px] leading-[1.45]">${pairs.map(([k, v]) => `<dt class="faint">${k}</dt><dd class="text-right num font-medium min-w-0">${v}</dd>`).join('')}</dl>`;
+  const timeline = steps => `<ol class="tl">${steps.map(st => `<li class="${st.state || ''}"><span class="tl-dot"></span><div><div class="text-[13px] font-medium">${st.label}</div><div class="text-[12px] faint num">${st.date}${st.note ? ' · ' + st.note : ''}</div></div></li>`).join('')}</ol>`;
+  const steps = list => `<ol class="check-list">${list.map((t, i) => `<li><span class="n">${i + 1}</span><span>${t}</span></li>`).join('')}</ol>`;
+  const panel = (cols, actions) => `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">${cols.map(c => `<div class="min-w-0">${c}</div>`).join('')}</div>${actions ? `<div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">${actions}</div>` : ''}</div>`;
+  const patientBlock = q => sec('Patient &amp; encounter', kv([
+    ['Patient', `<span class="phi">${esc(mask(q.patient))}</span>`],
+    ['Member ID', `<span class="phi">${state.phi ? q.memberId : '•••••' + q.memberId.slice(-4)}</span>`],
+    ['Rendering', q.provider],
+    ['Diagnosis', `<span class="phi">${state.phi ? q.icd : '•••'}</span>`],
+    ['CPT', `<span class="phi">${q.cpt}</span>`],
+    ['Practice', q.client.short],
+  ]) + (state.phi ? '' : `<p class="text-[11.5px] faint mt-3 flex items-center gap-1.5"><svg width="12" height="12"><use href="#i-lock"/></svg>Identifiers masked. Use “PHI masked” in the top bar to reveal.</p>`));
+
+  const DENIAL_INFO = {
+    auth: { why: 'Service required prior authorization and none was on file with the payer.', fix: ['Request retro-authorization, or pull proof the auth was obtained', 'Attach clinical notes for the date of service', 'Include a letter of medical necessity from the provider'] },
+    nec:  { why: 'Payer considers the service not medically necessary for the diagnosis billed.', fix: ['Attach progress notes that support the diagnosis', 'Cite the payer’s coverage policy (LCD/NCD or medical policy)', 'Document prior conservative treatment'] },
+    elig: { why: 'Coverage was inactive or terminated on the date of service.', fix: ['Re-run eligibility (270/271) for the date of service', 'If other coverage is found, bill the correct payer', 'Otherwise move balance to patient with a coverage update form'] },
+    code: { why: 'Procedure was bundled into another service paid on the same date.', fix: ['Check the NCCI edit for this CPT pair', 'Add modifier 59/XS if the service was distinct', 'Attach the procedure note showing a separate site or session'] },
+    info: { why: 'Claim was missing information needed to adjudicate it. Usually fixable without an appeal.', fix: ['Add the missing referring NPI, modifier or units', 'Send a corrected claim (frequency code 7)', 'No appeal letter needed'] },
+  };
+  const FILING_INFO = {
+    'Rejected — not resubmitted': { why: 'Payer front-end rejection (277CA): subscriber ID not found. A correction was never resubmitted.', fix: ['Verify member ID against the card or a 270 eligibility check', 'Correct the subscriber ID on the claim', 'Resubmit electronically today and keep the acceptance report'] },
+    'Never submitted': { why: 'Charge exists in the PM system, but no claim was created: the encounter note is unsigned.', fix: ['Ask the provider to sign the encounter note', 'Generate the claim from the signed encounter', 'Submit in today’s batch'] },
+    'Held: missing auth #': { why: 'Held by the claim scrubber: this CPT requires an authorization number for this payer.', fix: ['Pull the auth number from the payer portal', 'Add it to the claim (Box 23 / REF*G1)', 'Release the hold and submit'] },
+    'Rejected — invalid NPI': { why: 'Clearinghouse rejection: rendering NPI is not enrolled with this payer.', fix: ['Confirm the provider’s enrollment status with the payer', 'Bill under the enrolled group NPI if the contract allows', 'Resubmit and keep proof of timely filing'] },
+  };
+
+  function queueDetail(q) {
+    if (q.type === 'denials') {
+      const info = DENIAL_INFO[q.reason.k];
+      const expected = q.amt * .56;
+      return panel([
+        sec('Claim timeline', timeline([
+          { state: 'done', label: 'Date of service', date: dayStr(-q.dosAgo) },
+          { state: 'done', label: 'Submitted to ' + q.payer.n, date: dayStr(-q.dosAgo + 3), note: 'accepted by clearinghouse' },
+          { state: 'bad', label: `Denied ${q.reason.code}`, date: dayStr(-q.deniedAgo), note: 'via 835 remittance' },
+          ...(q.priorAppeals ? [{ state: 'bad', label: 'Level 1 appeal upheld', date: dayStr(-Math.round(q.deniedAgo / 2)) }] : []),
+          { state: 'next', label: `${q.priorAppeals ? 'Level 2' : 'Level 1'} appeal deadline`, date: dayStr(q.daysLeft), note: `${q.payer.appeal}-day window` },
+        ])),
+        sec('Why it was denied', `<p class="text-[13px] leading-[1.55]"><b>${q.reason.label}.</b> ${info.why}</p>`) +
+          `<div class="mt-4">${sec('To overturn', steps(info.fix))}</div>`,
+        sec('Recovery', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(expected)], ['Win odds', pct(q.win, 0)], ['Expected recovery', `<b>${moneyFull(expected * q.win)}</b>`]])) +
+          `<div class="mt-5">${patientBlock(q)}</div>`,
+      ], `<button class="btn btn-primary btn-sm" data-toast="Appeal draft for ${q.claim} started with ${q.payer.n} template">Draft appeal</button>
+          <button class="btn btn-ghost btn-sm" data-toast="Call logged to ${q.claim}"><svg width="14" height="14"><use href="#i-phone"/></svg>Log payer call</button>
+          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+          <span class="claim-id ml-auto">${q.claim}</span>`);
+    }
+    if (q.type === 'filing') {
+      const info = FILING_INFO[q.status];
+      return panel([
+        sec('Filing clock', timeline([
+          { state: 'done', label: 'Date of service', date: dayStr(-q.dosAgo) },
+          { state: 'bad', label: q.status, date: dayStr(-Math.max(1, q.dosAgo - 6)) },
+          { state: 'next', label: `${q.payer.n} filing limit`, date: dayStr(q.daysLeft), note: `${q.payer.tf} days from service` },
+        ])) + `<div class="mt-4">${deadlineChip(q.daysLeft)}</div>`,
+        sec('What’s blocking it', `<p class="text-[13px] leading-[1.55]">${info.why}</p>`) +
+          `<div class="mt-4">${sec('Fix', steps(info.fix))}</div>`,
+        sec('Amount at risk', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(q.amt * .56)], ['Recoverable after limit', '<span style="color: var(--crit-ink)">≈ $0</span>']])) +
+          `<div class="mt-5">${patientBlock(q)}</div>`,
+      ], `<button class="btn btn-primary btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button>
+          <button class="btn btn-ghost btn-sm" data-toast="Provider sign-off requested for ${q.claim}">Request sign-off</button>
+          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+          <span class="claim-id ml-auto">${q.claim}</span>`);
+    }
+    // underpayment
+    const variance = q.contracted - q.paid;
+    const same = Math.round(variance * q.pattern * .9);
+    return panel([
+      sec('Line detail', kv([
+        ['CPT · units', `${q.cpt} · 1`],
+        ['Contract rate', moneyFull(q.contracted)],
+        ['Allowed on ERA', moneyFull(q.paid)],
+        ['Paid', moneyFull(q.paid)],
+        ['Adjustment', 'CO-45'],
+        ['Variance', `<span style="color: var(--crit-ink)">−${moneyFull(variance)} (${pct(variance / q.contracted, 0)})</span>`],
+      ])) + `<p class="text-[12px] faint mt-3">Paid ${dayStr(-q.paidAgo)} · ${q.payer.n} 2026 fee schedule</p>`,
+      sec('Pattern', `<p class="text-[13px] leading-[1.55]"><b>${q.payer.n}</b> also underpaid CPT ${q.cpt} on <b class="num">${q.pattern}</b> other claims this quarter, about <b class="num">${moneyFull(same)}</b> in total. That usually means the payer loaded an outdated fee schedule.</p>
+        <div class="mt-4 flex items-center gap-3 text-[12px]"><span class="faint w-16">This claim</span><div class="mini-bar flex-1"><i style="width:${Math.max(4, 100 / (q.pattern + 1))}%; background: var(--s2)"></i></div></div>
+        <div class="mt-2 flex items-center gap-3 text-[12px]"><span class="faint w-16">Same CPT</span><div class="mini-bar flex-1"><i style="width:100%; background: var(--s2); opacity:.55"></i></div></div>`) +
+        `<div class="mt-4">${chip('warn', 'hourglass', 'Patient statement on hold')}</div><p class="text-[12px] faint mt-2">Held so the patient isn’t billed from the wrong amount.</p>`,
+      patientBlock(q),
+    ], `<button class="btn btn-primary btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button>
+        <button class="btn btn-ghost btn-sm" data-toast="${q.pattern + 1} claims bundled into one ${q.payer.n} dispute">Bundle ${q.pattern + 1} claims</button>
+        <button class="btn btn-ghost btn-sm" data-toast="Variance report exported (de-identified)"><svg width="14" height="14"><use href="#i-download"/></svg>Export</button>
+        <span class="claim-id ml-auto">${q.claim}</span>`);
+  }
+
+  function clientDetail(r) {
+    const c = r.c, ci = CLIENTS.indexOf(c);
+    const mix = PAYERS.map((p, pi) => ({ n: p.n, v: c.payerAging[pi].reduce((a, b) => a + b, 0) })).sort((a, b) => b.v - a.v);
+    const mixTot = mix.reduce((a, m) => a + m.v, 0);
+    const reasons = REASONS.map((rs, j) => ({ rs, j, n: c.months[10].byReason[rs.k] })).sort((a, b) => b.n - a.n);
+    const maxR = Math.max(1, ...reasons.map(x => x.n));
+    const mine = k => QUEUE[k].filter(q => q.client === c);
+    const work = [
+      ['Appeals due', mine('denials').length, moneyFull(mine('denials').reduce((a, q) => a + q.amt * q.win, 0)), 'denials'],
+      ['Filing limits', mine('filing').length, moneyFull(mine('filing').reduce((a, q) => a + q.amt, 0)), 'filing'],
+      ['Underpaid', mine('under').length, moneyFull(mine('under').reduce((a, q) => a + q.contracted - q.paid, 0)), 'under'],
+    ];
+    return `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">
+      <div class="min-w-0">${sec('A/R by payer', mix.slice(0, 5).map(m => `<div class="flex items-center gap-3 text-[12.5px] mb-2"><span class="w-32 truncate">${m.n}</span><div class="mini-bar flex-1"><i style="width:${m.v / mix[0].v * 100}%; background: var(--seq3)"></i></div><span class="num w-14 text-right">${money(m.v)}</span><span class="num faint w-9 text-right">${pct(m.v / mixTot, 0)}</span></div>`).join(''))}
+        <div class="mt-4">${sec('Sep denials by cause', reasons.map(x => `<div class="flex items-center gap-3 text-[12.5px] mb-2"><span class="w-32 truncate">${x.rs.label}</span><div class="mini-bar flex-1"><i style="width:${x.n / maxR * 100}%; background: var(--s${x.j + 1})"></i></div><span class="num w-9 text-right">${x.n}</span></div>`).join(''))}</div></div>
+      <div class="min-w-0">${sec('Open work', `<ul class="flex flex-col gap-2">${work.map(([l, n, v, tab]) => `<li><button class="tile-btn focus-ring" data-jump="${tab}" data-jump-client="${c.id}"><span class="text-[13px] font-medium">${l}</span><span class="ml-auto text-right leading-tight"><b class="num text-[14px]">${n}</b><br><span class="num text-[11.5px] faint">${v}</span></span><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg></button></li>`).join('')}</ul>`)}
+        <p class="text-[12px] faint mt-3">Opens the work queue filtered to this practice.</p></div>
+      <div class="min-w-0">${sec('Account', kv([
+        ['Contact', `${c.contact}`], ['Role', c.contactRole], ['Client since', c.since], ['Fee', `${c.fee.toFixed(1)}% of collections`],
+        ['PM system', c.pm], ['Last sync', c.sync.ok ? c.sync.ago + ' ago' : `<span style="color: var(--crit-ink)">failed ${c.sync.ago} ago</span>`],
+        ['BAA', `on file · ${c.since}`], ['Last report sent', c.lastReport],
+      ]))}</div>
+    </div>
+    <div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">
+      <button class="btn btn-primary btn-sm" data-focus="${c.id}">${state.client === c.id ? 'Show all clients' : 'Focus dashboard'}</button>
+      <button class="btn btn-ghost btn-sm" data-report="${c.id}"><svg width="14" height="14"><use href="#i-download"/></svg>Month-end report</button>
+      <button class="btn btn-ghost btn-sm" data-toast="Secure message to ${c.contact} drafted">Message ${c.contact.split(' ').slice(-2).join(' ')}</button>
+    </div></div>`;
+  }
+
+  function renderQueue() {
+    const ids = sel().map(c => c.id);
+    const items = QUEUE[state.tab].filter(q => ids.includes(q.client.id));
+    let rows, head;
+    const patientCell = q => `<td class="pl-5 sm:pl-6"><div class="flex items-center gap-3"><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg><div><div class="phi">${esc(mask(q.patient))}</div><div class="text-[11.5px] faint phi">DOB ${maskDob(q.dob)}</div></div></div></td>`;
+    const rowOpen = q => `<tr class="expandable ${state.openQ === q.id ? 'is-open' : ''}" tabindex="0" aria-expanded="${state.openQ === q.id}" data-q="${q.id}">`;
+    const withDetail = (q, html) => html + (state.openQ === q.id ? `<tr class="detail"><td colspan="7">${queueDetail(q)}</td></tr>` : '');
+    const clientCell = q => `<td><div class="font-medium">${q.client.short}</div><div class="text-[12px] faint">${q.payer.n}</div></td>`;
+    if (state.tab === 'denials') {
+      items.sort((a, b) => b.amt * b.win - a.amt * a.win);
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Denial</th><th class="r">Billed</th><th>Win odds</th><th>Appeal window</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = items.slice(0, 7).map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="font-medium">${q.reason.label}</div><div class="claim-id">${q.reason.code} · ${q.claim} · ${q.cpt}</div></td>
+        <td class="r num font-semibold">${moneyFull(q.amt)}</td>
+        <td><div class="flex items-center gap-2"><div class="w-14 h-1.5 rounded-full overflow-hidden" style="background: var(--sunken)"><div class="h-full rounded-full" style="width:${q.win * 100}%; background: var(--brand)"></div></div><span class="num text-[12.5px] muted">${pct(q.win, 0)}</span></div></td>
+        <td>${deadlineChip(q.daysLeft)}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Appeal draft for ${q.claim} started with payer template">Draft appeal</button></td>
+      </tr>`));
+    } else if (state.tab === 'filing') {
+      items.sort((a, b) => a.daysLeft - b.daysLeft);
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Status</th><th class="r">Billed</th><th>Payer limit</th><th>Time left</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = items.slice(0, 7).map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="font-medium">${q.status}</div><div class="claim-id">${q.claim} · ${q.cpt}</div></td>
+        <td class="r num font-semibold">${moneyFull(q.amt)}</td>
+        <td class="num muted">${q.payer.tf} days</td>
+        <td>${deadlineChip(q.daysLeft)}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button></td>
+      </tr>`));
+    } else {
+      items.sort((a, b) => (b.contracted - b.paid) - (a.contracted - a.paid));
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Claim</th><th class="r">Contracted</th><th class="r">Paid</th><th class="r">Variance</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = items.slice(0, 7).map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="claim-id">${q.claim}</div><div class="text-[12px] faint">CPT ${q.cpt}</div></td>
+        <td class="r num">${moneyFull(q.contracted)}</td>
+        <td class="r num muted">${moneyFull(q.paid)}</td>
+        <td class="r"><span class="chip chip-serious num"><svg><use href="#i-arrow-down"/></svg>${moneyFull(q.contracted - q.paid)}</span></td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button></td>
+      </tr>`));
+    }
+    $('#queueTable').innerHTML = `<thead>${head}</thead><tbody>${rows.join('') || `<tr><td colspan="7" class="text-center py-10 faint">Nothing in this queue. Nice.</td></tr>`}</tbody>`;
+    const value = state.tab === 'denials' ? items.reduce((a, q) => a + q.amt * q.win, 0) : state.tab === 'filing' ? items.reduce((a, q) => a + q.amt, 0) : items.reduce((a, q) => a + q.contracted - q.paid, 0);
+    const lbl = { denials: 'expected recovery', filing: 'at risk', under: 'recoverable variance' }[state.tab];
+    $('#queueBlurb').innerHTML = `<b class="num" style="color: var(--ink)">${moneyFull(value)}</b> ${lbl} across ${items.length} claims. ${QUEUE_META[state.tab].blurb}`;
+    $('#queueSolves').innerHTML = QUEUE_META[state.tab].solves;
+    $('#queueCount').textContent = `(${items.length})`;
+    $('#navDenials').textContent = QUEUE.denials.filter(q => ids.includes(q.client.id)).length;
+  }
+
+  const BUCKETS = ['0–30', '31–60', '61–90', '91–120', '120+'];
+  function renderAging() {
+    const cs = sel();
+    const tot = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.aging[b], 0));
+    const all = tot.reduce((a, b) => a + b, 0);
+    $('#ageBar').innerHTML = tot.map((v, b) => `<div class="barx-anim h-full" style="flex:${v}; background: var(--seq${b + 1}); animation-delay:${b * .06}s" data-tip="${enc(`<b>${BUCKETS[b]} days</b>${tipRow(`var(--seq${b + 1})`, 'Balance', moneyFull(v))}${tipRow('', 'Share of A/R', pct(v / all))}`)}"></div>`).join('');
+    $('#ageBarLabels').style.gridTemplateColumns = tot.map(v => `${v}fr`).join(' ');
+    $('#ageBarLabels').innerHTML = tot.map((v, b) => `<div class="min-w-0 truncate"><b class="num">${money(v)}</b><span class="faint hidden sm:inline"> · ${pct(v / all, 0)}</span></div>`).join('');
+    $('#ageLegend').innerHTML = BUCKETS.map((l, b) => `<span><i style="background: var(--seq${b + 1})"></i>${l} days</span>`).join('');
+
+    const rows = PAYERS.map((p, pi) => {
+      const v = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.payerAging[pi][b], 0));
+      return { p, v, t: v.reduce((a, b) => a + b, 0), over: (v[3] + v[4]) };
+    }).sort((a, b) => b.t - a.t);
+    const maxCell = Math.max(...rows.flatMap(r => r.v));
+    $('#ageTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b}</th>`).join('')}<th class="r">Total</th><th class="r">Days to pay</th><th class="pr-5 sm:pr-6">90+ share</th></tr></thead><tbody>${rows.map(r => {
+      const share = r.over / r.t;
+      return `<tr><td class="pl-5 sm:pl-6 font-medium">${r.p.n}</td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${money(v)}</span></td>`).join('')}<td class="r num font-semibold">${money(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
+    }).join('')}</tbody>`;
+  }
+
+  function sparkline(vals, color) {
+    const W = 76, H = 26, mn = Math.min(...vals), mx = Math.max(...vals);
+    const pts = vals.map((v, i) => [i / (vals.length - 1) * (W - 4) + 2, H - 3 - (v - mn) / (mx - mn || 1) * (H - 6)]);
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="2.5" fill="${color}"/></svg>`;
+  }
+
+  function renderClients() {
+    const rows = CLIENTS.map(c => {
+      const den = c.months[10].denied / c.months[10].claims;
+      const ar = c.aging.reduce((a, b) => a + b, 0);
+      const over90 = (c.aging[3] + c.aging[4]) / ar;
+      const days = ar / ((c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91);
+      const flags = (den > .1) + (days > 45) + (over90 > .22) + (c.clean < .88);
+      const health = flags >= 2 ? ['crit', 'alert', 'At risk'] : flags === 1 ? ['warn', 'alert', 'Watch'] : ['good', 'check', 'Healthy'];
+      return { c, den, ar, over90, days, health, flags, coll: c.months[10].collected };
+    }).sort((a, b) => b.flags - a.flags || b.coll - a.coll);
+    const cell = (v, bad, fmt) => `<td class="r num ${bad ? 'font-semibold' : ''}" ${bad ? 'style="color: var(--crit-ink)"' : ''}>${fmt(v)}</td>`;
+    $('#clientTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Practice</th><th>Health</th><th class="r">Sep collected</th><th>Trend</th><th class="r">Net coll.</th><th class="r">Denial rate</th><th class="r">A/R days</th><th class="r">A/R 90+</th><th class="r">Clean</th><th class="pr-5 sm:pr-6"></th></tr></thead><tbody>${rows.map(r => `
+      <tr class="expandable ${state.openC === r.c.id ? 'is-open' : ''}" tabindex="0" aria-expanded="${state.openC === r.c.id}" data-client="${r.c.id}">
+        <td class="pl-5 sm:pl-6"><div class="flex items-center gap-3"><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg><div><div class="font-semibold">${r.c.name}${state.client === r.c.id ? ' <span class="chip chip-neutral ml-1">Focused</span>' : ''}</div><div class="text-[12px] faint">${r.c.spec} · ${r.c.pm}</div></div></div></td>
+        <td>${chip(...r.health)}</td>
+        <td class="r num font-semibold">${moneyFull(r.coll)}</td>
+        <td>${sparkline(r.c.months.slice(0, 11).map(m => m.collected), 'var(--s1)')}</td>
+        ${cell(r.c.ncr, r.c.ncr < .95, v => pct(v))}
+        ${cell(r.den, r.den > .1, v => pct(v))}
+        ${cell(r.days, r.days > 45, v => v.toFixed(0))}
+        ${cell(r.over90, r.over90 > .22, v => pct(v, 0))}
+        ${cell(r.c.clean, r.c.clean < .88, v => pct(v, 0))}
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-report="${r.c.id}">Report</button></td>
+      </tr>${state.openC === r.c.id ? `<tr class="detail"><td colspan="10">${clientDetail(r)}</td></tr>` : ''}`).join('')}</tbody>`;
+  }
+
+  function renderClientSelect() {
+    $('#clientSelect').innerHTML = `<option value="all">All clients (${CLIENTS.length})</option>` + CLIENTS.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    $('#clientSelect').value = state.client;
+  }
+
+  function renderHeader() {
+    const c = CLIENTS.find(c => c.id === state.client);
+    $('#subLine').textContent = c ? `${c.spec} · ${c.pm} · synced ${c.sync.ok ? c.sync.ago + ' ago' : 'failed ' + c.sync.ago + ' ago'}. Every number below is scoped to this practice.` : 'Seven practices. One queue. Everything sorted by the dollars you can still recover.';
+  }
+
+  function renderAll() { renderHeader(); renderKpis(); renderPipeline(); renderRevenue(); renderDenials(); renderQueue(); renderAging(); renderClients(); }
+
+  /* ================= Drawers & modals ================= */
+  const openDrawer = (title, html) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer [data-close-drawer]').focus(); };
+  const closeDrawer = () => { $('#drawer').classList.remove('on'); $('#drawerScrim').classList.remove('on'); };
+  const auditHtml = () => `<p class="text-[13px] muted mb-4">Every PHI reveal, export and sign-in is recorded. Retained for 6 years.</p><ol class="flex flex-col">${audit.slice().reverse().map(a => `<li class="flex gap-4 py-3 border-b text-[13.5px]" style="border-color: var(--line)"><span class="num faint w-12 shrink-0">${a.t}</span><span><b>${a.who}</b><br><span class="muted">${esc(a.what)}</span></span></li>`).join('')}</ol>`;
+  const reportHtml = id => {
+    const c = CLIENTS.find(x => x.id === id) || null;
+    const name = c ? c.name : 'All clients';
+    return `<p class="text-[13px] muted">Month-end performance report for <b style="color: var(--ink)">${name}</b>, ready to send. Patient identifiers are excluded.</p>
+      <div class="card p-4 mt-4 flex flex-col gap-2 text-[13.5px]">${['Collections & net collection rate', 'Denials by root cause + what we fixed', 'A/R aging by payer', 'Recovered from appeals & underpayments', 'Next month’s focus'].map(s => `<label class="flex items-center gap-3"><input type="checkbox" checked> ${s}</label>`).join('')}</div>
+      <div class="mt-4 rounded-[14px] p-4 border text-[13px]" style="border-color: var(--line); background: var(--sunken)"><div class="eyebrow">Recovered for this client in Sep</div><div class="font-display text-[34px] num mt-1">${moneyFull((c ? c.underpaid : CLIENTS.reduce((a, x) => a + x.underpaid, 0)) * 2.4)}</div><div class="faint">From overturned denials and underpayment disputes</div></div>
+      <div class="mt-5 flex gap-2"><button class="btn btn-primary" data-export="${name}"><svg width="16" height="16"><use href="#i-download"/></svg>Export PDF</button><button class="btn btn-ghost" data-toast="Scheduled: first business day of each month">Schedule monthly</button></div>`;
+  };
+
+  const openModal = () => { $('#phiModal').classList.add('on'); $('#modalScrim').classList.add('on'); $('#phiConfirm').focus(); };
+  const closeModal = () => { $('#phiModal').classList.remove('on'); $('#modalScrim').classList.remove('on'); };
+  const now = () => new Date().toTimeString().slice(0, 5);
+
+  let remaskTimer;
+  function setPhi(on) {
+    state.phi = on;
+    $('#phiToggle').setAttribute('aria-pressed', on);
+    $('#phiIcon').innerHTML = `<use href="#i-${on ? 'eye' : 'eye-off'}"/>`;
+    $('#phiLabel').textContent = on ? 'PHI visible' : 'PHI masked';
+    $('#phiToggle').style.cssText = on ? 'background: var(--warn-bg); color: var(--warn-ink); border-color: transparent' : '';
+    clearTimeout(remaskTimer);
+    if (on) remaskTimer = setTimeout(() => { setPhi(false); audit.push({ t: now(), who: 'System', what: 'PHI auto re-masked after 5 minutes' }); }, 5 * 60 * 1000);
+    renderQueue();
+  }
+
+  /* ================= Events ================= */
+  $('#clientSelect').addEventListener('change', e => { state.client = e.target.value; state.openQ = null; renderAll(); });
+  $$('[data-period]').forEach(b => b.addEventListener('click', () => { state.period = +b.dataset.period; $$('[data-period]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderRevenue(); }));
+  const setTab = tab => { state.tab = tab; state.openQ = null; $$('[data-tab]').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab)); renderQueue(); };
+  $$('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  $('#phiToggle').addEventListener('click', () => state.phi ? (setPhi(false), audit.push({ t: now(), who: 'Dana Reyes', what: 'Re-masked PHI' })) : openModal());
+  $('#phiConfirm').addEventListener('click', () => {
+    const reason = document.querySelector('input[name="reason"]:checked').value;
+    audit.push({ t: now(), who: 'Dana Reyes', what: `Revealed PHI in work queue — reason: ${reason}` });
+    closeModal(); setPhi(true); toast('Identifiers visible for 5 minutes · access logged');
+  });
+  $('#modalScrim').addEventListener('click', closeModal);
+  $$('[data-close-modal]').forEach(b => b.addEventListener('click', closeModal));
+  $$('[data-open-audit]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Audit log', auditHtml()); }));
+  $$('[data-open-report]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Client report', reportHtml(state.client)); }));
+  $('#drawerScrim').addEventListener('click', closeDrawer);
+  $('[data-close-drawer]').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); closeModal(); closeSidebar(); } });
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-toast]'); if (t) { toast(t.dataset.toast); return; }
+    const ex = e.target.closest('[data-export]'); if (ex) { audit.push({ t: now(), who: 'Dana Reyes', what: `Exported report: ${ex.dataset.export} (de-identified)` }); toast('Report exported · logged to audit trail'); return; }
+    const rp = e.target.closest('[data-report]'); if (rp) { e.stopPropagation(); openDrawer('Client report', reportHtml(rp.dataset.report)); return; }
+    const fc = e.target.closest('[data-focus]'); if (fc) { state.client = state.client === fc.dataset.focus ? 'all' : fc.dataset.focus; $('#clientSelect').value = state.client; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    const jp = e.target.closest('[data-jump]'); if (jp) { state.client = jp.dataset.jumpClient; $('#clientSelect').value = state.client; renderAll(); setTab(jp.dataset.jump); $('#queue').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (e.target.closest('button, a, input, label, .detail')) return;
+    const qr = e.target.closest('tr[data-q]'); if (qr) { state.openQ = state.openQ === qr.dataset.q ? null : qr.dataset.q; renderQueue(); document.querySelector(`tr[data-q="${qr.dataset.q}"]`)?.focus({ preventScroll: true }); return; }
+    const row = e.target.closest('tr[data-client]'); if (row) { state.openC = state.openC === row.dataset.client ? null : row.dataset.client; renderClients(); document.querySelector(`tr[data-client="${row.dataset.client}"]`)?.focus({ preventScroll: true }); }
+  });
+  document.addEventListener('keydown', e => { const row = e.target.closest?.('tr[data-client], tr[data-q]'); if (row && e.target !== row) return; if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); } });
+  $('#queueAll').addEventListener('click', () => toast('Opening full queue…'));
+  $('#resync').addEventListener('click', () => { CLIENTS.forEach(c => c.sync = { ok: true, ago: 'just now' }); renderSources(); renderHeader(); audit.push({ t: now(), who: 'Dana Reyes', what: 'Manual re-sync of all data sources' }); toast('All 7 sources synced'); });
+
+  // theme
+  // Follows the OS setting until the viewer picks one; the choice is remembered per browser.
+  const sysDark = matchMedia('(prefers-color-scheme: dark)');
+  const currentTheme = () => document.documentElement.dataset.theme || (sysDark.matches ? 'dark' : 'light');
+  const syncThemeSwitch = () => {
+    const t = currentTheme();
+    $('#themeSwitch').dataset.on = t;
+    $$('[data-theme-set]').forEach(b => b.setAttribute('aria-checked', b.dataset.themeSet === t));
+  };
+  const setTheme = t => {
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('ll-theme', t); } catch {}
+    syncThemeSwitch();
+  };
+  $$('[data-theme-set]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+  $('#themeSwitch').addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    $(`[data-theme-set="${currentTheme()}"]`).focus();
+  });
+  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'd' && e.shiftKey && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); } });
+  sysDark.addEventListener('change', syncThemeSwitch);
+  syncThemeSwitch();
+
+  // sidebar (mobile)
+  const closeSidebar = () => { $('#sidebar').style.transform = ''; $('#sideScrim').classList.remove('on'); };
+  $('#openSidebar').addEventListener('click', () => { $('#sidebar').style.transform = 'translateX(0)'; $('#sideScrim').classList.add('on'); });
+  $$('[data-close-sidebar]').forEach(b => b.addEventListener('click', closeSidebar));
+
+  // session auto-lock countdown (resets on activity)
+  let left = 15 * 60;
+  ['mousemove', 'keydown', 'click', 'scroll'].forEach(ev => addEventListener(ev, () => left = 15 * 60, { passive: true }));
+  setInterval(() => { left = Math.max(0, left - 1); $('#session').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; }, 1000);
+
+  $('#dateLine').textContent = new Date(2026, 9, 19).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderRevenue(); renderDenials(); }, 150); });
+  renderSources(); renderClientSelect(); renderAll();
+})();
+</script>
+</body>
+</html>
