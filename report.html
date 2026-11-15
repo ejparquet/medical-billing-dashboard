@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgerline Client Report</title>
+<meta name="description" content="Month-end billing performance report for a practice, with no patient information. Print or save as PDF.">
+<script>try { const t = localStorage.getItem('ll-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/glass.css">
+<style>
+  .r-stat b { display: block; font-family: 'Urbanist', sans-serif; font-weight: 400; font-size: 30px; letter-spacing: -0.03em; line-height: 1.1; color: var(--ink); }
+  .r-stat span { font-size: 12.5px; color: var(--ink-3); }
+  .r-stat small { display: block; margin-top: 4px; font-size: 12px; }
+  .focus-list li { display: flex; gap: 12px; font-size: 14px; line-height: 1.55; }
+  .focus-list li + li { margin-top: 10px; }
+  .work-stat { text-align: left; position: relative; transition: transform .35s var(--spring), border-color .2s; }
+  .work-stat:hover { transform: translateY(-2px); border-color: var(--line-strong); }
+  .work-stat:active { transform: scale(.98); }
+  .work-stat:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .work-stat .chev { position: absolute; top: 14px; right: 12px; }
+  .focus-list .n { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 99px; font-size: 12px; font-weight: 700; background: var(--hl-soft); color: var(--hl); }
+</style>
+</head>
+<body>
+<div class="canvas-bg" aria-hidden="true"></div>
+<script src="assets/icons.js"></script>
+
+<div class="page">
+  <header class="flex flex-wrap items-center gap-3 no-print">
+    <a href="glass.html" class="round-btn" aria-label="Back to the dashboard"><svg><use href="#i-back"/></svg></a>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="glass.html">Dashboard</a><span aria-hidden="true">/</span><span style="color: var(--ink)">Client report</span></nav>
+    <div class="ml-auto flex flex-wrap items-center gap-2">
+      <label class="sr-only" for="pick">Practice</label>
+      <select id="pick" class="fchip-select"></select>
+      <div id="themeSlot"></div>
+    </div>
+  </header>
+
+  <div class="card p-4 sm:p-5 mt-6 flex flex-wrap items-center gap-3 no-print">
+    <p class="text-[13.5px] muted mr-auto" id="sendState"></p>
+    <label class="check-row py-2"><input type="checkbox" id="schedule">Send automatically on the 2nd of each month</label>
+    <button class="btn btn-ghost" id="print"><svg width="15" height="15"><use href="#i-printer"/></svg>Print or save PDF</button>
+    <button class="btn btn-primary" id="send"><svg width="15" height="15"><use href="#i-send"/></svg>Send to practice</button>
+  </div>
+
+  <article id="report" class="mt-6"></article>
+</div>
+
+<div class="toast floating px-4 py-3 text-[13.5px] font-medium flex items-center gap-2" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/claims.js"></script>
+<script>
+(() => {
+  const { CLIENTS, PAYERS, REASONS, MONTHS, YEARS, QUEUE, logAudit } = window.LEDGER;
+  const { $, money, moneyFull, pct, chip, esc, dayStr, param, toast, initTheme, themeSwitchHtml } = window.UI;
+  const { open: openDrawer, close: closeDrawer, claimDrawer, deadlineChip, statePill } = window.CLAIMS;
+  $('#themeSlot').innerHTML = themeSwitchHtml; initTheme();
+
+  const M = 10; // September 2026: the last complete month
+  let id = CLIENTS.some(c => c.id === param('client')) ? param('client') : 'all';
+  $('#pick').innerHTML = '<option value="all">All practices</option>' + CLIENTS.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  $('#pick').value = id;
+
+  const BUCKETS = ['0–30', '31–60', '61–90', '91–120', '120+'];
+  const sent = {}; // per practice, this visit only
+
+  function render() {
+    const one = CLIENTS.find(c => c.id === id), cs = one ? [one] : CLIENTS, name = one ? one.name : 'All practices';
+    const sum = (k, m = M) => cs.reduce((a, c) => a + c.months[m][k], 0);
+    const coll = sum('collected'), prev = sum('collected', M - 1), allowed = sum('allowed');
+    const den = sum('denied') / sum('claims'), denPrev = sum('denied', M - 1) / sum('claims', M - 1);
+    const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
+    const days = ar / cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
+    const clean = cs.reduce((a, c) => a + c.clean * c.base, 0) / cs.reduce((a, c) => a + c.base, 0);
+    const recovered = cs.reduce((a, c) => a + c.underpaid, 0) * 2.4;
+    const ids = cs.map(c => c.id), mine = k => QUEUE[k].filter(q => ids.includes(q.client.id) && q.state === 'open');
+    const byR = REASONS.map((r, j) => ({ r, j, n: cs.reduce((a, c) => a + c.months[M].byReason[r.k], 0) })).sort((a, b) => b.n - a.n);
+    const maxR = byR[0].n || 1;
+    const trend = MONTHS.slice(0, 11).map((m, i) => ({ m, v: cs.reduce((a, c) => a + c.months[i].collected, 0) }));
+    const maxT = Math.max(...trend.map(t => t.v));
+
+    const delta = (d, goodUp) => { const good = (d >= 0) === goodUp; return `<small class="num" style="color: var(${good ? '--good-ink' : '--crit-ink'})">${d >= 0 ? '+' : '−'}${pct(Math.abs(d))} vs. August</small>`; };
+    const stat = (label, value, extra = '') => `<div class="card r-stat p-5"><span>${label}</span><b class="num">${value}</b>${extra}</div>`;
+
+    // Collections trend: bars, one series, labels on the axis only.
+    const W = 640, H = 170, bw = 30, gap = (W - 11 * bw) / 10;
+    const bars = trend.map((t, i) => { const h = Math.max(4, t.v / maxT * (H - 30)), x = i * (bw + gap); return `<rect x="${x}" y="${H - 22 - h}" width="${bw}" height="${h}" rx="6" style="fill: ${i === 10 ? 'var(--hl)' : 'color-mix(in oklab, var(--hl) 40%, transparent)'}"><title>${t.m} ${YEARS[i]}: ${moneyFull(t.v)}</title></rect><text x="${x + bw / 2}" y="${H - 4}" text-anchor="middle" font-size="11" style="fill: var(--ink-3)">${t.m}</text>`; }).join('');
+
+    const aging = PAYERS.map((p, pi) => { const v = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.payerAging[pi][b], 0)); return { p, v, t: v.reduce((a, b) => a + b, 0) }; }).sort((a, b) => b.t - a.t);
+
+    const top = byR[0].r;
+    const focus = [
+      `Cut ${top.label.toLowerCase()} denials (${top.code}), the top cause in September at ${byR[0].n} claims, with a check before claims are sent.`,
+      `Work the ${mine('denials').length} open appeals worth about ${moneyFull(mine('denials').reduce((a, q) => a + q.amt * .56 * q.win, 0))} in expected recovery, earliest deadlines first.`,
+      mine('filing').length ? `Resubmit ${mine('filing').length} claim${mine('filing').length === 1 ? '' : 's'} before their payer filing limits pass.` : 'Keep filing-limit risk at zero by resubmitting rejects the day they come back.',
+      mine('under').length ? `Dispute ${mine('under').length} underpayment${mine('under').length === 1 ? '' : 's'} (${moneyFull(mine('under').reduce((a, q) => a + q.contracted - q.paid, 0))} short of contract).` : 'No open underpayments. We will keep checking every payment against your contracts.',
+    ];
+
+    $('#report').innerHTML = `
+      <header class="flex flex-wrap items-end gap-4">
+        <div>
+          <p class="text-[13.5px] muted">Month-end report, September 2026</p>
+          <h1 class="font-display text-[44px] sm:text-[64px] mt-2">${name}</h1>
+          <p class="muted mt-3 text-[14px]">${one ? `${one.spec}. Prepared by Ledgerline for ${one.contact}.` : `${CLIENTS.length} practices combined.`} Prepared October 19, 2026.</p>
+        </div>
+        <div class="ml-auto text-right text-[12.5px] faint leading-relaxed"><b class="font-display text-[22px] block" style="font-weight:500; color: var(--ink)">Ledgerline</b>Revenue cycle management</div>
+      </header>
+
+      <section class="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
+        ${stat('Collected in September', money(coll, 1), delta(coll / prev - 1, true))}
+        ${stat('Collected of allowed', pct(coll / allowed), '<small class="faint">Net collection rate</small>')}
+        ${stat('Recovered for you', moneyFull(recovered), '<small class="faint">Overturned denials and underpayments</small>')}
+        ${stat('Denial rate', pct(den), delta(den / denPrev - 1, false))}
+        ${stat('Days in A/R', days.toFixed(0), `<small class="faint">Target 40 days</small>`)}
+        ${stat('Clean on first pass', pct(clean, 0), '<small class="faint">Claims accepted without correction</small>')}
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
+        <div class="card p-5 sm:p-6 lg:col-span-3">
+          <h2 class="card-title">Collections, last 11 months</h2>
+          <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto mt-5" role="img" aria-label="Monthly collections from November 2025 to September 2026">${bars}</svg>
+        </div>
+        <div class="card p-5 sm:p-6 lg:col-span-2">
+          <h2 class="card-title">Why claims were denied in September</h2>
+          <div class="mt-5">${byR.map(x => `<div class="bar-row"><span class="truncate">${x.r.label}</span><div class="mini-bar"><i style="width:${x.n / maxR * 100}%; background: var(--s${x.j + 1})"></i></div><span class="num">${x.n}</span></div>`).join('')}</div>
+          <p class="text-[13px] muted mt-4">${top.label} was the most common cause (${top.code}).</p>
+        </div>
+      </section>
+
+      <section class="card p-5 sm:p-6 mt-4">
+        <h2 class="card-title">Money still owed, by payer</h2>
+        <div class="scroll-x mt-4 -mx-5 sm:-mx-6"><table class="tbl min-w-[640px]"><thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b} days</th>`).join('')}<th class="r pr-5 sm:pr-6">Total</th></tr></thead>
+          <tbody>${aging.map(a => `<tr><td class="pl-5 sm:pl-6 font-medium">${a.p.n}</td>${a.v.map(v => `<td class="r num">${money(v)}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${money(a.t)}</td></tr>`).join('')}
+          <tr><td class="pl-5 sm:pl-6 font-semibold">Total</td>${BUCKETS.map((_, b) => `<td class="r num font-semibold">${money(aging.reduce((s, a) => s + a.v[b], 0))}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${money(ar)}</td></tr></tbody></table></div>
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div class="card p-5 sm:p-6">
+          <h2 class="card-title">What we are working on</h2>
+          <div class="stat-grid mt-4" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+            ${[['denials', 'Appeals'], ['filing', 'Near filing limit'], ['under', 'Underpaid']].map(([k, l]) => `<button class="stat work-stat" data-work="${k}"><span>${l}</span><b class="num">${mine(k).length}</b><svg class="chev no-print" width="14" height="14"><use href="#i-chev"/></svg></button>`).join('')}
+          </div>
+          <p class="text-[12px] faint mt-3 no-print">Select a count to see and work those claims.</p>
+        </div>
+        <div class="card p-5 sm:p-6">
+          <h2 class="card-title">Focus for October</h2>
+          <ol class="focus-list mt-4">${focus.map((f, i) => `<li><span class="n">${i + 1}</span><span>${f}</span></li>`).join('')}</ol>
+        </div>
+      </section>
+
+      <p class="text-[12.5px] faint mt-6 flex items-center gap-2"><svg width="13" height="13"><use href="#i-shield"/></svg>This report contains no patient information. Demo data.</p>`;
+
+    const key = 'll-schedule-' + id;
+    let scheduled = false; try { scheduled = localStorage.getItem(key) === '1'; } catch (e) {}
+    $('#schedule').checked = scheduled;
+    $('#sendState').innerHTML = sent[id] ? `${chip('good', 'check', 'Sent')} <span class="ml-1">Delivered to ${one ? one.contact : 'all practice contacts'} today at ${sent[id]}.</span>` : one ? `Last report sent ${one.lastReport}. Ready to send to ${one.contact}.` : `Ready to send to all ${CLIENTS.length} practice contacts.`;
+    $('#send').innerHTML = sent[id] ? '<svg width="15" height="15"><use href="#i-send"/></svg>Send again' : '<svg width="15" height="15"><use href="#i-send"/></svg>Send to practice';
+    document.title = `${name} report – Ledgerline`;
+  }
+
+  $('#pick').addEventListener('change', e => { id = e.target.value; history.replaceState(null, '', `?client=${id}`); render(); });
+  $('#print').addEventListener('click', () => { logAudit('Dana Reyes', `Printed or saved the ${$('#pick').selectedOptions[0].text} report`); window.print(); });
+  const LISTS = { denials: 'Open appeals', filing: 'Claims near their filing limit', under: 'Underpayments' };
+  function workDrawer(k) {
+    const one = CLIENTS.find(c => c.id === id), ids = one ? [one.id] : CLIENTS.map(c => c.id);
+    const list = QUEUE[k].filter(q => ids.includes(q.client.id) && q.state === 'open').sort((a, b) => k === 'under' ? (b.contracted - b.paid) - (a.contracted - a.paid) : a.daysLeft - b.daysLeft);
+    const line = q => k === 'under' ? `<span class="num">${moneyFull(q.contracted - q.paid)} short</span>` : `<span class="num">${moneyFull(q.amt)}</span>${deadlineChip(q.daysLeft)}`;
+    openDrawer(`${LISTS[k]}, ${one ? one.short : 'all practices'}`,
+      list.length ? `<p class="text-[13px] muted mb-4">${list.length} still open, ${k === 'under' ? 'largest shortfall' : 'earliest deadline'} first. Select a claim to work it.</p>` +
+        list.map(q => `<button class="list-btn" data-claim-act="open" data-id="${q.id}"><span class="min-w-0 leading-snug"><b class="block text-[13.5px] font-semibold truncate" style="color: var(--ink)">${q.client.short}, ${q.payer.n} <span class="claim-id">${q.claim}</span></b><span class="pw-meta">${k === 'under' ? `<span class="faint">CPT ${q.cpt}</span>` : `<span class="faint">${k === 'denials' ? q.reason.label : q.status}</span>`}${line(q)}</span></span><svg class="chev ml-auto" width="14" height="14"><use href="#i-chev"/></svg></button>`).join('')
+        : `<p class="text-[13.5px] muted">Nothing open here. Every claim in this list has been worked.</p>`,
+      { foot: `<a class="btn btn-primary ml-auto" href="queue.html?tab=${k}&client=${id}">Open in the work queue</a>` });
+  }
+
+  function sendDrawer() {
+    const one = CLIENTS.find(c => c.id === id);
+    const to = one ? `${one.contact}, ${one.contactRole.toLowerCase()} at ${one.short}` : `${CLIENTS.length} practice contacts (one report each)`;
+    openDrawer('Send the September report', `<form id="drawerForm" data-form="send-report">
+      <div class="d-sec grid gap-3">
+        <label class="field">To<input class="input" value="${esc(to)}" readonly></label>
+        <label class="field">Subject<input class="input" name="subject" value="Your September 2026 billing report"></label>
+        <label class="field">Message<textarea class="textarea" style="min-height:150px" name="body">Hi${one ? ' ' + one.contact : ''},
+
+Your month-end billing report for September 2026 is attached. It covers collections, denials, money still owed by payer, and what we are focusing on in October.
+
+Reply here with any questions.
+
+Dana Reyes
+Ledgerline</textarea></label>
+        <label class="check-row"><input type="checkbox" name="pdf" checked>Attach the report as a PDF (no patient details)</label>
+        <label class="check-row"><input type="checkbox" name="schedule" ${$('#schedule').checked ? 'checked' : ''}>Send it automatically on the 2nd of each month</label>
+      </div>
+      <p class="text-[12px] faint flex items-center gap-1.5"><svg width="12" height="12"><use href="#i-lock"/></svg>Sent through the secure client portal, not regular email.</p></form>`,
+      { foot: `<button class="btn btn-ghost" type="button" data-close-drawer-alt>Cancel</button><button class="btn btn-primary ml-auto" type="submit" form="drawerForm">${sent[id] ? 'Send again' : 'Send report'}</button>` });
+  }
+
+  document.addEventListener('click', e => {
+    const w = e.target.closest('[data-work]'); if (w) return workDrawer(w.dataset.work);
+    if (e.target.closest('[data-close-drawer-alt]')) closeDrawer();
+  });
+  document.addEventListener('submit', e => {
+    if (e.target.dataset.form !== 'send-report') return;
+    e.preventDefault();
+    const one = CLIENTS.find(c => c.id === id), fd = new FormData(e.target);
+    sent[id] = new Date().toTimeString().slice(0, 5);
+    try { localStorage.setItem('ll-schedule-' + id, fd.get('schedule') ? '1' : '0'); } catch (err) {}
+    logAudit('Dana Reyes', `Sent September report for ${one ? one.name : 'all practices'} through the client portal`);
+    closeDrawer(); render(); toast(`Report sent to ${one ? one.contact : `${CLIENTS.length} practice contacts`} through the secure portal`);
+  });
+  window.CLAIMS.onChange(render);
+  $('#send').addEventListener('click', sendDrawer);
+  $('#schedule').addEventListener('change', e => {
+    try { localStorage.setItem('ll-schedule-' + id, e.target.checked ? '1' : '0'); } catch (err) {}
+    toast(e.target.checked ? 'Scheduled for the 2nd of each month' : 'Monthly sending turned off');
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

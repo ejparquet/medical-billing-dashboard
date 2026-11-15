@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgerline Work Queue</title>
+<meta name="description" content="Every open appeal, filing-limit risk and underpayment across your practices, with bulk assignment and export.">
+<script>try { const t = localStorage.getItem('ll-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/glass.css">
+</head>
+<body>
+<div class="canvas-bg" aria-hidden="true"></div>
+<script src="assets/icons.js"></script>
+
+<div class="page">
+  <header class="flex items-center gap-3 no-print">
+    <a href="glass.html" class="round-btn" aria-label="Back to the dashboard"><svg><use href="#i-back"/></svg></a>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="glass.html">Dashboard</a><span aria-hidden="true">/</span><span style="color: var(--ink)">Work queue</span></nav>
+    <div class="ml-auto flex items-center gap-2" id="topRight"></div>
+  </header>
+
+  <section class="mt-8 flex flex-wrap items-end gap-5">
+    <div class="min-w-0">
+      <h1 class="font-display text-[44px] sm:text-[60px]">Work queue</h1>
+      <p class="muted mt-3 text-[15px]" id="summary"></p>
+    </div>
+    <div class="ml-auto flex flex-wrap gap-2">
+      <button class="btn btn-ghost" id="exportAll"><svg width="15" height="15"><use href="#i-download"/></svg>Download this list</button>
+    </div>
+  </section>
+
+  <section class="mt-6 flex flex-wrap items-center gap-2" aria-label="Filters">
+    <div class="seg" role="tablist" aria-label="Queue">
+      <button role="tab" data-tab="denials">Appeals due</button>
+      <button role="tab" data-tab="filing">Filing limits</button>
+      <button role="tab" data-tab="under">Underpaid</button>
+    </div>
+    <label class="search-pill"><svg width="16" height="16"><use href="#i-search"/></svg><input type="search" id="q" placeholder="Search claims" aria-label="Search the queue"></label>
+    <label class="sr-only" for="fClient">Practice</label><select id="fClient" class="fchip-select"></select>
+    <label class="sr-only" for="fPayer">Payer</label><select id="fPayer" class="fchip-select"></select>
+    <label class="sr-only" for="fOwner">Owner</label><select id="fOwner" class="fchip-select"></select>
+    <label class="sr-only" for="fState">Status</label>
+    <select id="fState" class="fchip-select"><option value="open">Still open</option><option value="done">Worked today</option><option value="all">Everything</option></select>
+  </section>
+
+  <section class="card mt-5 overflow-hidden">
+    <div class="scroll-x"><table class="tbl min-w-[980px]" id="table"></table></div>
+    <p class="px-5 sm:px-6 py-4 border-t text-[12.5px] faint flex items-center gap-2" style="border-color: var(--line)"><svg width="13" height="13"><use href="#i-lock"/></svg>Patient details stay masked on this page. Open a claim to work it here: appeals and disputes fill patient details in when they are sent.</p>
+  </section>
+
+  <div class="bulk-bar floating" id="bulk" role="region" aria-label="Bulk actions">
+    <b class="text-[13.5px]" id="bulkCount">0 selected</b>
+    <label class="sr-only" for="bulkOwner">Assign to</label>
+    <select id="bulkOwner" class="fchip-select"></select>
+    <button class="btn btn-primary btn-sm" id="bulkAssign">Assign</button>
+    <button class="btn btn-ghost btn-sm" id="bulkExport"><svg width="14" height="14"><use href="#i-download"/></svg>Download selected</button>
+    <button class="btn btn-ghost btn-sm ml-auto" id="bulkClear">Clear selection</button>
+  </div>
+</div>
+
+<div id="tip" class="floating" role="tooltip"></div>
+<div class="toast floating px-4 py-3 text-[13.5px] font-medium flex items-center gap-2" id="toast" role="status" aria-live="polite"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/claims.js"></script>
+<script>
+(() => {
+  const { QUEUE, CLIENTS, PAYERS, TEAM, logAudit, persist } = window.LEDGER;
+  const { $, $$, money, moneyFull, pct, esc, chip, dayStr, mask, param, toast, download, initTheme, themeSwitchHtml } = window.UI;
+  $('#topRight').innerHTML = themeSwitchHtml; initTheme();
+
+  const state = { tab: ['denials', 'filing', 'under'].includes(param('tab')) ? param('tab') : 'denials', client: param('client') || 'all', q: (param('q') || '').toLowerCase(), payer: param('payer') || 'all', owner: 'all', status: 'open', sort: null, dir: -1, picked: new Set() };
+  const TITLES = { denials: 'appeals', filing: 'claims near their filing limit', under: 'underpayments' };
+  const STATE_LABEL = { 'appeal-submitted': 'Appeal sent', resubmitted: 'Resubmitted', 'dispute-filed': 'Dispute filed', 'signoff-requested': 'Sign-off requested' };
+  const initials = n => n.split(' ').map(w => w[0]).join('').slice(0, 2);
+  const deadline = d => d <= 7 ? chip('crit', 'alert', `${d}d left`) : d <= 21 ? chip('serious', 'clock', `${d}d left`) : d <= 35 ? chip('warn', 'clock', `${d}d left`) : chip('neutral', 'clock', `${d}d left`);
+
+  $('#q').value = state.q;
+  $('#fClient').innerHTML = '<option value="all">All practices</option>' + CLIENTS.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+  $('#fClient').value = CLIENTS.some(c => c.id === state.client) ? state.client : 'all';
+  $('#fPayer').innerHTML = '<option value="all">All payers</option>' + PAYERS.map(p => `<option>${p.n}</option>`).join('');
+  $('#fPayer').value = PAYERS.some(p => p.n === state.payer) ? state.payer : 'all';
+  $('#fOwner').innerHTML = '<option value="all">Any owner</option><option value="none">Unassigned</option>' + TEAM.map(t => `<option>${t.name}</option>`).join('');
+  $('#bulkOwner').innerHTML = TEAM.map(t => `<option>${t.name}</option>`).join('') + '<option value="">Unassigned</option>';
+
+  // Column definitions per queue: [header, cell(q), sort value(q), align]
+  const COLS = {
+    denials: [
+      ['Denial', q => `<div class="font-medium">${q.reason.label}</div><div class="claim-id">${q.reason.code} · CPT ${q.cpt}</div>`, q => q.reason.label],
+      ['Billed', q => `<b class="num">${moneyFull(q.amt)}</b>`, q => q.amt, 'r'],
+      ['Win odds', q => `<span class="num muted">${pct(q.win, 0)}</span>`, q => q.win, 'r'],
+      ['Expected', q => `<span class="num">${moneyFull(q.amt * .56 * q.win)}</span>`, q => q.amt * q.win, 'r'],
+      ['Appeal window', q => deadline(q.daysLeft), q => -q.daysLeft],
+    ],
+    filing: [
+      ['Status', q => `<div class="font-medium">${q.status}</div><div class="claim-id">CPT ${q.cpt}</div>`, q => q.status],
+      ['Billed', q => `<b class="num">${moneyFull(q.amt)}</b>`, q => q.amt, 'r'],
+      ['Payer limit', q => `<span class="num muted">${q.payer.tf} days</span>`, q => q.payer.tf, 'r'],
+      ['Limit date', q => `<span class="num muted">${dayStr(q.daysLeft)}</span>`, q => -q.daysLeft],
+      ['Time left', q => deadline(q.daysLeft), q => -q.daysLeft],
+    ],
+    under: [
+      ['CPT', q => `<span class="claim-id">${q.cpt}</span>`, q => q.cpt],
+      ['Contract', q => `<span class="num">${moneyFull(q.contracted)}</span>`, q => q.contracted, 'r'],
+      ['Paid', q => `<span class="num muted">${moneyFull(q.paid)}</span>`, q => q.paid, 'r'],
+      ['Short by', q => `<b class="num" style="color: var(--crit-ink)">${moneyFull(q.contracted - q.paid)}</b>`, q => q.contracted - q.paid, 'r'],
+      ['Paid on', q => `<span class="num muted">${dayStr(-q.paidAgo)}</span>`, q => -q.paidAgo],
+    ],
+  };
+  const DEFAULT_SORT = { denials: 3, filing: 4, under: 3 };
+
+  const rows = () => {
+    let list = QUEUE[state.tab].filter(q =>
+      (state.client === 'all' || q.client.id === state.client) &&
+      (state.payer === 'all' || q.payer.n === state.payer) &&
+      (state.owner === 'all' || (state.owner === 'none' ? !q.assignee : q.assignee === state.owner)) &&
+      (state.status === 'all' || (state.status === 'open' ? q.state === 'open' : q.state !== 'open' || q.activity.length)) &&
+      (!state.q || [q.claim, q.client.name, q.payer.n, q.reason?.label, q.status, q.cpt].join(' ').toLowerCase().includes(state.q)));
+    const ci = state.sort ?? DEFAULT_SORT[state.tab], key = COLS[state.tab][ci][2];
+    return list.sort((a, b) => { const x = key(a), y = key(b); return (x > y ? 1 : x < y ? -1 : 0) * state.dir; });
+  };
+
+  function render() {
+    $$('[data-tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === state.tab));
+    const list = rows(), cols = COLS[state.tab], ci = state.sort ?? DEFAULT_SORT[state.tab];
+    state.picked.forEach(id => { if (!list.some(q => q.id === id)) state.picked.delete(id); });
+    const value = state.tab === 'denials' ? list.reduce((a, q) => a + q.amt * .56 * q.win, 0) : state.tab === 'filing' ? list.reduce((a, q) => a + q.amt, 0) : list.reduce((a, q) => a + q.contracted - q.paid, 0);
+    $('#summary').innerHTML = `<b class="num" style="color: var(--ink)">${list.length}</b> ${TITLES[state.tab]}, worth <b class="num" style="color: var(--ink)">${moneyFull(value)}</b>${state.tab === 'denials' ? ' in expected recovery' : state.tab === 'filing' ? ' at risk' : ' in recoverable variance'}.`;
+    const allOn = list.length && list.every(q => state.picked.has(q.id));
+    $('#table').innerHTML = `<thead><tr>
+        <th class="pl-5 sm:pl-6 w-10"><input type="checkbox" id="pickAll" aria-label="Select all" ${allOn ? 'checked' : ''}></th>
+        <th>Claim</th><th>Patient</th><th>Practice / payer</th>
+        ${cols.map(([h, , , al], i) => `<th class="${al || ''}"><button class="th-sort" data-sort="${i}" ${i === ci ? `aria-sort="${state.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${h}</button></th>`).join('')}
+        <th>Owner</th><th>Status</th><th class="pr-5 sm:pr-6"></th></tr></thead>
+      <tbody>${list.map(q => `<tr class="expandable" tabindex="0" data-row="${q.id}" aria-label="Open claim ${q.claim}">
+        <td class="pl-5 sm:pl-6"><input type="checkbox" data-pick="${q.id}" aria-label="Select ${q.claim}" ${state.picked.has(q.id) ? 'checked' : ''}></td>
+        <td class="claim-id">${q.claim}</td>
+        <td class="phi">${esc(mask(q.patient))}</td>
+        <td><div class="font-medium">${q.client.short}</div><div class="text-[12px] faint">${q.payer.n}</div></td>
+        ${cols.map(([, cell, , al]) => `<td class="${al || ''}">${cell(q)}</td>`).join('')}
+        <td>${q.assignee ? `<span class="assignee"><i>${initials(q.assignee)}</i>${q.assignee.split(' ')[0]}</span>` : '<span class="assignee faint">Unassigned</span>'}</td>
+        <td>${STATE_LABEL[q.state] ? `<span class="state-pill">${STATE_LABEL[q.state]}</span>` : '<span class="faint text-[12.5px]">Open</span>'}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-claim-act="open" data-id="${q.id}">Open</button></td>
+      </tr>`).join('') || `<tr><td colspan="${cols.length + 7}" class="text-center py-12 faint">No claims match these filters. Try “Everything” under status, or clear the search.</td></tr>`}</tbody>`;
+    $('#bulk').classList.toggle('on', state.picked.size > 0);
+    $('#bulkCount').textContent = `${state.picked.size} selected`;
+  }
+
+  const exportRows = list => {
+    const cols = COLS[state.tab];
+    return [['Claim', 'Practice', 'Payer', ...cols.map(c => c[0]), 'Owner', 'Status'],
+      ...list.map(q => [q.claim, q.client.name, q.payer.n, ...cols.map(c => String(c[1](q)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()), q.assignee || 'Unassigned', STATE_LABEL[q.state] || 'Open'])];
+  };
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-tab]'); if (t) { state.tab = t.dataset.tab; state.sort = null; state.dir = -1; state.picked.clear(); history.replaceState(null, '', `?tab=${state.tab}&client=${state.client}`); return render(); }
+    const s = e.target.closest('[data-sort]'); if (s) { const i = +s.dataset.sort, cur = state.sort ?? DEFAULT_SORT[state.tab]; state.dir = i === cur ? -state.dir : -1; state.sort = i; return render(); }
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'pickAll') { rows().forEach(q => e.target.checked ? state.picked.add(q.id) : state.picked.delete(q.id)); return render(); }
+    if (e.target.dataset.pick) { e.target.checked ? state.picked.add(e.target.dataset.pick) : state.picked.delete(e.target.dataset.pick); return render(); }
+    const map = { fClient: 'client', fPayer: 'payer', fOwner: 'owner', fState: 'status' };
+    if (map[e.target.id]) { state[map[e.target.id]] = e.target.value; render(); }
+  });
+  $('#q').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); render(); });
+  $('#bulkAssign').addEventListener('click', () => {
+    const who = $('#bulkOwner').value || null, list = QUEUE[state.tab].filter(q => state.picked.has(q.id));
+    list.forEach(q => { q.assignee = who; q.touched = true; q.activity.push({ t: new Date().toTimeString().slice(0, 5), who: 'Dana Reyes', what: who ? `Assigned to ${who}` : 'Left unassigned' }); });
+    persist(); logAudit('Dana Reyes', `Assigned ${list.length} claims to ${who || 'nobody'}`);
+    state.picked.clear(); render(); toast(`${list.length} claim${list.length === 1 ? '' : 's'} assigned to ${who || 'nobody'}`);
+  });
+  $('#bulkExport').addEventListener('click', () => {
+    const list = rows().filter(q => state.picked.has(q.id));
+    download(`work-queue-${state.tab}-selected.csv`, exportRows(list)); logAudit('Dana Reyes', `Downloaded ${list.length} ${TITLES[state.tab]} (no patient details)`);
+    toast(`Downloaded ${list.length} claims, without patient details`);
+  });
+  $('#bulkClear').addEventListener('click', () => { state.picked.clear(); render(); });
+  $('#exportAll').addEventListener('click', () => {
+    const list = rows(); download(`work-queue-${state.tab}.csv`, exportRows(list)); logAudit('Dana Reyes', `Downloaded ${list.length} ${TITLES[state.tab]} (no patient details)`);
+    toast(`Downloaded ${list.length} claims, without patient details`);
+  });
+
+  window.CLAIMS.onChange(render);
+  document.addEventListener('click', e => {
+    if (e.target.closest('button, a, input, label, select')) return;
+    const r = e.target.closest('tr[data-row]'); if (r) window.CLAIMS.claimDrawer(window.LEDGER.findClaim(r.dataset.row));
+  });
+  document.addEventListener('keydown', e => { const r = e.target.closest?.('tr[data-row]'); if (r && e.target === r && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); window.CLAIMS.claimDrawer(window.LEDGER.findClaim(r.dataset.row)); } });
+
+  render();
+})();
+</script>
+</body>
+</html>

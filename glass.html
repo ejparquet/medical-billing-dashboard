@@ -23,384 +23,13 @@
     },
   };
 </script>
-<style>
-  /* ---------- Tokens ---------- */
-  :root {
-    color-scheme: light;
-    --canvas: #dde3eb;            /* frosted slate */
-    --glass: rgba(255, 255, 255, .44);
-    --glass-strong: rgba(255, 255, 255, .68);
-    --glass-line: rgba(255, 255, 255, .72);
-    --glass-hi: rgba(255, 255, 255, .85);
-    --surface: #f4f7fb;
-    --elevated: #ffffff;
-    --sunken: rgba(26, 44, 72, .06);
-    --line: rgba(26, 44, 72, .09);
-    --line-strong: rgba(26, 44, 72, .17);
-    --ink: #1a2230;
-    --ink-2: #556071;
-    --ink-3: #8590a0;
-    --hl: #2f6bd8;                /* highlight blue */
-    --hl-2: #a9c5f2;              /* gradient tail */
-    --hl-soft: rgba(47, 107, 216, .12);
-    --brand: #163a6b;             /* navy, for filled controls */
-    --brand-hover: #0f2c55;
-    --brand-soft: #dde7f5;
-    --brand-ink: #ffffff;
-    --accent: var(--hl);
-    --orb-1: #9ec4f5; --orb-2: #c9dcf7; --orb-3: #7fa8e6;
-
-    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
-    --seq1: #86b6ef; --seq2: #5598e7; --seq3: #2a78d6; --seq4: #1c5cab; --seq5: #104281;
-
-    --good: #0ca30c; --good-ink: #0b6e1f; --good-bg: rgba(12, 163, 12, .12);
-    --warn: #fab219; --warn-ink: #8a5a00; --warn-bg: rgba(250, 178, 25, .18);
-    --serious: #ec835a; --serious-ink: #9a4220; --serious-bg: rgba(236, 131, 90, .16);
-    --crit: #d03b3b; --crit-ink: #a42828; --crit-bg: rgba(208, 59, 59, .12);
-
-    --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 2px rgba(26, 44, 72, .05), 0 24px 48px -30px rgba(26, 52, 96, .38);
-    --float-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 24px -10px rgba(26, 52, 96, .22), 0 40px 70px -30px rgba(26, 52, 96, .40);
-    --spring: cubic-bezier(.34, 1.36, .64, 1);
-    --ease-out: cubic-bezier(.22, 1, .36, 1);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      color-scheme: dark;
-      --canvas: #0c111a; --glass: rgba(30, 40, 56, .46); --glass-strong: rgba(36, 47, 64, .74); --glass-line: rgba(255, 255, 255, .08); --glass-hi: rgba(255, 255, 255, .07);
-      --surface: #1a2230; --elevated: #222b3a; --sunken: rgba(255, 255, 255, .05); --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .15);
-      --ink: #e8edf4; --ink-2: #a9b4c3; --ink-3: #7d8899;
-      --hl: #6ea0f0; --hl-2: #24457c; --hl-soft: rgba(110, 160, 240, .16);
-      --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
-      --orb-1: #1d4a8c; --orb-2: #16304f; --orb-3: #2a5fb0;
-      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
-      --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
-      --good-ink: #5fd35f; --good-bg: rgba(95, 211, 95, .13); --warn-ink: #fac458; --warn-bg: rgba(250, 196, 88, .14);
-      --serious-ink: #f2a281; --serious-bg: rgba(242, 162, 129, .14); --crit-ink: #f08080; --crit-bg: rgba(240, 128, 128, .14);
-      --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 50px -28px rgba(0, 0, 0, .8);
-      --float-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -24px rgba(0, 0, 0, .85);
-    }
-  }
-  :root[data-theme="dark"] {
-    color-scheme: dark;
-    --canvas: #0c111a; --glass: rgba(30, 40, 56, .46); --glass-strong: rgba(36, 47, 64, .74); --glass-line: rgba(255, 255, 255, .08); --glass-hi: rgba(255, 255, 255, .07);
-    --surface: #1a2230; --elevated: #222b3a; --sunken: rgba(255, 255, 255, .05); --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .15);
-    --ink: #e8edf4; --ink-2: #a9b4c3; --ink-3: #7d8899;
-    --hl: #6ea0f0; --hl-2: #24457c; --hl-soft: rgba(110, 160, 240, .16);
-    --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
-    --orb-1: #1d4a8c; --orb-2: #16304f; --orb-3: #2a5fb0;
-    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
-    --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
-    --good-ink: #5fd35f; --good-bg: rgba(95, 211, 95, .13); --warn-ink: #fac458; --warn-bg: rgba(250, 196, 88, .14);
-    --serious-ink: #f2a281; --serious-bg: rgba(242, 162, 129, .14); --crit-ink: #f08080; --crit-bg: rgba(240, 128, 128, .14);
-    --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 50px -28px rgba(0, 0, 0, .8);
-    --float-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -24px rgba(0, 0, 0, .85);
-  }
-
-  /* ---------- Base ---------- */
-  html, body { background: var(--canvas); color: var(--ink); }
-  body { font-family: 'Figtree', system-ui, sans-serif; line-height: 1.6; font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; }
-  .canvas-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background:
-      radial-gradient(70rem 40rem at 85% -10%, color-mix(in oklab, var(--orb-2) 70%, transparent), transparent 60%),
-      radial-gradient(50rem 40rem at -10% 110%, color-mix(in oklab, var(--orb-1) 40%, transparent), transparent 60%),
-      var(--canvas); }
-  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .28; mix-blend-mode: multiply; }
-  :root[data-theme="dark"] .grain { mix-blend-mode: overlay; opacity: .2; }
-  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grain { mix-blend-mode: overlay; opacity: .2; } }
-
-  .font-display { font-family: 'Urbanist', system-ui, sans-serif; font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; }
-  .num { font-variant-numeric: tabular-nums; }
-  .eyebrow { font-size: 12.5px; font-weight: 600; color: var(--ink-3); line-height: 1.4; }
-  .muted { color: var(--ink-2); }
-  .faint { color: var(--ink-3); }
-
-  /* ---------- Shell: the big frosted window ---------- */
-  .shell { position: relative; z-index: 2; min-height: 100vh; overflow: hidden; isolation: isolate; }
-  @media (min-width: 1024px) {
-    .shell { margin: 20px; min-height: calc(100vh - 40px); border-radius: 36px; background: color-mix(in oklab, var(--glass) 55%, transparent); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 90px -50px rgba(20, 40, 80, .45); }
-  }
-  .orb { position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; filter: blur(8px); }
-  .orb-a { width: 620px; height: 620px; right: -120px; top: -160px; background: radial-gradient(circle at 35% 35%, var(--orb-1), color-mix(in oklab, var(--orb-3) 70%, transparent) 45%, transparent 70%); opacity: .9; }
-  .orb-b { width: 460px; height: 460px; left: 22%; top: 640px; background: radial-gradient(circle, var(--orb-2), transparent 70%); opacity: .9; }
-  .orb-c { width: 520px; height: 520px; right: 8%; top: 1500px; background: radial-gradient(circle, var(--orb-3), transparent 68%); opacity: .45; }
-  .stripes { position: absolute; z-index: -1; right: 40px; top: 70px; width: 420px; height: 380px; pointer-events: none; opacity: .5;
-    background: repeating-linear-gradient(90deg, color-mix(in oklab, var(--hl) 22%, transparent) 0 2px, transparent 2px 26px);
-    -webkit-mask: radial-gradient(closest-side, #000, transparent); mask: radial-gradient(closest-side, #000, transparent); }
-
-  /* ---------- Glass surfaces ---------- */
-  .card, .card-raised, .floating, .float-card, .detail-panel, .glass {
-    -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid var(--glass-line);
-  }
-  .card { background: var(--glass); border-radius: 26px; box-shadow: var(--glass-shadow); }
-  .card-raised { background: var(--glass); border-radius: 26px; box-shadow: var(--glass-shadow); }
-  .floating, .float-card { background: var(--glass-strong); border-radius: 20px; box-shadow: var(--float-shadow); }
-  .glass { background: var(--glass); }
-
-  /* ---------- Controls ---------- */
-  .round-btn { position: relative; display: inline-grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 999px; color: var(--ink-2);
-    background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi), 0 6px 14px -8px rgba(26, 52, 96, .3);
-    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: transform .4s var(--spring), color .2s, background-color .2s; cursor: pointer; }
-  .round-btn svg { width: 18px; height: 18px; }
-  .round-btn.sm { width: 34px; height: 34px; }
-  .round-btn.sm svg { width: 15px; height: 15px; }
-  .round-btn:hover { color: var(--ink); transform: translateY(-1px) scale(1.04); }
-  .round-btn:active { transform: scale(.94); }
-  .round-btn:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .round-btn.is-active { background: var(--hl); color: #fff; border-color: transparent; box-shadow: 0 10px 22px -8px color-mix(in oklab, var(--hl) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.3); }
-  .round-btn .dot { position: absolute; top: 9px; right: 10px; width: 7px; height: 7px; border-radius: 99px; background: var(--hl); box-shadow: 0 0 0 2px var(--glass-strong); }
-  .round-btn .badge { position: absolute; top: -4px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--brand); color: var(--brand-ink); font-size: 10.5px; font-weight: 700; line-height: 18px; text-align: center; }
-
-  .pill { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink-2);
-    background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi);
-    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: transform .4s var(--spring), color .2s; white-space: nowrap; }
-  button.pill { cursor: pointer; }
-  button.pill:hover { color: var(--ink); transform: translateY(-1px); }
-  button.pill:active { transform: scale(.97); }
-  button.pill:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .pill svg { width: 16px; height: 16px; flex: none; }
-  .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--hl), var(--brand)); }
-
-  .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; font-size: 13.5px; font-weight: 600; line-height: 1;
-    transition: transform .4s var(--spring), background-color .2s, color .2s, border-color .2s; cursor: pointer; white-space: nowrap; }
-  .btn:hover { transform: translateY(-1px); }
-  .btn:active { transform: translateY(0) scale(.96); }
-  .btn:focus-visible, .focus-ring:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .btn-primary { background: var(--hl); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 22px -10px color-mix(in oklab, var(--hl) 80%, transparent); }
-  .btn-primary:hover { background: color-mix(in oklab, var(--hl) 88%, #000); }
-  .btn-ghost { background: var(--glass-strong); color: var(--ink); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); }
-  .btn-ghost:hover { border-color: var(--line-strong); }
-  .btn-sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
-
-  .seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--sunken); border: 1px solid var(--line); }
-  .seg button { height: 30px; padding: 0 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); transition: transform .3s var(--spring), background-color .2s, color .2s; }
-  .seg button:hover { color: var(--ink); }
-  .seg button:active { transform: scale(.95); }
-  .seg button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
-  .seg button[aria-pressed="true"], .seg button[aria-selected="true"] { background: var(--hl); color: #fff; box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 70%, transparent); }
-
-  .theme-switch { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; padding: 4px; height: 42px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-  .theme-switch .thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--hl); box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 70%, transparent); transition: transform .5s var(--spring); }
-  .theme-switch[data-on="dark"] .thumb { transform: translateX(100%); }
-  .theme-switch button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; transition: transform .3s var(--spring), color .2s; }
-  .theme-switch button:hover { color: var(--ink); }
-  .theme-switch button:active { transform: scale(.94); }
-  .theme-switch button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
-  .theme-switch button[aria-checked="true"] { color: #fff; }
-  .theme-switch button svg { width: 15px; height: 15px; }
-
-  /* ---------- Rail ---------- */
-  .rail { display: flex; gap: 10px; z-index: 40; }
-  @media (min-width: 1024px) { .rail { flex-direction: column; position: sticky; top: 140px; align-self: start; padding-left: 22px; } }
-  @media (max-width: 1023px) { .rail { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 8px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: var(--float-shadow); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
-    .rail .round-btn { width: 38px; height: 38px; } }
-
-  /* ---------- Hero ---------- */
-  .hero-title { font-size: clamp(44px, 6vw, 76px); margin-top: 14px; }
-  .hero-sub { margin-top: 14px; font-size: 15px; color: var(--ink-2); line-height: 1.55; }
-  .hdot { width: 14px; height: 14px; border-radius: 99px; border: 2px solid var(--glass-line); cursor: pointer; transition: transform .35s var(--spring); }
-  .hdot:hover { transform: scale(1.25); }
-  .hdot:active { transform: scale(.9); }
-  .hdot:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .hdot-good { background: var(--good); } .hdot-warn { background: var(--warn); } .hdot-crit { background: var(--crit); }
-  .due-wrap { position: relative; max-width: 470px; }
-  .due-stack { position: absolute; left: 16px; right: 16px; bottom: -11px; height: 14px; border-radius: 0 0 18px 18px; background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
-  .due-card { position: relative; border-radius: 26px; }
-  .due-blob { position: relative; display: grid; place-items: center; width: 92px; height: 64px; flex: none; border-radius: 99px;
-    background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--hl) 22%, transparent), transparent 70%); }
-  .due-pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 99px; background: var(--hl); color: #fff; font-size: 12px; font-weight: 600; box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 80%, transparent); }
-  .due-item { text-align: left; padding: 6px 8px; border-radius: 12px; line-height: 1.35; transition: transform .35s var(--spring), background-color .2s; min-width: 0; }
-  .due-item:hover { background: var(--hl-soft); transform: translateY(-1px); }
-  .due-item:active { transform: scale(.97); }
-  .due-item:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
-  .due-item b { display: block; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .due-item span { display: block; font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
-
-  .float-card { position: relative; margin-bottom: 18px; padding: 18px; }
-  @media (min-width: 1280px) { .float-card { position: absolute; z-index: 3; top: -8px; right: 26px; width: 262px; margin: 0; } }
-  .ring-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.35; }
-  .ring-list li + li { margin-top: 8px; }
-  .ring { width: 11px; height: 11px; flex: none; border-radius: 99px; border: 2px solid currentColor; }
-  .ring-hl { color: var(--hl); } .ring-good { color: var(--good); } .ring-warn { color: var(--warn); } .ring-crit { color: var(--crit); }
-
-  /* ---------- Filter row ---------- */
-  .search-pill { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--ink-3); }
-  .search-pill:focus-within { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .search-pill input { width: 150px; background: transparent; border: 0; outline: 0; font-size: 13.5px; color: var(--ink); }
-  .search-pill input::placeholder { color: var(--ink-3); }
-  .fchip { display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 6px 0 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ink-2); background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
-  .fchip button { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 99px; color: var(--ink-3); transition: transform .3s var(--spring), background-color .2s, color .2s; }
-  .fchip button:hover { background: var(--sunken); color: var(--ink); }
-  .fchip button:active { transform: scale(.88); }
-  .fchip button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
-  .fchip-off { padding: 0 14px; border-style: dashed; border-color: var(--line-strong); background: transparent; cursor: pointer; transition: transform .3s var(--spring), color .2s; }
-  .fchip-off:hover { color: var(--ink); transform: translateY(-1px); }
-  .fchip-off:active { transform: scale(.96); }
-  .fchip-off:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .fchip-select { appearance: none; height: 34px; padding: 0 32px 0 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer;
-    background: var(--glass-strong) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238590a0' stroke-width='1.8'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E") no-repeat right 12px center;
-    border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: border-color .2s; }
-  .fchip-select:hover { border-color: var(--line-strong); }
-  .fchip-select:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
-  .pager { display: inline-flex; align-items: center; gap: 2px; height: 42px; padding: 0 4px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font-size: 13px; font-weight: 600; color: var(--ink-2); }
-  .pager button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 99px; transition: transform .3s var(--spring), background-color .2s, color .2s; }
-  .pager button:hover { background: var(--sunken); color: var(--ink); }
-  .pager button:active { transform: scale(.88); }
-  .pager button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
-  .pager span { min-width: 54px; text-align: center; }
-
-  /* ---------- Cards: header + KPI ---------- */
-  .card-head { display: flex; align-items: center; gap: 12px; }
-  .icon-circle { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 99px; color: var(--ink-2); border: 1px solid var(--line-strong); background: var(--glass-strong); }
-  .icon-circle svg { width: 17px; height: 17px; }
-  .card-title { font-size: 16px; font-weight: 500; color: var(--ink); line-height: 1.3; }
-  .kpi-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-top: 16px; font-size: 12.5px; }
-  .kpi-value { font-family: 'Urbanist', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: -0.03em; line-height: 1; color: var(--ink); margin-right: 4px; }
-  .delta { font-weight: 600; }
-  .delta.good { color: var(--good-ink); } .delta.bad { color: var(--crit-ink); }
-  .viz { position: relative; margin-top: 18px; }
-  .viz svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .g-track { fill: none; stroke: var(--sunken); stroke-width: 16; stroke-linecap: round; }
-  .g-track.thin { stroke-width: 12; }
-  .g-fill { fill: none; stroke-width: 16; stroke-linecap: round; }
-  .g-fill.thin { stroke-width: 12; }
-  .g-center { position: absolute; left: 0; right: 0; text-align: center; line-height: 1.25; pointer-events: none; }
-  .g-center b { display: block; font-family: 'Urbanist', sans-serif; font-weight: 500; font-size: 24px; letter-spacing: -0.02em; color: var(--ink); }
-  .g-center span { font-size: 12px; color: var(--ink-3); }
-  .kleg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 12px; font-size: 11.5px; color: var(--ink-3); }
-  .kleg span { display: inline-flex; align-items: center; gap: 6px; }
-  .kleg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-  .slider-hit { fill: transparent; cursor: crosshair; }
-
-  /* ---------- Generic bits reused by the renderers ---------- */
-  .chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 99px; font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; }
-  .chip svg { width: 11px; height: 11px; flex: none; }
-  .chip-good { background: var(--good-bg); color: var(--good-ink); }
-  .chip-warn { background: var(--warn-bg); color: var(--warn-ink); }
-  .chip-serious { background: var(--serious-bg); color: var(--serious-ink); }
-  .chip-crit { background: var(--crit-bg); color: var(--crit-ink); }
-  .chip-neutral { background: var(--sunken); color: var(--ink-2); }
-  .solves { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); line-height: 1.4; }
-  .solves b { color: var(--hl); font-weight: 600; }
-
-  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
-  .tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-3); padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-  .tbl td { white-space: nowrap; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; line-height: 1.4; }
-  .tbl tr:last-child td { border-bottom: 0; }
-  .tbl .r { text-align: right; }
-  .tbl tbody tr { transition: background-color .15s; }
-  .tbl tbody tr:hover { background: var(--hl-soft); }
-  .tbl tbody tr.expandable { cursor: pointer; }
-  .tbl tbody tr.expandable:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
-  .tbl tbody tr.expandable:active { background: color-mix(in oklab, var(--hl) 18%, transparent); }
-  .tbl tbody tr.is-open, .tbl tbody tr.is-open:hover, .tbl tbody tr.detail, .tbl tbody tr.detail:hover { background: var(--hl-soft); }
-  .tbl tbody tr.is-open td { border-bottom-color: transparent; }
-  .tbl tbody tr.detail > td { padding: 0 12px 16px; white-space: normal; }
-  .chev { flex: none; color: var(--ink-3); transition: transform .4s var(--spring), color .2s; }
-  tr.expandable:hover .chev { color: var(--ink); }
-  tr.is-open .chev { transform: rotate(90deg); color: var(--hl); }
-  .detail-panel { background: var(--glass-strong); border-radius: 20px; box-shadow: var(--float-shadow); animation: reveal .5s var(--spring) both; }
-  @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
-  @media (max-width: 1023px) { .detail-panel { position: sticky; left: 12px; width: calc(100vw - 60px); } }
-  .tl { display: flex; flex-direction: column; gap: 14px; }
-  .tl li { position: relative; display: flex; gap: 12px; line-height: 1.4; }
-  .tl li:not(:last-child)::before { content: ''; position: absolute; left: 5px; top: 18px; bottom: -14px; width: 2px; background: var(--line-strong); }
-  .tl-dot { flex: none; width: 12px; height: 12px; margin-top: 3px; border-radius: 99px; background: var(--surface); border: 2px solid var(--line-strong); }
-  .tl li.done .tl-dot { background: var(--hl); border-color: var(--hl); }
-  .tl li.bad .tl-dot { background: var(--crit); border-color: var(--crit); }
-  .tl li.next .tl-dot { background: var(--warn-bg); border-color: var(--warn); }
-  .check-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
-  .check-list li + li { margin-top: 8px; }
-  .check-list .n { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--hl-soft); color: var(--hl); }
-  .tile-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--glass-line); background: var(--glass); text-align: left; transition: transform .35s var(--spring), border-color .2s; }
-  .tile-btn:hover { border-color: var(--line-strong); transform: translateX(2px); }
-  .tile-btn:active { transform: scale(.98); }
-  .tile-btn:hover .chev { color: var(--hl); }
-  .mini-bar { height: 6px; border-radius: 99px; background: var(--sunken); overflow: hidden; }
-  .mini-bar > i { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: growx .7s var(--ease-out) both; }
-
-  .phi { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
-  .claim-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3); }
-
-  #tip { position: fixed; z-index: 60; pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .25s var(--spring); min-width: 160px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; border-radius: 14px; }
-  #tip.on { opacity: 1; transform: translateY(0); }
-  #tip .tt-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
-  #tip .tt-key { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
-  #tip .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
-  .chart .grid line { stroke: var(--line); stroke-width: 1; }
-  .chart .axis text { fill: var(--ink-3); font-size: 11px; font-family: 'Figtree', sans-serif; }
-  .chart .hit { fill: transparent; cursor: crosshair; }
-  .chart .hl { fill: var(--hl-soft); opacity: 0; transition: opacity .15s; pointer-events: none; }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
-  .legend span { display: inline-flex; align-items: center; gap: 6px; }
-  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-
-  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
-  .rise { animation: rise .8s var(--ease-out) both; }
-  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-  .bar-anim { transform-box: fill-box; transform-origin: bottom; animation: grow .8s var(--ease-out) both; }
-  @keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
-  .barx-anim { transform-origin: left; animation: growx .9s var(--ease-out) both; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
-
-  .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(12, 22, 40, .28); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .25s; }
-  .scrim.on { opacity: 1; pointer-events: auto; }
-  .drawer { position: fixed; z-index: 55; top: 12px; right: 12px; bottom: 12px; width: min(440px, calc(100vw - 24px)); transform: translateX(110%); transition: transform .5s var(--spring); display: flex; flex-direction: column; border-radius: 26px; }
-  .drawer.on { transform: none; }
-  .modal { position: fixed; z-index: 56; left: 50%; top: 50%; width: min(460px, calc(100vw - 32px)); transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .45s var(--spring), opacity .2s; border-radius: 26px; }
-  .modal.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
-  .toast { position: fixed; z-index: 70; left: 50%; bottom: 84px; transform: translate(-50%, 20px); opacity: 0; transition: transform .45s var(--spring), opacity .2s; pointer-events: none; border-radius: 999px; }
-  @media (min-width: 1024px) { .toast { bottom: 28px; } }
-  .toast.on { transform: translate(-50%, 0); opacity: 1; }
-  .scroll-x { overflow-x: auto; scrollbar-width: thin; }
-  .ring-sync { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex: none; }
-  input[type="search"], input[type="text"], textarea { font: inherit; }
-  .section-hidden { display: none !important; }
-</style>
+<link rel="stylesheet" href="assets/glass.css">
 </head>
 <body>
 <div class="canvas-bg" aria-hidden="true"></div>
 <svg class="grain" aria-hidden="true" width="100%" height="100%"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .18 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
 
-<!-- SVG icon sprite -->
-<svg width="0" height="0" class="absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-grid" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></symbol>
-    <symbol id="i-file" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 2.5h6.5L15 6v11.5H5z"/><path d="M11 2.5V6.5h4M7.5 10h5M7.5 13h5"/></symbol>
-    <symbol id="i-x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="m7.5 7.5 5 5m0-5-5 5"/></symbol>
-    <symbol id="i-clock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.2l2.8 1.8"/></symbol>
-    <symbol id="i-scale" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3v14M5 17h10M3 7h14M5 7l-2.5 5a2.6 2.6 0 0 0 5 0zM15 7l-2.5 5a2.6 2.6 0 0 0 5 0z"/></symbol>
-    <symbol id="i-users" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7" r="3"/><path d="M2 16.5c.6-2.8 2.8-4.5 5.5-4.5s4.9 1.7 5.5 4.5"/><path d="M13 4.2a3 3 0 0 1 0 5.6M14.5 12.3c1.8.6 3 2.1 3.5 4.2"/></symbol>
-    <symbol id="i-chart" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h14M5.5 14V9M10 14V5M14.5 14v-3"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5 16 5v5c0 3.8-2.6 6.5-6 7.5-3.4-1-6-3.7-6-7.5V5z"/><path d="m7.3 10 1.9 1.9 3.6-3.8"/></symbol>
-    <symbol id="i-eye" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.8 10S4.8 4.5 10 4.5 18.2 10 18.2 10 15.2 15.5 10 15.5 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.5"/></symbol>
-    <symbol id="i-eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l14 14M8.2 5a8.4 8.4 0 0 1 1.8-.5C15.2 4.5 18.2 10 18.2 10a14 14 0 0 1-2.4 3.1M12 15.2a7 7 0 0 1-2 .3C4.8 15.5 1.8 10 1.8 10a14.5 14.5 0 0 1 3.1-3.7"/></symbol>
-    <symbol id="i-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></symbol>
-    <symbol id="i-moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></symbol>
-    <symbol id="i-download" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></symbol>
-    <symbol id="i-arrow-up" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 10V2M2.5 5.5 6 2l3.5 3.5"/></symbol>
-    <symbol id="i-arrow-down" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5"/></symbol>
-    <symbol id="i-check" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="m2.5 6.2 2.3 2.3 4.7-5"/></symbol>
-    <symbol id="i-alert" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1.5 11 10.5H1z"/><path d="M6 5v2.4M6 8.9v.1"/></symbol>
-    <symbol id="i-dot" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.2" fill="currentColor"/></symbol>
-    <symbol id="i-hourglass" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 1.5h6M3 10.5h6M3.5 1.5c0 3 5 3 5 4.5S3.5 7.5 3.5 10.5M8.5 1.5c0 3-5 3-5 4.5s5 1.5 5 4.5"/></symbol>
-    <symbol id="i-spark" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M4.7 15.3l2.1-2.1M13.2 6.8l2.1-2.1"/></symbol>
-    <symbol id="i-search" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 4 4"/></symbol>
-    <symbol id="i-close" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m5 5 10 10M15 5 5 15"/></symbol>
-    <symbol id="i-menu" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h14M3 10h14M3 14h14"/></symbol>
-    <symbol id="i-lock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M6.8 9V6.5a3.2 3.2 0 0 1 6.4 0V9"/></symbol>
-    <symbol id="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 3.5 4.5 4.5L6 12.5"/></symbol>
-    <symbol id="i-phone" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3h3l1.5 4-2 1.3a9 9 0 0 0 5.2 5.2l1.3-2 4 1.5v3a1.5 1.5 0 0 1-1.5 1.5A14 14 0 0 1 2.5 4.5 1.5 1.5 0 0 1 4 3z"/></symbol>
-    <symbol id="i-refresh" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 4.5v4h-4M4 15.5v-4h4"/><path d="M15.4 8.5A6 6 0 0 0 4.8 6.6M4.6 11.5a6 6 0 0 0 10.6 1.9"/></symbol>
-    <symbol id="i-arrow-ur" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 14 14 6M7.5 6H14v6.5"/></symbol>
-    <symbol id="i-dollar" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.2 6.6c-.6-1-1.8-1.6-3.2-1.6-1.8 0-3.1 1-3.1 2.4 0 3.4 6.5 1.8 6.5 5.2 0 1.4-1.4 2.4-3.4 2.4-1.5 0-2.8-.7-3.4-1.8M10 3v14"/></symbol>
-    <symbol id="i-inbox" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l2.2-6.2a1.5 1.5 0 0 1 1.4-1h6.8a1.5 1.5 0 0 1 1.4 1L17 11v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5z"/><path d="M3 11h4l1 2h4l1-2h4"/></symbol>
-    <symbol id="i-bell" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 4-1.5 5.5-1.5 5.5h12s-1.5-1.5-1.5-5.5A4.5 4.5 0 0 0 10 3zM8.3 16a1.8 1.8 0 0 0 3.4 0"/></symbol>
-    <symbol id="i-filter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 4.5h13l-5 6v5l-3 1.5v-6.5z"/></symbol>
-  </defs>
-</svg>
+<script src="assets/icons.js"></script>
 
 <div class="shell lg:grid lg:grid-cols-[86px_1fr]" id="top">
   <div class="orb orb-a" aria-hidden="true"></div>
@@ -416,7 +45,7 @@
     <span class="hidden sm:block font-display text-[22px] font-medium" style="font-weight: 500">Ledgerline</span>
     <div class="ml-auto flex items-center gap-2">
       <button class="pill hidden md:inline-flex" data-open-sources id="sourcesChip"></button>
-      <span class="pill hidden xl:inline-flex" title="Session locks after 15 minutes without activity"><svg><use href="#i-lock"/></svg>Locks in <span id="session" class="num">15:00</span></span>
+      <button class="pill hidden xl:inline-flex" data-act="profile" title="Change when the screen locks" aria-label="Session lock settings"><svg><use href="#i-lock"/></svg>Locks in <span id="session" class="num">15:00</span></button>
       <button class="pill px-3 sm:px-4" id="phiToggle" aria-pressed="false" aria-label="Reveal patient identifiers">
         <svg id="phiIcon"><use href="#i-eye-off"/></svg><span class="hidden sm:inline" id="phiLabel">PHI masked</span>
       </button>
@@ -425,11 +54,11 @@
         <button role="radio" data-theme-set="light" aria-checked="false" aria-label="Light mode"><svg><use href="#i-sun"/></svg><span class="hidden sm:inline">Light</span></button>
         <button role="radio" data-theme-set="dark" aria-checked="false" aria-label="Dark mode"><svg><use href="#i-moon"/></svg><span class="hidden sm:inline">Dark</span></button>
       </div>
-      <div class="pill hidden md:inline-flex pl-1.5 pr-4 gap-2.5">
+      <button class="pill hidden md:inline-flex pl-1.5 pr-4 gap-2.5" data-act="profile" aria-label="Your profile and settings">
         <span class="avatar">DR</span>
         <span class="leading-tight text-left"><b class="block text-[13px] font-semibold" style="color: var(--ink)">Dana Reyes</b><span class="block text-[11.5px] faint">Billing lead</span></span>
-      </div>
-      <button class="round-btn" data-open-audit aria-label="Activity and audit log"><svg><use href="#i-bell"/></svg><span class="dot"></span></button>
+      </button>
+      <button class="round-btn" data-act="notifications" aria-label="Notifications"><svg><use href="#i-bell"/></svg><span class="dot"></span></button>
     </div>
   </header>
 
@@ -518,7 +147,7 @@
           <span id="pagerLabel" class="num">All</span>
           <button data-page="1" aria-label="Next practice"><svg width="14" height="14"><use href="#i-chev"/></svg></button>
         </div>
-        <button class="pill" data-toast="Showing October 1 to 19, 2026. More ranges are coming."><span>Oct 1 – 19</span><svg><use href="#i-filter"/></svg></button>
+        <button class="pill" data-act="period" aria-label="Change the reporting period"><span id="periodPill">Oct 1 – 19</span><svg><use href="#i-calendar"/></svg></button>
       </div>
     </section>
 
@@ -542,7 +171,7 @@
         </div>
       </div>
       <div class="scroll-x">
-        <table class="tbl min-w-[780px]" id="queueTable"></table>
+        <table class="tbl min-w-[900px]" id="queueTable"></table>
       </div>
       <div class="px-5 sm:px-6 py-4 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--line);">
         <p class="solves" id="queueSolves"></p>
@@ -643,125 +272,29 @@
     <button class="btn btn-ghost btn-sm px-2 ml-auto" data-close-drawer aria-label="Close"><svg width="16" height="16"><use href="#i-close"/></svg></button>
   </div>
   <div class="p-5 overflow-y-auto flex-1" id="drawerBody"></div>
+  <div class="drawer-foot" id="drawerFoot" hidden></div>
 </aside>
+
+<div class="lock" id="lock" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="floating">
+    <span class="avatar mx-auto" style="width:56px;height:56px;font-size:17px">DR</span>
+    <h2 id="lockTitle" class="font-display text-[32px] mt-4">Session locked</h2>
+    <p class="text-[13.5px] muted mt-2" id="lockMsg">Patient information is hidden while you are away.</p>
+    <button class="btn btn-primary mt-6 w-full justify-center" data-unlock>Sign in again</button>
+    <p class="text-[12px] faint mt-3">Demo sign-in, no password needed.</p>
+  </div>
+</div>
 
 <div class="toast floating px-4 py-3 text-[13.5px] font-medium flex items-center gap-2" id="toast" role="status" aria-live="polite"></div>
 
+<script src="assets/data.js"></script>
 <script>
 (() => {
-  /* ================= Demo data ================= */
-  let seed = 20261019;
-  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
-  const pick = a => a[Math.floor(rnd() * a.length)];
-  const between = (a, b) => a + rnd() * (b - a);
-
-  const MONTHS = ['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
-  const YEARS  = [2025,2025,2026,2026,2026,2026,2026,2026,2026,2026,2026,2026];
-
-  const CLIENTS = [
-    { id: 'cedar',   name: 'Cedar Ridge Family Medicine', short: 'Cedar Ridge',  spec: 'Primary care',      pm: 'athenaOne',     base: 182000, den: .062, ar: 34, auth: .9 },
-    { id: 'harbor',  name: 'Harbor Orthopedics',          short: 'Harbor Ortho', spec: 'Orthopedics',       pm: 'ModMed',        base: 341000, den: .118, ar: 47, auth: 2.4 },
-    { id: 'lumen',   name: 'Lumen Pediatrics',            short: 'Lumen Peds',   spec: 'Pediatrics',        pm: 'Office Ally',   base: 126000, den: .048, ar: 29, auth: .6 },
-    { id: 'north',   name: 'Northgate Cardiology',        short: 'Northgate',    spec: 'Cardiology',        pm: 'eClinicalWorks',base: 288000, den: .094, ar: 44, auth: 2.0 },
-    { id: 'sierra',  name: 'Sierra Physical Therapy',     short: 'Sierra PT',    spec: 'Physical therapy',  pm: 'WebPT',         base: 98000,  den: .081, ar: 38, auth: 1.5 },
-    { id: 'willow',  name: 'Willow Behavioral Health',    short: 'Willow BH',    spec: 'Behavioral health', pm: 'SimplePractice',base: 74000,  den: .132, ar: 58, auth: 1.3 },
-    { id: 'bayview', name: 'Bayview Dermatology',         short: 'Bayview Derm', spec: 'Dermatology',       pm: 'ModMed',        base: 156000, den: .057, ar: 31, auth: .8 },
-  ];
-  const PAYERS = [
-    { n: 'Medicare',          tf: 365, appeal: 120, dtp: 14 },
-    { n: 'Medicaid (state)',  tf: 180, appeal: 90,  dtp: 31 },
-    { n: 'BCBS',              tf: 180, appeal: 180, dtp: 19 },
-    { n: 'UnitedHealthcare',  tf: 90,  appeal: 180, dtp: 24 },
-    { n: 'Aetna',             tf: 120, appeal: 180, dtp: 22 },
-    { n: 'Cigna',             tf: 90,  appeal: 180, dtp: 21 },
-    { n: 'Humana',            tf: 180, appeal: 60,  dtp: 27 },
-  ];
-  const REASONS = [
-    { k: 'auth',  label: 'Prior authorization', code: 'CO-197' },
-    { k: 'nec',   label: 'Medical necessity',   code: 'CO-50'  },
-    { k: 'elig',  label: 'Eligibility',         code: 'CO-27'  },
-    { k: 'code',  label: 'Coding & bundling',   code: 'CO-97'  },
-    { k: 'info',  label: 'Missing info',        code: 'CO-16'  },
-  ];
-
-  // Monthly series per client
-  CLIENTS.forEach(c => {
-    c.months = MONTHS.map((m, i) => {
-      const season = 1 + .06 * Math.sin((i + 2) / 12 * Math.PI * 2);
-      const growth = 1 + i * .008;
-      const charges = c.base * season * growth * between(.93, 1.07);
-      const allowed = charges * between(.5, .56);
-      const collected = allowed * between(.93, .985) * (i === 11 ? .62 : 1);  // Oct is month-to-date
-      const claims = Math.round(charges / between(310, 360));
-      const trend = i >= 6 ? 1 + (i - 6) * .04 * (c.auth > 1.4 ? 1 : .2) : 1;
-      const denRate = c.den * between(.88, 1.12) * trend;
-      const denied = Math.round(claims * denRate);
-      const w = { auth: c.auth * trend * (i > 7 ? 1.15 : 1), nec: 1.1, elig: 1, code: .9, info: .8 };
-      const tot = Object.values(w).reduce((a, b) => a + b, 0);
-      const byReason = {}; let used = 0;
-      REASONS.forEach((r, j) => { const v = j === REASONS.length - 1 ? denied - used : Math.round(denied * w[r.k] / tot); byReason[r.k] = Math.max(0, v); used += byReason[r.k]; });
-      return { charges, allowed, collected, claims, denied, byReason };
-    });
-    const total = c.base * c.ar / 30 * between(.95, 1.05);
-    const mix = c.ar > 45 ? [.36, .21, .14, .11, .18] : c.ar > 35 ? [.46, .22, .12, .08, .12] : [.55, .23, .1, .06, .06];
-    c.aging = mix.map(f => total * f);
-    c.payerAging = PAYERS.map(() => c.aging.map(v => v / PAYERS.length * between(.5, 1.5)));
-    c.clean = 1 - c.den * between(.7, .9) - .02;
-    c.ncr = between(.945, .985) - (c.den > .1 ? .02 : 0);
-    c.sync = c.id === 'willow' ? { ok: false, ago: '3 h' } : { ok: true, ago: Math.round(between(2, 18)) + ' min' };
-    c.underpaid = c.base * between(.008, .022);
-  });
-
-  // Work-queue items
-  const FIRST = ['Maria','James','Aisha','Robert','Linh','David','Grace','Omar','Elena','Marcus','Priya','Thomas','Hannah','Luis','Nora','Kevin','Sofia','Andre','Ruth','Felix'];
-  const LAST  = ['Alvarez','Brooks','Chen','Delgado','Evans','Fitzgerald','Garcia','Hughes','Ibrahim','Jensen','Kowalski','Lopez','Moreno','Nakamura','Okafor','Patel','Quinn','Russo','Sato','Thompson'];
-  const PROVIDERS = ['Dr. A. Okoye, MD', 'Dr. S. Lindqvist, DO', 'Dr. R. Mehta, MD', 'K. Alder, PA-C', 'Dr. J. Whitfield, MD', 'M. Torres, NP'];
-  const ICD = ['M17.11', 'I10', 'E11.9', 'F41.1', 'L57.0', 'M54.50', 'R07.9', 'Z00.129', 'M75.101', 'I48.91'];
-  const mkItem = (type, i) => {
-    const c = pick(CLIENTS), p = pick(PAYERS), r = type === 'denials' ? pick(REASONS) : null;
-    const amt = Math.round(between(180, type === 'under' ? 1400 : 6200));
-    const daysLeft = type === 'denials' ? Math.round(between(2, 55)) : type === 'filing' ? Math.round(between(3, 40)) : null;
-    const deniedAgo = type === 'denials' ? Math.max(4, p.appeal - daysLeft) : null;
-    const dosAgo = type === 'filing' ? p.tf - daysLeft : type === 'denials' ? deniedAgo + Math.round(between(18, 40)) : Math.round(between(24, 70));
-    const contracted = type === 'under' ? amt : null;
-    const paid = type === 'under' ? Math.round(amt * between(.62, .9)) : null;
-    const winByReason = { auth: .48, nec: .57, elig: .41, code: .74, info: .88 };
-    return {
-      type, client: c, payer: p, reason: r,
-      patient: pick(FIRST) + ' ' + pick(LAST),
-      dob: `${String(Math.ceil(between(0, 12))).padStart(2,'0')}/${String(Math.ceil(between(0, 28))).padStart(2,'0')}/${Math.round(between(1945, 2018))}`,
-      claim: 'CLM-' + (480000 + Math.round(rnd() * 99999)),
-      amt, daysLeft, contracted, paid,
-      win: r ? Math.min(.95, winByReason[r.k] * between(.85, 1.15)) : null,
-      status: type === 'filing' ? pick(['Rejected — not resubmitted', 'Never submitted', 'Held: missing auth #', 'Rejected — invalid NPI']) : null,
-      cpt: pick(['99214','99215','27447','93306','97110','90837','11102','29881','93000','99204']),
-      id: type + i, deniedAgo, dosAgo,
-      memberId: pick(['W', 'XJ', 'H', 'ZG', 'M']) + Math.round(between(1e8, 9e8)),
-      provider: pick(PROVIDERS), icd: pick(ICD),
-      priorAppeals: rnd() < .25 ? 1 : 0,
-      paidAgo: Math.round(between(2, 20)),
-      pattern: Math.round(between(3, 14)),
-    };
-  };
-  const CONTACTS = ['Dr. Ellen Park', 'Marisol Vega', 'Tom Haverford', 'Priscilla Moon', 'Gabe Ortiz', 'Dr. Naomi Burke', 'Ines Kowal'];
-  CLIENTS.forEach((c, i) => {
-    c.contact = CONTACTS[i]; c.contactRole = i % 2 ? 'Practice manager' : 'Owner / physician';
-    c.fee = [6.0, 5.5, 7.0, 5.0, 7.5, 8.0, 6.5][i]; c.since = [2019, 2021, 2022, 2020, 2023, 2024, 2021][i];
-    c.lastReport = ['Oct 2', 'Oct 1', 'Oct 3', 'Oct 1', 'Oct 6', 'Sep 4', 'Oct 2'][i];
-  });
-  const QUEUE = { denials: [], filing: [], under: [] };
-  for (let i = 0; i < 46; i++) QUEUE.denials.push(mkItem('denials', i));
-  for (let i = 0; i < 22; i++) QUEUE.filing.push(mkItem('filing', i));
-  for (let i = 0; i < 31; i++) QUEUE.under.push(mkItem('under', i));
+  const { MONTHS, YEARS, CLIENTS, PAYERS, REASONS, QUEUE, TEAM } = window.LEDGER;
 
   /* ================= State ================= */
-  const state = { client: 'all', period: 12, tab: 'denials', phi: false, openQ: null, openC: null, q: '', hidden: new Set() };
-  const audit = [
-    { t: '08:02', who: 'Dana Reyes', what: 'Signed in (MFA: authenticator app)' },
-    { t: '08:04', who: 'System', what: 'Nightly 835/ERA import completed — 1,284 remittances' },
-    { t: '08:15', who: 'Jordan Pike', what: 'Exported Harbor Orthopedics month-end report' },
-    { t: '08:31', who: 'System', what: 'SimplePractice sync failed for Willow BH — retrying' },
-  ];
+  const state = { client: 'all', period: 12, tab: 'denials', phi: false, openQ: null, openC: null, q: '', hidden: new Set(), month: 11, rules: {} };
+  const { audit, logAudit, persist } = window.LEDGER;
 
   /* ================= Helpers ================= */
   const $ = s => document.querySelector(s);
@@ -825,7 +358,7 @@
   /* ---------- KPI gauges ---------- */
   const gradDefs = (id, x1, y1, x2, y2) => `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" style="stop-color: var(--hl-2)"/><stop offset="1" style="stop-color: var(--hl)"/></linearGradient></defs>`;
   const polar = (cx, cy, r, deg) => [cx + r * Math.cos(deg * Math.PI / 180), cy + r * Math.sin(deg * Math.PI / 180)];
-  const kHead = (icon, title, target, tab, label) => `<div class="card-head"><span class="icon-circle"><svg><use href="#i-${icon}"/></svg></span><h3 class="card-title">${title}</h3><button class="round-btn sm ml-auto" data-scroll="${target}"${tab ? ` data-tab-go="${tab}"` : ''} aria-label="${label}"><svg><use href="#i-arrow-ur"/></svg></button></div>`;
+  const kHead = (icon, title, target, tab, label) => `<div class="card-head"><span class="icon-circle"><svg><use href="#i-${icon}"/></svg></span><h3 class="card-title">${title}</h3><button class="round-btn sm ml-auto" data-act="kpi" data-kpi="${target}" aria-label="${label}"><svg><use href="#i-arrow-ur"/></svg></button></div>`;
   const kLine = (value, d, goodDir, note) => {
     let delta = '';
     if (d !== null) { const up = d >= 0, good = (goodDir === 'up') === up; delta = `<span class="delta ${good ? 'good' : 'bad'}">${up ? '+' : '−'}${pct(Math.abs(d))}</span>`; }
@@ -853,7 +386,7 @@
       <div class="g-center" style="top: 50%; transform: translateY(-50%)"><span>${label}</span><b class="num">${value}</b></div></div>`;
   }
 
-  const DAYS = ['Oct 7', 'Oct 8', 'Oct 9', 'Oct 12', 'Oct 13', 'Oct 14', 'Oct 15', 'Oct 16', 'Oct 19'];
+  let DAYS; const OCT_DAYS = ['Oct 7', 'Oct 8', 'Oct 9', 'Oct 12', 'Oct 13', 'Oct 14', 'Oct 15', 'Oct 16', 'Oct 19'];
   function sliders(vals) {
     const W = 260, H = 154, top = 12, bot = H - 30, n = vals.length, max = Math.max(...vals) * 1.08;
     const x = i => 14 + i * (W - 28) / (n - 1), y = v => bot - (bot - top) * v / max;
@@ -865,8 +398,8 @@
       s += `<line x1="${x(i)}" x2="${x(i)}" y1="${bot}" y2="${y(v)}" style="stroke: ${last ? 'url(#gSl)' : 'color-mix(in oklab, var(--hl) 38%, transparent)'}" stroke-width="${last ? 6 : 4}" stroke-linecap="round"/>`;
       s += `<circle cx="${x(i)}" cy="${y(v)}" r="${last ? 6 : 4}" style="fill: ${last ? 'var(--hl)' : 'var(--elevated)'}; stroke: var(--hl)" stroke-width="2"/>`;
     });
-    [[0, 'Oct 7'], [4, 'Oct 13'], [n - 1, 'Today']].forEach(([i, t]) => s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" style="fill: var(--ink-3)">${t}</text>`);
-    vals.forEach((v, i) => s += `<rect class="slider-hit" x="${x(i) - 13}" y="0" width="26" height="${bot + 8}" data-tip="${enc(`<b>${i === n - 1 ? 'Today' : DAYS[i]}</b>${tipRow('', 'Claims submitted', v.toLocaleString())}`)}"/>`);
+    [[0, DAYS[0]], [4, DAYS[4]], [n - 1, state.month === 11 ? 'Today' : DAYS[n - 1]]].forEach(([i, t]) => s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" style="fill: var(--ink-3)">${t}</text>`);
+    vals.forEach((v, i) => s += `<rect class="slider-hit" x="${x(i) - 13}" y="0" width="26" height="${bot + 8}" data-tip="${enc(`<b>${i === n - 1 && state.month === 11 ? 'Today' : DAYS[i]}</b>${tipRow('', 'Claims submitted', v.toLocaleString())}`)}"/>`);
     return `<div class="viz">${s}</svg></div>`;
   }
 
@@ -887,8 +420,9 @@
   }
 
   function renderKpis() {
-    const cs = sel(), L = 11, P = 10, ids = cs.map(c => c.id);
-    const coll = sumMonths(cs, 'collected', L), collPrev = sumMonths(cs, 'collected', P) * .62, lastMonth = sumMonths(cs, 'collected', P);
+    const cs = sel(), L = state.month, P = state.month - 1, ids = cs.map(c => c.id);
+    DAYS = L === 11 ? OCT_DAYS : OCT_DAYS.map((_, i) => `${MONTHS[L]} ${1 + Math.round(i * 3.4)}`);
+    const coll = sumMonths(cs, 'collected', L), collPrev = sumMonths(cs, 'collected', P) * (L === 11 ? .62 : 1), lastMonth = sumMonths(cs, 'collected', P);
     const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
     const daily = cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
     const days = ar / daily, daysPrev = days * 1.06;
@@ -901,13 +435,13 @@
     const worked = .59, dtp = Math.round(cs.reduce((a, c) => a + c.ar, 0) / cs.length * .55);
 
     const cards = [
-      kHead('dollar', 'Collections', 'revenue', null, 'Open the revenue chart') + kLine(money(coll, 1), coll / collPrev - 1, 'up', 'vs. last month') +
+      kHead('dollar', 'Collections', 'collections', null, 'Collections breakdown') + kLine(money(coll, 1), coll / collPrev - 1, 'up', 'vs. last month') +
         `<div class="mt-auto">${semiGauge(coll / lastMonth, 'Last month', money(lastMonth, 1))}<div class="kleg"><span><i style="background: var(--hl)"></i>Collected ${pct(coll / lastMonth, 0)}</span><span><i style="${trackSwatch}"></i>Left to match</span></div></div>`,
-      kHead('file', 'Claims submitted', 'queue', 'filing', 'Open claims near their filing limit') + kLine(sub.toLocaleString(), sub / subPrev - 1, 'up', `${pct(clean, 0)} clean first pass`) +
+      kHead('file', 'Claims submitted', 'claims', null, 'Claims breakdown') + kLine(sub.toLocaleString(), sub / subPrev - 1, 'up', `${pct(clean, 0)} clean first pass`) +
         `<div class="mt-auto">${sliders(vals)}<div class="kleg"><span><i style="background: var(--good)"></i>Paid ${paid.toLocaleString()}</span><span><i style="background: var(--warn)"></i>Pending ${pend.toLocaleString()}</span><span><i style="background: var(--crit)"></i>Denied ${denied}</span></div></div>`,
-      kHead('x', 'Denials', 'queue', 'denials', 'Open the appeals queue') + kLine(pct(den), den / denPrev - 1, 'down', 'vs. last month') +
+      kHead('x', 'Denials', 'denials', null, 'Denials breakdown') + kLine(pct(den), den / denPrev - 1, 'down', 'vs. last month') +
         `<div class="mt-auto">${stadium(worked, 'Recoverable', moneyFull(rec))}<div class="kleg"><span><i style="background: var(--hl)"></i>Worked ${pct(worked, 0)}</span><span><i style="${trackSwatch}"></i>Not yet worked</span></div></div>`,
-      kHead('clock', 'Days in A/R', 'aging', null, 'Open the aging report') + kLine(days.toFixed(1), days / daysPrev - 1, 'down', 'target 40') +
+      kHead('clock', 'Days in A/R', 'ar', null, 'Days in A/R breakdown') + kLine(days.toFixed(1), days / daysPrev - 1, 'down', 'target 40') +
         `<div class="mt-auto">${dial(days, 60, 40, 'Avg. days to pay', dtp + ' days')}<div class="kleg"><span><i style="background: var(--hl)"></i>Current ${days.toFixed(0)} days</span><span><i style="background: var(--brand); width: 4px"></i>Target 40</span></div></div>`,
     ];
     $('#kpis').innerHTML = cards.map((c, i) => `<article class="card p-5 sm:p-6 flex flex-col rise" style="animation-delay:${.14 + i * .06}s">${c}</article>`).join('');
@@ -919,13 +453,13 @@
     $('#heroTitle').textContent = one ? one.name : 'All practices';
     $('#heroSub').innerHTML = one
       ? `${one.spec} on ${one.pm}<br>${one.sync.ok ? 'Synced ' + agoTxt(one) : 'Sync failed ' + agoTxt(one)}, client since ${one.since}`
-      : `Seven practices billed through one queue<br>October 1 to 19, 2026`;
+      : `Seven practices billed through one queue<br>${periodLabel()}`;
     const stats = cs.map(clientStats);
     $('#healthDots').innerHTML = stats.map(st => `<button class="hdot hdot-${st.health[0]}" data-focus="${st.c.id}" aria-label="${st.c.name}: ${st.health[2]}" data-tip="${enc(`<b>${st.c.name}</b><div class="faint">${st.health[2]}</div>`)}"></button>`).join('');
     const risk = stats.filter(s => s.health[0] === 'crit').length, watch = stats.filter(s => s.health[0] === 'warn').length;
     $('#healthText').textContent = one ? stats[0].health[2] : [risk && `${risk} at risk`, watch && `${watch} to watch`].filter(Boolean).join(', ') || 'All practices healthy';
 
-    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7).sort((a, b) => a.daysLeft - b.daysLeft);
+    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7 && q.state === 'open').sort((a, b) => a.daysLeft - b.daysLeft);
     $('#dueCount').textContent = `${due.length} due`;
     $('#dueList').innerHTML = due.slice(0, 3).map(q => `<button class="due-item" data-open-q="${q.id}"><b>${q.client.short}</b><span class="num">${money(q.amt)}, ${q.daysLeft}d left</span></button>`).join('')
       || '<p class="faint text-[13px]">Nothing due in the next 7 days.</p>';
@@ -935,10 +469,10 @@
     const rec = QUEUE.denials.filter(q => ids.includes(q.client.id)).reduce((a, q) => a + q.amt * q.win, 0);
     $('#alertMeta').textContent = one ? one.short : 'Monday, October 19';
     $('#alertList').innerHTML = [
-      failed.length ? ['crit', `${failed.map(c => c.short).join(', ')} sync failed`] : ['good', 'All data sources synced'],
-      ['hl', `${due.length} appeal${due.length === 1 ? '' : 's'} due in 7 days`],
-      ['warn', `${rej} clearinghouse rejects`],
-    ].map(([k, t]) => `<li><span class="ring ring-${k}"></span>${t}</li>`).join('');
+      failed.length ? ['crit', `${failed.map(c => c.short).join(', ')} sync failed`, 'data-open-sources'] : ['good', 'All data sources synced', 'data-open-sources'],
+      ['hl', `${due.length} appeal${due.length === 1 ? '' : 's'} due in 7 days`, 'data-goto-tab="denials"'],
+      ['warn', `${rej} clearinghouse rejects`, 'data-act="rejects"'],
+    ].map(([k, t, attr]) => `<li><button class="ring-btn" ${attr}><span class="ring ring-${k}"></span>${t}<svg class="chev ml-auto" width="12" height="12"><use href="#i-chev"/></svg></button></li>`).join('');
     $('#alertValue').textContent = moneyFull(rec);
   }
 
@@ -1067,7 +601,7 @@
       <div class="flex items-center gap-2 text-[12px] font-semibold" style="color: var(--accent)"><svg width="14" height="14"><use href="#i-spark"/></svg>Root-cause alert</div>
       <p class="text-[13.5px] mt-2 leading-[1.55]"><b>${worst.r.label}</b> denials are ${worst.g >= 0 ? 'up' : 'down'} <b class="num">${pct(Math.abs(worst.g), 0)}</b> quarter over quarter${cs.length > 1 ? `, led by <b>${driver.short}</b>` : ''} (${worst.r.code}).</p>
       <p class="text-[12.5px] muted mt-1.5 leading-[1.55]">${fix}.</p>
-      <button class="btn btn-ghost btn-sm mt-3" data-toast="Prevention rule queued for review">Create prevention rule</button>`;
+      ${state.rules[worst.r.k] ? `<div class="mt-3 flex flex-wrap items-center gap-2">${chip('good', 'check', 'Rule on')}<button class="btn btn-ghost btn-sm" data-act="rule" data-reason="${worst.r.k}" data-client="${driver.id}">Edit rule</button></div>` : `<button class="btn btn-ghost btn-sm mt-3" data-act="rule" data-reason="${worst.r.k}" data-client="${driver.id}">Create prevention rule</button>`}`;
   }
 
   const QUEUE_META = {
@@ -1090,7 +624,7 @@
   const kv = pairs => `<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px] leading-[1.45]">${pairs.map(([k, v]) => `<dt class="faint">${k}</dt><dd class="text-right num font-medium min-w-0">${v}</dd>`).join('')}</dl>`;
   const timeline = steps => `<ol class="tl">${steps.map(st => `<li class="${st.state || ''}"><span class="tl-dot"></span><div><div class="text-[13px] font-medium">${st.label}</div><div class="text-[12px] faint num">${st.date}${st.note ? ' · ' + st.note : ''}</div></div></li>`).join('')}</ol>`;
   const steps = list => `<ol class="check-list">${list.map((t, i) => `<li><span class="n">${i + 1}</span><span>${t}</span></li>`).join('')}</ol>`;
-  const panel = (cols, actions) => `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">${cols.map(c => `<div class="min-w-0">${c}</div>`).join('')}</div>${actions ? `<div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">${actions}</div>` : ''}</div>`;
+  const panel = (cols, actions) => `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">${cols.map(c => `<div class="min-w-0">${c}</div>`).join('')}</div><!--activity-->${actions ? `<div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">${actions}</div>` : ''}</div>`;
   const patientBlock = q => sec('Patient &amp; encounter', kv([
     ['Patient', `<span class="phi">${esc(mask(q.patient))}</span>`],
     ['Member ID', `<span class="phi">${state.phi ? q.memberId : '•••••' + q.memberId.slice(-4)}</span>`],
@@ -1114,7 +648,8 @@
     'Rejected — invalid NPI': { why: 'Clearinghouse rejection: rendering NPI is not enrolled with this payer.', fix: ['Confirm the provider’s enrollment status with the payer', 'Bill under the enrolled group NPI if the contract allows', 'Resubmit and keep proof of timely filing'] },
   };
 
-  function queueDetail(q) {
+  function queueDetail(q) { return queueDetailBase(q).replace('<!--activity-->', activityHtml(q)); }
+  function queueDetailBase(q) {
     if (q.type === 'denials') {
       const info = DENIAL_INFO[q.reason.k];
       const expected = q.amt * .56;
@@ -1130,9 +665,10 @@
           `<div class="mt-4">${sec('To overturn', steps(info.fix))}</div>`,
         sec('Recovery', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(expected)], ['Win odds', pct(q.win, 0)], ['Expected recovery', `<b>${moneyFull(expected * q.win)}</b>`]])) +
           `<div class="mt-5">${patientBlock(q)}</div>`,
-      ], `<button class="btn btn-primary btn-sm" data-toast="Appeal draft for ${q.claim} started with ${q.payer.n} template">Draft appeal</button>
-          <button class="btn btn-ghost btn-sm" data-toast="Call logged to ${q.claim}"><svg width="14" height="14"><use href="#i-phone"/></svg>Log payer call</button>
-          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+      ], `<button class="btn btn-primary btn-sm" data-act="appeal" data-id="${q.id}">${q.state === 'appeal-submitted' ? 'Send another appeal' : 'Draft appeal'}</button>
+          <button class="btn btn-ghost btn-sm" data-act="call" data-id="${q.id}"><svg width="14" height="14"><use href="#i-phone"/></svg>Log payer call</button>
+          <button class="btn btn-ghost btn-sm" data-act="assign" data-id="${q.id}">${q.assignee ? 'Reassign' : 'Assign'}</button>
+          ${statePill(q)}
           <span class="claim-id ml-auto">${q.claim}</span>`);
     }
     if (q.type === 'filing') {
@@ -1147,9 +683,10 @@
           `<div class="mt-4">${sec('Fix', steps(info.fix))}</div>`,
         sec('Amount at risk', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(q.amt * .56)], ['Recoverable after limit', '<span style="color: var(--crit-ink)">≈ $0</span>']])) +
           `<div class="mt-5">${patientBlock(q)}</div>`,
-      ], `<button class="btn btn-primary btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button>
-          <button class="btn btn-ghost btn-sm" data-toast="Provider sign-off requested for ${q.claim}">Request sign-off</button>
-          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+      ], `<button class="btn btn-primary btn-sm" data-act="resubmit" data-id="${q.id}">Fix &amp; resubmit</button>
+          <button class="btn btn-ghost btn-sm" data-act="signoff" data-id="${q.id}">Request sign-off</button>
+          <button class="btn btn-ghost btn-sm" data-act="assign" data-id="${q.id}">${q.assignee ? 'Reassign' : 'Assign'}</button>
+          ${statePill(q)}
           <span class="claim-id ml-auto">${q.claim}</span>`);
     }
     // underpayment
@@ -1169,9 +706,10 @@
         <div class="mt-2 flex items-center gap-3 text-[12px]"><span class="faint w-16">Same CPT</span><div class="mini-bar flex-1"><i style="width:100%; background: var(--s2); opacity:.55"></i></div></div>`) +
         `<div class="mt-4">${chip('warn', 'hourglass', 'Patient statement on hold')}</div><p class="text-[12px] faint mt-2">Held so the patient isn’t billed from the wrong amount.</p>`,
       patientBlock(q),
-    ], `<button class="btn btn-primary btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button>
-        <button class="btn btn-ghost btn-sm" data-toast="${q.pattern + 1} claims bundled into one ${q.payer.n} dispute">Bundle ${q.pattern + 1} claims</button>
-        <button class="btn btn-ghost btn-sm" data-toast="Variance report exported (de-identified)"><svg width="14" height="14"><use href="#i-download"/></svg>Export</button>
+    ], `<button class="btn btn-primary btn-sm" data-act="dispute" data-id="${q.id}">Dispute</button>
+        <button class="btn btn-ghost btn-sm" data-act="bundle" data-id="${q.id}">Bundle ${q.pattern + 1} claims</button>
+        <button class="btn btn-ghost btn-sm" data-act="export" data-id="${q.id}"><svg width="14" height="14"><use href="#i-download"/></svg>Export ${q.payer.n} list</button>
+        ${statePill(q)}
         <span class="claim-id ml-auto">${q.claim}</span>`);
   }
 
@@ -1200,8 +738,8 @@
     </div>
     <div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">
       <button class="btn btn-primary btn-sm" data-focus="${c.id}">${state.client === c.id ? 'Show all clients' : 'Focus dashboard'}</button>
-      <button class="btn btn-ghost btn-sm" data-report="${c.id}"><svg width="14" height="14"><use href="#i-download"/></svg>Month-end report</button>
-      <button class="btn btn-ghost btn-sm" data-toast="Secure message to ${c.contact} drafted">Message ${c.contact.split(' ').slice(-2).join(' ')}</button>
+      <a class="btn btn-ghost btn-sm" href="report.html?client=${c.id}"><svg width="14" height="14"><use href="#i-file"/></svg>Month-end report</a>
+      <button class="btn btn-ghost btn-sm" data-act="message" data-client="${c.id}"><svg width="14" height="14"><use href="#i-mail"/></svg>Message ${c.contact}</button>
     </div></div>`;
   }
 
@@ -1212,46 +750,49 @@
     let rows, head;
     const patientCell = q => `<td class="pl-5 sm:pl-6"><div class="flex items-center gap-3"><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg><div><div class="phi">${esc(mask(q.patient))}</div><div class="text-[11.5px] faint phi">DOB ${maskDob(q.dob)}</div></div></div></td>`;
     const rowOpen = q => `<tr class="expandable ${state.openQ === q.id ? 'is-open' : ''}" tabindex="0" aria-expanded="${state.openQ === q.id}" data-q="${q.id}">`;
-    const withDetail = (q, html) => html + (state.openQ === q.id ? `<tr class="detail"><td colspan="7">${queueDetail(q)}</td></tr>` : '');
+    const withDetail = (q, html) => html + (state.openQ === q.id ? `<tr class="detail"><td colspan="8">${queueDetail(q)}</td></tr>` : '');
     const clientCell = q => `<td><div class="font-medium">${q.client.short}</div><div class="text-[12px] faint">${q.payer.n}</div></td>`;
     if (state.tab === 'denials') {
       items.sort((a, b) => b.amt * b.win - a.amt * a.win);
-      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Denial</th><th class="r">Billed</th><th>Win odds</th><th>Appeal window</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Denial</th><th class="r">Billed</th><th>Win odds</th><th>Appeal window</th><th>Owner</th><th class="pr-5 sm:pr-6"></th></tr>`;
       rows = top7().map(q => withDetail(q, `${rowOpen(q)}
         ${patientCell(q)}
         ${clientCell(q)}
         <td><div class="font-medium">${q.reason.label}</div><div class="claim-id">${q.reason.code} · ${q.claim} · ${q.cpt}</div></td>
         <td class="r num font-semibold">${moneyFull(q.amt)}</td>
         <td><div class="flex items-center gap-2"><div class="w-14 h-1.5 rounded-full overflow-hidden" style="background: var(--sunken)"><div class="h-full rounded-full" style="width:${q.win * 100}%; background: var(--brand)"></div></div><span class="num text-[12.5px] muted">${pct(q.win, 0)}</span></div></td>
-        <td>${deadlineChip(q.daysLeft)}</td>
-        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Appeal draft for ${q.claim} started with payer template">Draft appeal</button></td>
+        <td>${statePill(q) || deadlineChip(q.daysLeft)}</td>
+        <td>${ownerHtml(q)}</td>
+        <td class="pr-5 sm:pr-6 r">${rowAction(q)}</td>
       </tr>`));
     } else if (state.tab === 'filing') {
       items.sort((a, b) => a.daysLeft - b.daysLeft);
-      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Status</th><th class="r">Billed</th><th>Payer limit</th><th>Time left</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Status</th><th class="r">Billed</th><th>Payer limit</th><th>Time left</th><th>Owner</th><th class="pr-5 sm:pr-6"></th></tr>`;
       rows = top7().map(q => withDetail(q, `${rowOpen(q)}
         ${patientCell(q)}
         ${clientCell(q)}
         <td><div class="font-medium">${q.status}</div><div class="claim-id">${q.claim} · ${q.cpt}</div></td>
         <td class="r num font-semibold">${moneyFull(q.amt)}</td>
         <td class="num muted">${q.payer.tf} days</td>
-        <td>${deadlineChip(q.daysLeft)}</td>
-        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button></td>
+        <td>${statePill(q) || deadlineChip(q.daysLeft)}</td>
+        <td>${ownerHtml(q)}</td>
+        <td class="pr-5 sm:pr-6 r">${rowAction(q)}</td>
       </tr>`));
     } else {
       items.sort((a, b) => (b.contracted - b.paid) - (a.contracted - a.paid));
-      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Claim</th><th class="r">Contracted</th><th class="r">Paid</th><th class="r">Variance</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Claim</th><th class="r">Contracted</th><th class="r">Paid</th><th class="r">Variance</th><th>Owner</th><th class="pr-5 sm:pr-6"></th></tr>`;
       rows = top7().map(q => withDetail(q, `${rowOpen(q)}
         ${patientCell(q)}
         ${clientCell(q)}
         <td><div class="claim-id">${q.claim}</div><div class="text-[12px] faint">CPT ${q.cpt}</div></td>
         <td class="r num">${moneyFull(q.contracted)}</td>
         <td class="r num muted">${moneyFull(q.paid)}</td>
-        <td class="r"><span class="chip chip-serious num"><svg><use href="#i-arrow-down"/></svg>${moneyFull(q.contracted - q.paid)}</span></td>
-        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button></td>
+        <td class="r">${statePill(q) || `<span class="chip chip-serious num"><svg><use href="#i-arrow-down"/></svg>${moneyFull(q.contracted - q.paid)}</span>`}</td>
+        <td>${ownerHtml(q)}</td>
+        <td class="pr-5 sm:pr-6 r">${rowAction(q)}</td>
       </tr>`));
     }
-    $('#queueTable').innerHTML = `<thead>${head}</thead><tbody>${rows.join('') || `<tr><td colspan="7" class="text-center py-10 faint">Nothing matches. Clear the search or pick another practice.</td></tr>`}</tbody>`;
+    $('#queueTable').innerHTML = `<thead>${head}</thead><tbody>${rows.join('') || `<tr><td colspan="8" class="text-center py-10 faint">Nothing matches. Clear the search or pick another practice.</td></tr>`}</tbody>`;
     const value = state.tab === 'denials' ? items.reduce((a, q) => a + q.amt * q.win, 0) : state.tab === 'filing' ? items.reduce((a, q) => a + q.amt, 0) : items.reduce((a, q) => a + q.contracted - q.paid, 0);
     const lbl = { denials: 'expected recovery', filing: 'at risk', under: 'recoverable variance' }[state.tab];
     $('#queueBlurb').innerHTML = `<b class="num" style="color: var(--ink)">${moneyFull(value)}</b> ${lbl} across ${items.length} claims. ${QUEUE_META[state.tab].blurb}`;
@@ -1277,7 +818,7 @@
     const maxCell = Math.max(...rows.flatMap(r => r.v));
     $('#ageTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b}</th>`).join('')}<th class="r">Total</th><th class="r">Days to pay</th><th class="pr-5 sm:pr-6">90+ share</th></tr></thead><tbody>${rows.map(r => {
       const share = r.over / r.t;
-      return `<tr><td class="pl-5 sm:pl-6 font-medium">${r.p.n}</td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${money(v)}</span></td>`).join('')}<td class="r num font-semibold">${money(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
+      return `<tr class="expandable" tabindex="0" data-act="payer" data-payer="${r.p.n}" aria-label="${r.p.n} details"><td class="pl-5 sm:pl-6 font-medium"><span class="inline-flex items-center gap-2"><svg class="chev" width="13" height="13"><use href="#i-chev"/></svg>${r.p.n}</span></td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${money(v)}</span></td>`).join('')}<td class="r num font-semibold">${money(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
     }).join('')}</tbody>`;
   }
 
@@ -1301,7 +842,7 @@
         ${cell(r.days, r.days > 45, v => v.toFixed(0))}
         ${cell(r.over90, r.over90 > .22, v => pct(v, 0))}
         ${cell(r.c.clean, r.c.clean < .88, v => pct(v, 0))}
-        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-report="${r.c.id}">Report</button></td>
+        <td class="pr-5 sm:pr-6 r"><a class="btn btn-ghost btn-sm" href="report.html?client=${r.c.id}">Report</a></td>
       </tr>${state.openC === r.c.id ? `<tr class="detail"><td colspan="10">${clientDetail(r)}</td></tr>` : ''}`).join('')}</tbody>`;
   }
 
@@ -1315,17 +856,9 @@
   function renderAll() { renderHero(); renderKpis(); renderRevenue(); renderDenials(); renderQueue(); renderAging(); renderClients(); renderPager(); renderChips(); }
 
   /* ================= Drawers & modals ================= */
-  const openDrawer = (title, html) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer [data-close-drawer]').focus(); };
+  const openDrawer = (title, html, opts = {}) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawerBody').scrollTop = 0; const f = $('#drawerFoot'); f.innerHTML = opts.foot || ''; f.hidden = !opts.foot; $('#drawer').classList.toggle('wide', !!opts.wide); $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer [data-close-drawer]').focus(); };
   const closeDrawer = () => { $('#drawer').classList.remove('on'); $('#drawerScrim').classList.remove('on'); };
   const auditHtml = () => `<p class="text-[13px] muted mb-4">Every PHI reveal, export and sign-in is recorded. Retained for 6 years.</p><ol class="flex flex-col">${audit.slice().reverse().map(a => `<li class="flex gap-4 py-3 border-b text-[13.5px]" style="border-color: var(--line)"><span class="num faint w-12 shrink-0">${a.t}</span><span><b>${a.who}</b><br><span class="muted">${esc(a.what)}</span></span></li>`).join('')}</ol>`;
-  const reportHtml = id => {
-    const c = CLIENTS.find(x => x.id === id) || null;
-    const name = c ? c.name : 'All clients';
-    return `<p class="text-[13px] muted">Month-end performance report for <b style="color: var(--ink)">${name}</b>, ready to send. Patient identifiers are excluded.</p>
-      <div class="card p-4 mt-4 flex flex-col gap-2 text-[13.5px]">${['Collections & net collection rate', 'Denials by root cause + what we fixed', 'A/R aging by payer', 'Recovered from appeals & underpayments', 'Next month’s focus'].map(s => `<label class="flex items-center gap-3"><input type="checkbox" checked> ${s}</label>`).join('')}</div>
-      <div class="mt-4 rounded-[14px] p-4 border text-[13px]" style="border-color: var(--line); background: var(--sunken)"><div class="eyebrow">Recovered for this client in Sep</div><div class="font-display text-[34px] num mt-1">${moneyFull((c ? c.underpaid : CLIENTS.reduce((a, x) => a + x.underpaid, 0)) * 2.4)}</div><div class="faint">From overturned denials and underpayment disputes</div></div>
-      <div class="mt-5 flex gap-2"><button class="btn btn-primary" data-export="${name}"><svg width="16" height="16"><use href="#i-download"/></svg>Export PDF</button><button class="btn btn-ghost" data-toast="Scheduled: first business day of each month">Schedule monthly</button></div>`;
-  };
 
   const openModal = () => { $('#phiModal').classList.add('on'); $('#modalScrim').classList.add('on'); $('#phiConfirm').focus(); };
   const closeModal = () => { $('#phiModal').classList.remove('on'); $('#modalScrim').classList.remove('on'); };
@@ -1339,49 +872,437 @@
     $('#phiLabel').textContent = on ? 'PHI visible' : 'PHI masked';
     $('#phiToggle').style.cssText = on ? 'background: var(--warn-bg); color: var(--warn-ink); border-color: transparent' : '';
     clearTimeout(remaskTimer);
-    if (on) remaskTimer = setTimeout(() => { setPhi(false); audit.push({ t: now(), who: 'System', what: 'PHI auto re-masked after 5 minutes' }); }, 5 * 60 * 1000);
+    if (on) remaskTimer = setTimeout(() => { setPhi(false); logAudit('System', 'PHI auto re-masked after 5 minutes'); }, 5 * 60 * 1000);
     renderQueue();
   }
+
+  /* ================= Destinations: drawers, actions, exports ================= */
+  const findClaim = window.LEDGER.findClaim;
+  const FULL_MONTHS = { Nov: 'November', Dec: 'December', Jan: 'January', Feb: 'February', Mar: 'March', Apr: 'April', May: 'May', Jun: 'June', Jul: 'July', Aug: 'August', Sep: 'September', Oct: 'October' };
+  const periodLabel = () => state.month === 11 ? 'October 1 to 19, 2026' : `${FULL_MONTHS[MONTHS[state.month]]} ${YEARS[state.month]}`;
+  const periodShort = () => state.month === 11 ? 'Oct 1 – 19' : `${MONTHS[state.month]} ${YEARS[state.month]}`;
+  const initials = n => n.split(' ').filter(w => !w.endsWith('.')).map(w => w[0]).join('').slice(0, 2);
+  const STATE_LABEL = { 'appeal-submitted': ['send', 'Appeal sent'], resubmitted: ['refresh', 'Resubmitted'], 'dispute-filed': ['scale', 'Dispute filed'], 'signoff-requested': ['clock', 'Sign-off requested'] };
+  const statePill = q => STATE_LABEL[q.state] ? `<span class="state-pill"><svg><use href="#i-${STATE_LABEL[q.state][0]}"/></svg>${STATE_LABEL[q.state][1]}</span>` : '';
+  const ownerHtml = q => q.assignee ? `<span class="assignee"><i>${initials(q.assignee)}</i>${q.assignee.split(' ')[0]}</span>` : '<span class="assignee faint">Unassigned</span>';
+  const record = (q, what) => { q.activity.push({ t: now(), who: 'Dana Reyes', what }); q.touched = true; persist(); };
+  const activityHtml = q => q.activity.length ? `<div class="mt-5 pt-4 border-t" style="border-color: var(--line)">${sec('Activity on this claim', timeline(q.activity.slice().reverse().map(a => ({ state: 'done', label: esc(a.what), date: 'Today, ' + a.t, note: a.who }))))}</div>` : '';
+  const rowAction = q => {
+    const b = (act, label) => `<button class="btn btn-ghost btn-sm" data-act="${act}" data-id="${q.id}">${label}</button>`;
+    if (q.type === 'denials') return q.state === 'open' ? b('appeal', 'Draft appeal') : b('call', 'Log payer call');
+    if (q.type === 'filing') return q.state === 'open' ? b('resubmit', 'Fix &amp; resubmit') : b('assign', q.assignee ? 'Reassign' : 'Assign');
+    return q.state === 'open' ? b('dispute', 'Dispute') : b('export', 'Export');
+  };
+  const formWrap = (id, body) => `<form id="drawerForm" data-form="${id}">${body}</form>`;
+  const footBtns = (primary, secondary) => `${secondary ? `<button class="btn btn-ghost" type="submit" form="drawerForm" name="intent" value="draft">${secondary}</button>` : ''}<button class="btn btn-primary ml-auto" type="submit" form="drawerForm" name="intent" value="submit">${primary}</button>`;
+  const claimSummary = q => `<div class="stat-grid">
+      <div class="stat"><span>Claim</span><b class="num" style="font-size:17px">${q.claim}</b></div>
+      <div class="stat"><span>${q.client.short}</span><b style="font-size:17px">${q.payer.n}</b></div></div>`;
+  const barRows = (list, fmt, color = () => 'var(--hl)') => {
+    const mx = Math.max(...list.map(x => x[1])) || 1;
+    return list.map(([l, v], i) => `<div class="bar-row"><span class="truncate">${l}</span><div class="mini-bar"><i style="width:${v / mx * 100}%; background: ${color(i, l)}"></i></div><span class="num">${fmt(v)}</span></div>`).join('');
+  };
+  const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const download = (name, rows) => {
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+
+  const ATTACH = {
+    auth: ['Clinical notes for the date of service', 'Record of the authorization request', 'Letter of medical necessity'],
+    nec: ['Progress notes supporting the diagnosis', 'Payer coverage policy citation', 'Prior treatment history'],
+    elig: ['271 eligibility response for the date of service', 'Copy of the insurance card'],
+    code: ['Procedure note showing a separate site or session', 'NCCI edit review'],
+    info: ['Corrected claim (frequency code 7)'],
+  };
+  const ARGUMENT = {
+    auth: 'Authorization was requested before the date of service. The enclosed records show the service was medically required and could not be delayed, and we ask that the authorization be applied to this date.',
+    nec: 'The enclosed progress notes document the diagnosis and the conservative treatment that failed before this service, which meets the criteria in your published coverage policy.',
+    elig: 'Our eligibility response shows the patient’s coverage was active on the date of service. A copy is enclosed.',
+    code: 'This service was separate from the other procedure billed that day: it was performed at a different site and session, as the enclosed procedure note shows. Modifier 59 has been added.',
+    info: 'The missing information has been added. A corrected claim is enclosed.',
+  };
+  const RULE_NAME = { auth: 'Hold claims missing a prior authorization number', nec: 'Check diagnosis support on high-risk CPTs', elig: 'Re-verify eligibility 48 hours before visits', code: 'Run NCCI bundling edits before sending', info: 'Block claims missing NPI, modifier or referral' };
+  const RULE_CPT = { auth: '70553, 72148, 27447, 29881, E0601', nec: '93306, 97110, 90837', elig: 'All CPT codes', code: '29881, 11102, 20610', info: 'All CPT codes' };
+  const REJECTS = [
+    ['Subscriber ID not found', .38, 'Check the member ID against the card or a 270 eligibility response, then resubmit.'],
+    ['Rendering NPI not enrolled', .21, 'Bill under the enrolled group NPI, or finish enrollment with the payer.'],
+    ['Missing authorization number', .17, 'Pull the auth number from the payer portal and add it to the claim.'],
+    ['Invalid diagnosis pointer', .13, 'Point each service line at a valid diagnosis on the claim.'],
+    ['Duplicate claim', .11, 'Check whether the original was accepted. If it was, void the duplicate.'],
+  ];
+
+  function appealDrawer(q) {
+    const lvl = q.priorAppeals ? 2 : 1;
+    const letter = `${dayStr(0)}
+
+${q.payer.n}, Provider Appeals
+Re: Level ${lvl} appeal for claim ${q.claim}
+
+Patient: {{patient name}}    Member ID: {{member ID}}
+Date of service: ${dayStr(-q.dosAgo)}    CPT ${q.cpt}    Billed ${moneyFull(q.amt)}
+Denial: ${q.reason.code}, ${q.reason.label.toLowerCase()}
+
+To the appeals reviewer,
+
+On behalf of ${q.client.name} and ${q.provider}, we ask you to reconsider the denial above. ${ARGUMENT[q.reason.k]}
+
+The documents listed below are enclosed. Please reprocess this claim for payment.
+
+Sincerely,
+Dana Reyes, Billing lead
+Ledgerline, for ${q.client.name}`;
+    openDrawer('Draft appeal', formWrap('appeal', `<input type="hidden" name="id" value="${q.id}">
+      <div class="d-sec">${claimSummary(q)}<p class="text-[12.5px] muted mt-3 flex flex-wrap items-center gap-2">${deadlineChip(q.daysLeft)}<span>Level ${lvl} deadline ${dayStr(q.daysLeft)} (${q.payer.appeal}-day window)</span></p></div>
+      <div class="d-sec"><h4>Letter</h4><textarea class="textarea" name="letter" aria-label="Appeal letter">${esc(letter)}</textarea>
+        <p class="text-[12px] faint mt-2 flex items-center gap-1.5"><svg width="12" height="12"><use href="#i-lock"/></svg>Patient name and member ID are filled in when the appeal is sent, so they never show on screen.</p></div>
+      <div class="d-sec"><h4>Attachments</h4><div class="flex flex-col gap-2">${ATTACH[q.reason.k].map(a => `<label class="check-row"><input type="checkbox" name="attach" value="${esc(a)}" checked>${a}</label>`).join('')}</div></div>
+      <div class="d-sec"><h4>Send by</h4><div class="opt-grid">${['Payer portal', 'Fax', 'Mail'].map((m, i) => `<label class="opt"><input type="radio" name="method" value="${m}" ${i ? '' : 'checked'}>${m}</label>`).join('')}</div></div>`),
+      { wide: true, foot: footBtns('Send appeal', 'Save draft') });
+  }
+
+  function callDrawer(q) {
+    openDrawer('Log payer call', formWrap('call', `<input type="hidden" name="id" value="${q.id}">
+      <div class="d-sec">${claimSummary(q)}</div>
+      <div class="d-sec grid gap-3">
+        <label class="field">Who you spoke with<input class="input" name="rep" placeholder="Representative’s name" autocomplete="off"></label>
+        <label class="field">Call reference number<input class="input" name="ref" placeholder="Given by the payer at the end of the call" autocomplete="off"></label>
+        <label class="field">Outcome<select class="select-in" name="outcome">${['Payer will reprocess the claim', 'Payer needs more documentation', 'Denial upheld, appeal required', 'No answer, will call back'].map(o => `<option>${o}</option>`).join('')}</select></label>
+        <label class="field">Follow up on<input class="input" type="date" name="follow" value="2026-10-26"></label>
+        <label class="field">Notes<textarea class="textarea" style="min-height:110px" name="notes" placeholder="What the rep said, and anything they promised"></textarea></label>
+      </div>`), { foot: footBtns('Save call') });
+  }
+
+  function assignDrawer(q) {
+    const load = n => window.LEDGER.ALL().filter(x => x.assignee === n && x.state === 'open').length;
+    openDrawer('Assign claim', formWrap('assign', `<input type="hidden" name="id" value="${q.id}"><div class="d-sec">${claimSummary(q)}</div>
+      <div class="d-sec"><h4>Owner</h4><div class="flex flex-col gap-2">${TEAM.map(t => `<label class="opt"><input type="radio" name="who" value="${t.name}" ${q.assignee === t.name ? 'checked' : ''}><span class="avatar" style="width:28px;height:28px;font-size:10.5px">${t.initials}</span><span class="leading-tight"><b class="block text-[13px] font-semibold">${t.name}</b><span class="text-[12px] faint">${t.role}, ${load(t.name)} open claims</span></span></label>`).join('')}
+        <label class="opt"><input type="radio" name="who" value="" ${q.assignee ? '' : 'checked'}>Leave unassigned</label></div></div>`), { foot: footBtns('Save owner') });
+  }
+
+  function resubmitDrawer(q) {
+    const fields = {
+      'Rejected — not resubmitted': `<label class="field">Corrected member ID<input class="input" name="fix" required placeholder="As printed on the insurance card" autocomplete="off"></label><label class="field">Checked against<select class="select-in" name="source"><option>Insurance card</option><option>270/271 eligibility response</option></select></label>`,
+      'Never submitted': `<label class="check-row"><input type="checkbox" name="fix" value="signed" required>The provider has signed the encounter note</label>`,
+      'Held: missing auth #': `<label class="field">Authorization number<input class="input" name="fix" required placeholder="From the payer portal" autocomplete="off"></label>`,
+      'Rejected — invalid NPI': `<label class="field">Bill under<select class="select-in" name="fix"><option>Group NPI (enrolled with this payer)</option><option>Rendering NPI, now that enrollment is approved</option></select></label>`,
+    }[q.status];
+    openDrawer('Fix and resubmit', formWrap('resubmit', `<input type="hidden" name="id" value="${q.id}">
+      <div class="d-sec">${claimSummary(q)}<p class="text-[12.5px] muted mt-3 flex flex-wrap items-center gap-2">${deadlineChip(q.daysLeft)}<span>${q.payer.n} stops accepting it on ${dayStr(q.daysLeft)}</span></p></div>
+      <div class="d-sec"><h4>${q.status}</h4><p class="text-[13px] muted mb-3">${FILING_INFO[q.status].why}</p><div class="grid gap-3">${fields}</div></div>
+      <div class="d-sec"><label class="check-row"><input type="checkbox" name="proof" checked>Save the clearinghouse acceptance report as proof of timely filing</label></div>`), { foot: footBtns('Resubmit claim') });
+  }
+
+  function signoffDrawer(q) {
+    openDrawer('Request sign-off', formWrap('signoff', `<input type="hidden" name="id" value="${q.id}"><div class="d-sec">${claimSummary(q)}</div>
+      <div class="d-sec grid gap-3"><label class="field">To<input class="input" value="${q.provider}, ${q.client.short}" readonly></label>
+        <label class="field">Message<textarea class="textarea" style="min-height:140px" name="msg">The encounter note for claim ${q.claim} (date of service ${dayStr(-q.dosAgo)}) needs your signature before we can bill it. ${q.payer.n} stops accepting this claim on ${dayStr(q.daysLeft)}. Thank you.</textarea></label>
+        <label class="field">Needed by<select class="select-in" name="by"><option>End of today</option><option>Tomorrow</option><option>Within 3 days</option></select></label></div>`), { foot: footBtns('Send request') });
+  }
+
+  function disputeDrawer(q) {
+    const v = q.contracted - q.paid;
+    openDrawer('Dispute underpayment', formWrap('dispute', `<input type="hidden" name="id" value="${q.id}">
+      <div class="d-sec"><div class="stat-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr))"><div class="stat"><span>Contract rate</span><b class="num">${moneyFull(q.contracted)}</b></div><div class="stat"><span>Paid</span><b class="num">${moneyFull(q.paid)}</b></div><div class="stat"><span>Short by</span><b class="num" style="color: var(--crit-ink)">${moneyFull(v)}</b></div></div>
+        <p class="text-[12.5px] muted mt-3">${q.claim}, ${q.client.short}, CPT ${q.cpt}. Paid ${dayStr(-q.paidAgo)}. Contract source: ${q.payer.n} 2026 fee schedule.</p></div>
+      <div class="d-sec grid gap-3"><label class="field">Reason<select class="select-in" name="reason"><option>Paid below the contracted fee schedule</option><option>Incorrect multiple-procedure reduction</option><option>Modifier reduction applied in error</option></select></label>
+        <label class="check-row"><input type="checkbox" name="bundle" checked>Include the ${q.pattern} other ${q.payer.n} claims underpaid for CPT ${q.cpt} this quarter</label></div>
+      <div class="d-sec"><h4>Send by</h4><div class="opt-grid">${['Portal reconsideration', 'Provider rep email', 'Written dispute'].map((m, i) => `<label class="opt"><input type="radio" name="method" value="${m}" ${i ? '' : 'checked'}>${m}</label>`).join('')}</div></div>`), { foot: footBtns('File dispute') });
+  }
+
+  const patternClaims = q => [...Array(q.pattern)].map((_, k) => ({ claim: 'CLM-' + (Number(q.claim.slice(4)) - 913 * (k + 1)), paid: dayStr(-(q.paidAgo + 6 * (k + 1))), variance: Math.round((q.contracted - q.paid) * (.8 + ((k * 37) % 40) / 100)) }));
+  function bundleDrawer(q) {
+    const list = [{ claim: q.claim, paid: dayStr(-q.paidAgo), variance: q.contracted - q.paid }, ...patternClaims(q)];
+    const tot = list.reduce((a, x) => a + x.variance, 0);
+    openDrawer(`Bundle ${list.length} claims`, formWrap('bundle', `<input type="hidden" name="id" value="${q.id}">
+      <div class="d-sec"><div class="stat-grid"><div class="stat"><span>Claims</span><b class="num">${list.length}</b></div><div class="stat"><span>Total short</span><b class="num" style="color: var(--crit-ink)">${moneyFull(tot)}</b></div></div>
+        <p class="text-[12.5px] muted mt-3">${q.payer.n} underpaid CPT ${q.cpt} on each of these. One dispute is faster: payers usually reprocess the whole batch together.</p></div>
+      <div class="d-sec"><table class="tbl"><thead><tr><th>Claim</th><th>Paid on</th><th class="r">Short by</th></tr></thead><tbody>${list.map(x => `<tr><td class="claim-id">${x.claim}</td><td class="num muted">${x.paid}</td><td class="r num">${moneyFull(x.variance)}</td></tr>`).join('')}</tbody></table></div>`),
+      { wide: true, foot: footBtns('File bundled dispute') });
+  }
+
+  function exportVariance(q) {
+    const ids = sel().map(c => c.id), rows = QUEUE.under.filter(x => x.payer === q.payer && ids.includes(x.client.id));
+    download(`underpayments-${slug(q.payer.n)}-2026-10-19.csv`, [['Claim', 'Practice', 'Payer', 'CPT', 'Contract rate', 'Paid', 'Short by', 'Paid on'], ...rows.map(x => [x.claim, x.client.name, x.payer.n, x.cpt, x.contracted, x.paid, x.contracted - x.paid, dayStr(-x.paidAgo)])]);
+    logAudit('Dana Reyes', `Downloaded ${q.payer.n} underpayment list (${rows.length} claims, no patient details)`);
+    toast(`Downloaded ${rows.length} ${q.payer.n} underpayments, without patient details`);
+  }
+
+  function messageDrawer(id) {
+    const c = CLIENTS.find(x => x.id === id), st = clientStats(c);
+    const open = k => QUEUE[k].filter(q => q.client === c && q.state === 'open').length;
+    const body = `Hi ${c.contact},
+
+Here is where ${c.name} stands this month:
+
+• Collected in September: ${moneyFull(st.coll)}
+• Denial rate: ${pct(st.den)}
+• Days in A/R: ${st.days.toFixed(0)}
+• Open work: ${open('denials')} appeals, ${open('filing')} claims near their filing limit, ${open('under')} underpayments
+
+${st.health[0] === 'good' ? 'Everything is on track.' : 'We are focusing on denials and older balances this month, and I will update you next week.'}
+
+Best,
+Dana Reyes
+Ledgerline`;
+    openDrawer(`Message ${c.contact}`, formWrap('message', `<input type="hidden" name="id" value="${c.id}">
+      <div class="d-sec grid gap-3"><label class="field">To<input class="input" value="${c.contact}, ${c.contactRole.toLowerCase()} at ${c.short}" readonly></label>
+        <label class="field">Subject<input class="input" name="subject" value="Billing update for ${c.name}"></label>
+        <label class="field">Message<textarea class="textarea" name="body">${esc(body)}</textarea></label>
+        <label class="check-row"><input type="checkbox" name="attach" checked>Attach the month-end report (no patient details)</label></div>
+      <p class="text-[12px] faint mt-3 flex items-center gap-1.5"><svg width="12" height="12"><use href="#i-lock"/></svg>Sent through the secure client portal, not regular email.</p>`), { foot: footBtns('Send message') });
+  }
+
+  function ruleDrawer(k, clientId) {
+    const r = REASONS.find(x => x.k === k), ex = state.rules[k];
+    openDrawer(ex ? 'Edit prevention rule' : 'Create prevention rule', formWrap('rule', `<input type="hidden" name="k" value="${k}">
+      <div class="d-sec"><p class="text-[13px] muted">${r.label} denials (${r.code}) are growing fastest. A rule checks each claim before it is sent, so the problem is fixed once instead of appealed every time.</p></div>
+      <div class="d-sec grid gap-3">
+        <label class="field">Rule name<input class="input" name="name" value="${esc(ex?.name || RULE_NAME[k])}" required></label>
+        <label class="field">Practice<select class="select-in" name="client"><option value="all">All practices</option>${CLIENTS.map(c => `<option value="${c.id}" ${(ex ? ex.client : clientId) === c.id ? 'selected' : ''}>${c.name}</option>`).join('')}</select></label>
+        <label class="field">CPT codes to check<input class="input" name="cpt" value="${esc(ex?.cpt || RULE_CPT[k])}"></label>
+        <label class="field">When a claim matches<select class="select-in" name="action">${['Hold the claim and alert the biller', 'Block it until it is fixed', 'Show a reminder only'].map(o => `<option ${ex?.action === o ? 'selected' : ''}>${o}</option>`).join('')}</select></label>
+      </div>
+      <div class="d-sec"><h4>Payers</h4><div class="opt-grid">${PAYERS.map(p => `<label class="opt"><input type="checkbox" name="payer" value="${p.n}" ${!ex || ex.payers.includes(p.n) ? 'checked' : ''}>${p.n}</label>`).join('')}</div></div>`),
+      { foot: (ex ? `<button class="btn btn-ghost" type="button" data-act="rule-off" data-k="${k}">Turn off</button>` : '') + footBtns(ex ? 'Save changes' : 'Turn on rule') });
+  }
+
+  function payerDrawer(name) {
+    const pi = PAYERS.findIndex(p => p.n === name), p = PAYERS[pi], cs = sel(), ids = cs.map(c => c.id);
+    const v = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.payerAging[pi][b], 0)), tot = v.reduce((a, b) => a + b, 0);
+    const work = [['denials', 'Appeals due'], ['filing', 'Near the filing limit'], ['under', 'Underpaid']].map(([k, l]) => [k, l, QUEUE[k].filter(q => q.payer === p && ids.includes(q.client.id) && q.state === 'open').sort((a, b) => k === 'under' ? (b.contracted - b.paid) - (a.contracted - a.paid) : a.daysLeft - b.daysLeft)]);
+    const workLine = (k, q) => k === 'under'
+      ? `<span class="num">${moneyFull(q.contracted - q.paid)} short</span>`
+      : `<span class="num">${moneyFull(q.amt)}</span>${deadlineChip(q.daysLeft)}`;
+    const workPanel = (k, l, list) => `<div class="pw-panel" id="pw-${k}" hidden>
+        <ul class="pw-list">${list.slice(0, 5).map(q => `<li><div class="min-w-0"><div class="font-medium truncate">${q.client.short} <span class="claim-id">${q.claim}</span></div><div class="pw-meta">${k === 'under' ? '' : `<span class="faint">${k === 'denials' ? q.reason.label : q.status}</span>`}${workLine(k, q)}</div></div>${rowAction(q)}</li>`).join('')}</ul>
+        <a class="pw-all" href="queue.html?tab=${k}&client=${state.client}&payer=${encodeURIComponent(p.n)}">${list.length > 5 ? `See all ${list.length} in the work queue` : 'Open in the work queue'}<svg width="14" height="14"><use href="#i-arrow-ur"/></svg></a></div>`;
+    openDrawer(p.n, `<div class="d-sec"><div class="stat-grid">
+        <div class="stat"><span>Outstanding A/R</span><b class="num">${money(tot, 1)}</b></div>
+        <div class="stat"><span>Over 90 days</span><b class="num">${pct((v[3] + v[4]) / tot, 0)}</b></div>
+        <div class="stat"><span>Average days to pay</span><b class="num">${p.dtp}</b></div>
+        <div class="stat"><span>Timely filing limit</span><b class="num">${p.tf} days</b></div>
+        <div class="stat"><span>Appeal window</span><b class="num">${p.appeal} days</b></div>
+        <div class="stat"><span>Practices</span><b class="num">${cs.length}</b></div></div></div>
+      <div class="d-sec"><h4>Aging</h4>${barRows(BUCKETS.map((b, i) => [b + ' days', v[i]]), x => money(x), i => `var(--seq${i + 1})`)}</div>
+      <div class="d-sec"><h4>Open work with ${p.n}</h4>${work.map(([k, l, list]) => list.length
+        ? `<div class="pw"><button class="list-btn" data-pw-toggle="${k}" aria-expanded="false" aria-controls="pw-${k}"><span>${l}</span><b class="num ml-auto">${list.length}</b><svg class="chev pw-chev" width="14" height="14"><use href="#i-chev"/></svg></button>${workPanel(k, l, list)}</div>`
+        : `<div class="pw"><div class="list-btn is-empty"><span>${l}</span><span class="faint ml-auto">None open</span></div></div>`).join('')}</div>`,
+      { foot: `<button class="btn btn-ghost" data-act="payer-csv" data-payer="${p.n}"><svg width="15" height="15"><use href="#i-download"/></svg>Download A/R by practice</button>` });
+  }
+  function payerCsv(name) {
+    const pi = PAYERS.findIndex(p => p.n === name), cs = sel();
+    download(`ar-${slug(name)}-2026-10-19.csv`, [['Practice', ...BUCKETS.map(b => b + ' days'), 'Total'], ...cs.map(c => { const v = c.payerAging[pi].map(Math.round); return [c.name, ...v, v.reduce((a, b) => a + b, 0)]; })]);
+    logAudit('Dana Reyes', `Downloaded ${name} A/R by practice`);
+    toast(`Downloaded ${name} A/R for ${cs.length} practice${cs.length === 1 ? '' : 's'}`);
+  }
+
+  function rejectsDrawer() {
+    const cs = sel(), rej = Math.round(sumMonths(cs, 'claims', 11) * .031);
+    const byPractice = cs.map(c => [c.short, Math.round(c.months[11].claims * .031)]).sort((a, b) => b[1] - a[1]);
+    openDrawer('Clearinghouse rejects', `<div class="d-sec"><p class="text-[13px] muted">These claims never reached the payer, so the filing clock is still running. Fixing them today keeps them from becoming write-offs.</p></div>
+      <div class="d-sec"><h4>${rej} rejects this month, by reason</h4>${REJECTS.map(([l, f, fix]) => `<div class="stat mb-2"><div class="flex items-baseline gap-2"><b class="num" style="font-size:18px">${Math.round(rej * f)}</b><span class="text-[13px] font-semibold" style="color: var(--ink)">${l}</span></div><p class="text-[12.5px] muted mt-1">${fix}</p></div>`).join('')}</div>
+      <div class="d-sec"><h4>By practice</h4>${barRows(byPractice, x => x)}</div>`,
+      { foot: `<button class="btn btn-ghost" data-act="rejects-csv"><svg width="15" height="15"><use href="#i-download"/></svg>Download list</button><button class="btn btn-primary ml-auto" data-goto-tab="filing">Open filing-limit queue</button>` });
+  }
+  function rejectsCsv() {
+    const rej = Math.round(sumMonths(sel(), 'claims', 11) * .031);
+    download('clearinghouse-rejects-2026-10-19.csv', [['Reason', 'Claims', 'How to fix'], ...REJECTS.map(([l, f, fix]) => [l, Math.round(rej * f), fix])]);
+    toast('Downloaded the reject list');
+  }
+
+  function notificationsDrawer() {
+    const cs = sel(), ids = cs.map(c => c.id), failed = cs.filter(c => !c.sync.ok);
+    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7 && q.state === 'open').sort((a, b) => a.daysLeft - b.daysLeft);
+    const under = QUEUE.under.filter(q => ids.includes(q.client.id) && q.state === 'open').sort((a, b) => b.pattern - a.pattern)[0];
+    const items = [
+      ...failed.map(c => ['crit', `${c.name} stopped syncing ${agoTxt(c)}`, `New claims and payments from ${c.pm} are not coming in.`, 'data-open-sources']),
+      due[0] && ['crit', `Appeal for ${due[0].claim} is due in ${due[0].daysLeft} days`, `${due[0].client.short}, ${due[0].payer.n}, ${moneyFull(due[0].amt)} billed`, `data-open-q="${due[0].id}"`],
+      due.length > 1 && ['warn', `${due.length - 1} more appeals are due this week`, 'Sorted by expected recovery in the work queue', 'data-goto-tab="denials"'],
+      under && ['hl', `${under.payer.n} underpaid CPT ${under.cpt} on ${under.pattern + 1} claims`, 'Likely an outdated fee schedule. One bundled dispute covers them all.', `data-act="bundle" data-id="${under.id}"`],
+      ['hl', 'Month-end reports go out November 2', `${CLIENTS.length} practices. Review them before they are sent.`, 'data-open-report'],
+    ].filter(Boolean);
+    openDrawer('Notifications', items.map(([k, t, d, attr]) => `<button class="list-btn" ${attr}><span class="ring ring-${k}"></span><span class="leading-snug min-w-0"><b class="block text-[13.5px] font-semibold" style="color: var(--ink)">${t}</b><span class="text-[12.5px] faint">${d}</span></span><svg class="chev ml-auto" width="14" height="14"><use href="#i-chev"/></svg></button>`).join(''),
+      { foot: `<button class="btn btn-ghost" data-open-audit><svg width="15" height="15"><use href="#i-shield"/></svg>Open audit log</button>` });
+  }
+
+  let sessionMins = 15;
+  function profileDrawer() {
+    openDrawer('Your profile', formWrap('profile', `<div class="d-sec flex items-center gap-4"><span class="avatar" style="width:56px;height:56px;font-size:18px">DR</span><div class="leading-tight"><b class="text-[17px] font-semibold block">Dana Reyes</b><span class="text-[13px] faint">Billing lead, Ledgerline</span></div></div>
+      <div class="d-sec"><h4>Security</h4><div class="stat-grid"><div class="stat"><span>Sign-in method</span><b style="font-size:16px">Authenticator app</b></div><div class="stat"><span>Signed in at</span><b class="num" style="font-size:16px">${audit[0]?.t || '08:02'}</b></div></div>
+        <label class="field mt-3">Lock the screen after<select class="select-in" name="session">${[5, 15, 30].map(m => `<option value="${m}" ${m === sessionMins ? 'selected' : ''}>${m} minutes without activity</option>`).join('')}</select></label></div>
+      <div class="d-sec"><h4>Notify me about</h4><div class="flex flex-col gap-2">${[['Appeals due within 7 days', 1], ['Data sync failures', 1], ['Underpayment patterns', 1], ['Weekly summary email', 0]].map(([l, on]) => `<label class="check-row"><input type="checkbox" name="notify" value="${l}" ${on ? 'checked' : ''}>${l}</label>`).join('')}</div></div>
+      <div class="d-sec"><h4>What you can do</h4><ul class="text-[13px] muted flex flex-col gap-1.5"><li>View patient details after giving a reason, which is logged</li><li>Export reports that leave out patient details</li><li>Manage all ${CLIENTS.length} practices</li></ul></div>`),
+      { foot: `<button class="btn btn-ghost" type="button" data-act="signout"><svg width="15" height="15"><use href="#i-logout"/></svg>Sign out</button>` + footBtns('Save settings') });
+  }
+
+  function periodDrawer() {
+    openDrawer('Reporting period', formWrap('period', `<div class="d-sec"><p class="text-[13px] muted">Changes the four headline cards and the date under the title. The revenue chart keeps its own 6 or 12 month view, and the work queue always shows what is open today.</p></div>
+      <div class="d-sec flex flex-col gap-2">${[11, 10, 9, 8, 7, 6].map(m => `<label class="opt"><input type="radio" name="month" value="${m}" ${state.month === m ? 'checked' : ''}><span>${FULL_MONTHS[MONTHS[m]]} ${YEARS[m]}${m === 11 ? ', to date' : ''}</span></label>`).join('')}</div>`), { foot: footBtns('Show this period') });
+  }
+
+  function kpiDrawer(k) {
+    const cs = sel(), L = state.month, ids = cs.map(c => c.id), per = L === 11 ? 'October to date' : `${FULL_MONTHS[MONTHS[L]]} ${YEARS[L]}`;
+    const stat = (l, v, style = '') => `<div class="stat"><span>${l}</span><b class="num" ${style}>${v}</b></div>`;
+    if (k === 'collections') {
+      const coll = sumMonths(cs, 'collected', L), allowed = sumMonths(cs, 'allowed', L), ytd = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11].reduce((a, i) => a + sumMonths(cs, 'collected', i), 0);
+      return openDrawer('Collections', `<div class="d-sec"><div class="stat-grid">${stat(per, money(coll, 1))}${stat('Collected of allowed', pct(coll / allowed))}${stat('Previous month', money(sumMonths(cs, 'collected', L - 1), 1))}${stat('2026 to date', money(ytd, 2))}</div></div>
+        <div class="d-sec"><h4>By practice</h4>${barRows(cs.map(c => [c.short, c.months[L].collected]).sort((a, b) => b[1] - a[1]), v => money(v, 1))}</div>`,
+        { foot: `<button class="btn btn-ghost" data-close-scroll="revenue">Open revenue chart</button><a class="btn btn-primary ml-auto" href="report.html?client=${state.client}">Month-end report</a>` });
+    }
+    if (k === 'claims') {
+      const sub = sumMonths(cs, 'claims', L), den = sumMonths(cs, 'denied', L), paid = Math.round(sub * .63);
+      const clean = cs.reduce((a, c) => a + c.clean * c.base, 0) / cs.reduce((a, c) => a + c.base, 0);
+      return openDrawer('Claims submitted', `<div class="d-sec"><div class="stat-grid">${stat('Submitted, ' + per, sub.toLocaleString())}${stat('Clean on first pass', pct(clean))}${stat('Paid', paid.toLocaleString())}${stat('Pending', (sub - paid - den).toLocaleString())}${stat('Denied', den)}${stat('Clearinghouse rejects', Math.round(sub * .031))}</div></div>
+        <div class="d-sec"><h4>Clean claim rate by practice</h4>${barRows(cs.map(c => [c.short, c.clean]).sort((a, b) => a[1] - b[1]), v => pct(v, 0))}</div>`,
+        { foot: `<button class="btn btn-ghost" data-act="rejects">Review rejects</button><button class="btn btn-primary ml-auto" data-goto-tab="filing">Open filing-limit queue</button>` });
+    }
+    if (k === 'denials') {
+      const d = sumMonths(cs, 'denied', L), rate = d / sumMonths(cs, 'claims', L);
+      const open = QUEUE.denials.filter(q => ids.includes(q.client.id));
+      const rec = open.filter(q => q.state === 'open').reduce((a, q) => a + q.amt * q.win, 0), sent = open.filter(q => q.state === 'appeal-submitted').length;
+      const byR = REASONS.map((r, j) => [`${r.label}`, cs.reduce((a, c) => a + c.months[L].byReason[r.k], 0), j]).sort((a, b) => b[1] - a[1]);
+      return openDrawer('Denials', `<div class="d-sec"><div class="stat-grid">${stat('Denial rate, ' + per, pct(rate))}${stat('Denied claims', d)}${stat('Still recoverable', moneyFull(rec))}${stat('Appeals sent today', sent)}</div></div>
+        <div class="d-sec"><h4>By cause</h4>${barRows(byR.map(x => [x[0], x[1]]), v => v, i => `var(--s${byR[i][2] + 1})`)}</div>
+        <div class="d-sec"><h4>Denial rate by practice</h4>${barRows(cs.map(c => [c.short, c.months[L].denied / c.months[L].claims]).sort((a, b) => b[1] - a[1]), v => pct(v))}</div>`,
+        { foot: `<button class="btn btn-ghost" data-act="rule" data-reason="${REASONS[byR[0][2]].k}">Prevent the top cause</button><button class="btn btn-primary ml-auto" data-goto-tab="denials">Open appeals queue</button>` });
+    }
+    const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
+    const daily = cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
+    const over = cs.reduce((a, c) => a + c.aging[3] + c.aging[4], 0) / ar;
+    return openDrawer('Days in A/R', `<div class="d-sec"><div class="stat-grid">${stat('Days in A/R today', (ar / daily).toFixed(1))}${stat('Target', '40 days')}${stat('Outstanding A/R', money(ar, 2))}${stat('Over 90 days', pct(over, 0))}</div></div>
+      <div class="d-sec"><h4>By practice</h4>${barRows(cs.map(clientStats).map(s => [s.c.short, s.days]).sort((a, b) => b[1] - a[1]), v => v.toFixed(0) + ' days', (i, l) => (cs.map(clientStats).find(s => s.c.short === l).days > 45 ? 'var(--serious)' : 'var(--hl)'))}</div>
+      <p class="text-[12px] faint">Orange bars are above 45 days.</p>`,
+      { foot: `<button class="btn btn-primary ml-auto" data-close-scroll="aging">Open aging report</button>` });
+  }
+
+  const lockScreen = msg => {
+    if (state.phi) setPhi(false);
+    closeDrawer(); closeModal();
+    $('#lockMsg').textContent = msg; $('#lock').classList.add('on');
+    logAudit('System', msg);
+    setTimeout(() => $('[data-unlock]').focus(), 50);
+  };
+
+  function runAct(el) {
+    const q = el.dataset.id ? findClaim(el.dataset.id) : null;
+    const acts = {
+      appeal: () => appealDrawer(q), call: () => callDrawer(q), assign: () => assignDrawer(q),
+      resubmit: () => resubmitDrawer(q), signoff: () => signoffDrawer(q),
+      dispute: () => disputeDrawer(q), bundle: () => bundleDrawer(q), export: () => exportVariance(q),
+      message: () => messageDrawer(el.dataset.client), rule: () => ruleDrawer(el.dataset.reason, el.dataset.client),
+      'rule-off': () => { const n = state.rules[el.dataset.k]?.name; delete state.rules[el.dataset.k]; closeDrawer(); renderDenials(); logAudit('Dana Reyes', `Turned off prevention rule: ${n}`); toast('Rule turned off'); },
+      payer: () => payerDrawer(el.dataset.payer), 'payer-csv': () => payerCsv(el.dataset.payer),
+      rejects: rejectsDrawer, 'rejects-csv': rejectsCsv,
+      notifications: notificationsDrawer, profile: profileDrawer, period: periodDrawer,
+      kpi: () => kpiDrawer(el.dataset.kpi),
+      signout: () => lockScreen('You signed out. Patient information stays hidden until you sign in again.'),
+    };
+    (acts[el.dataset.act] || (() => {}))();
+  }
+
+  document.addEventListener('submit', e => {
+    const f = e.target.closest('form[data-form]'); if (!f) return;
+    e.preventDefault();
+    const fd = new FormData(f), intent = e.submitter?.value || 'submit', q = fd.get('id') ? findClaim(fd.get('id')) : null;
+    const done = msg => { closeDrawer(); renderQueue(); renderHero(); renderKpis(); toast(msg); };
+    switch (f.dataset.form) {
+      case 'appeal': {
+        if (intent === 'draft') { record(q, 'Saved an appeal letter draft'); closeDrawer(); renderQueue(); return toast('Draft saved to the claim'); }
+        const n = fd.getAll('attach').length;
+        q.state = 'appeal-submitted';
+        record(q, `Sent level ${q.priorAppeals ? 2 : 1} appeal by ${fd.get('method').toLowerCase()} with ${n} attachment${n === 1 ? '' : 's'}`);
+        logAudit('Dana Reyes', `Sent appeal for ${q.claim} to ${q.payer.n} (patient details added at send)`);
+        return done(`Appeal for ${q.claim} sent to ${q.payer.n}`);
+      }
+      case 'call':
+        record(q, `Payer call: ${fd.get('outcome').toLowerCase()}${fd.get('ref') ? `, reference ${fd.get('ref')}` : ''}${fd.get('rep') ? `, spoke with ${fd.get('rep')}` : ''}`);
+        return done(`Call logged to ${q.claim}`);
+      case 'assign': {
+        const who = fd.get('who') || null; q.assignee = who; record(q, who ? `Assigned to ${who}` : 'Left unassigned');
+        return done(who ? `${q.claim} assigned to ${who}` : `${q.claim} is unassigned`);
+      }
+      case 'resubmit':
+        q.state = 'resubmitted'; record(q, `Corrected and resubmitted to ${q.payer.n}`);
+        logAudit('Dana Reyes', `Resubmitted ${q.claim} to ${q.payer.n}`);
+        return done(`${q.claim} resubmitted. The acceptance report is saved as proof of timely filing.`);
+      case 'signoff':
+        q.state = 'signoff-requested'; record(q, `Asked ${q.provider} to sign the note, needed ${fd.get('by').toLowerCase()}`);
+        return done(`Sign-off request sent to ${q.provider}`);
+      case 'dispute':
+        q.state = 'dispute-filed'; record(q, `Filed dispute by ${fd.get('method').toLowerCase()}${fd.get('bundle') ? `, with ${q.pattern} similar claims` : ''}`);
+        logAudit('Dana Reyes', `Filed underpayment dispute for ${q.claim} with ${q.payer.n}`);
+        return done(`Dispute filed with ${q.payer.n}`);
+      case 'bundle':
+        q.state = 'dispute-filed'; record(q, `Filed one dispute covering ${q.pattern + 1} claims`);
+        logAudit('Dana Reyes', `Filed bundled dispute (${q.pattern + 1} claims) with ${q.payer.n}`);
+        return done(`Dispute for ${q.pattern + 1} claims filed with ${q.payer.n}`);
+      case 'message': {
+        const c = CLIENTS.find(x => x.id === fd.get('id'));
+        logAudit('Dana Reyes', `Sent secure message to ${c.contact} (${c.name})`);
+        closeDrawer(); return toast(`Message sent to ${c.contact}`);
+      }
+      case 'rule': {
+        const k = fd.get('k');
+        state.rules[k] = { name: fd.get('name'), client: fd.get('client'), cpt: fd.get('cpt'), action: fd.get('action'), payers: fd.getAll('payer') };
+        logAudit('Dana Reyes', `Turned on prevention rule: ${fd.get('name')}`);
+        closeDrawer(); renderDenials(); return toast('Rule is on. Matching claims are checked before they are sent.');
+      }
+      case 'profile':
+        sessionMins = +fd.get('session'); left = sessionMins * 60;
+        closeDrawer(); return toast(`Saved. The screen locks after ${sessionMins} minutes without activity.`);
+      case 'period':
+        state.month = +fd.get('month'); $('#periodPill').textContent = periodShort();
+        closeDrawer(); renderHero(); renderKpis(); return toast(`Showing ${periodLabel()}`);
+    }
+  });
 
   /* ================= Events ================= */
   $('#clientSelect').addEventListener('change', e => { state.client = e.target.value; state.openQ = null; renderAll(); });
   $$('[data-period]').forEach(b => b.addEventListener('click', () => { state.period = +b.dataset.period; $$('[data-period]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderRevenue(); }));
   const setTab = tab => { state.tab = tab; state.openQ = null; $$('[data-tab]').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab)); renderQueue(); };
   $$('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
-  $('#phiToggle').addEventListener('click', () => state.phi ? (setPhi(false), audit.push({ t: now(), who: 'Dana Reyes', what: 'Re-masked PHI' })) : openModal());
+  $('#phiToggle').addEventListener('click', () => state.phi ? (setPhi(false), logAudit('Dana Reyes', 'Re-masked PHI')) : openModal());
   $('#phiConfirm').addEventListener('click', () => {
     const reason = document.querySelector('input[name="reason"]:checked').value;
-    audit.push({ t: now(), who: 'Dana Reyes', what: `Revealed PHI in work queue — reason: ${reason}` });
+    logAudit('Dana Reyes', `Revealed PHI in work queue — reason: ${reason}`);
     closeModal(); setPhi(true); toast('Identifiers visible for 5 minutes · access logged');
   });
   $('#modalScrim').addEventListener('click', closeModal);
   $$('[data-close-modal]').forEach(b => b.addEventListener('click', closeModal));
-  $$('[data-open-audit]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Audit log', auditHtml()); }));
-  $$('[data-open-report]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Client report', reportHtml(state.client)); }));
   $('#drawerScrim').addEventListener('click', closeDrawer);
   $('[data-close-drawer]').addEventListener('click', closeDrawer);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); closeModal(); } });
 
   document.addEventListener('click', e => {
     const t = e.target.closest('[data-toast]'); if (t) { toast(t.dataset.toast); return; }
-    const oq = e.target.closest('[data-open-q]'); if (oq) { setTab('denials'); state.openQ = oq.dataset.openQ; renderQueue(); scrollToSection('queue'); return; }
+    const act = e.target.closest('[data-act]'); if (act) { runAct(act); return; }
+    const oa = e.target.closest('[data-open-audit]'); if (oa) { e.preventDefault(); openDrawer('Audit log', auditHtml()); return; }
+    const or = e.target.closest('[data-open-report]'); if (or) { e.preventDefault(); location.href = `report.html?client=${state.client}`; return; }
+    const gt = e.target.closest('[data-goto-tab]'); if (gt) { closeDrawer(); setTab(gt.dataset.gotoTab); scrollToSection('queue'); return; }
+    const cs2 = e.target.closest('[data-close-scroll]'); if (cs2) { closeDrawer(); scrollToSection(cs2.dataset.closeScroll); return; }
+    const pt = e.target.closest('[data-pw-toggle]'); if (pt) { const open = pt.getAttribute('aria-expanded') !== 'true'; pt.setAttribute('aria-expanded', open); $('#pw-' + pt.dataset.pwToggle).hidden = !open; return; }
+    const pw = e.target.closest('[data-payer-work]'); if (pw) { closeDrawer(); setTab(pw.dataset.payerWork); $('#search').value = pw.dataset.payerName; state.q = pw.dataset.payerName.toLowerCase(); renderQueue(); scrollToSection('queue'); return; }
+    const ul = e.target.closest('[data-unlock]'); if (ul) { $('#lock').classList.remove('on'); left = sessionMins * 60; logAudit('Dana Reyes', 'Signed in again (MFA: authenticator app)'); toast('Welcome back'); return; }
+    const oq = e.target.closest('[data-open-q]'); if (oq) { closeDrawer(); setTab('denials'); state.openQ = oq.dataset.openQ; renderQueue(); scrollToSection('queue'); return; }
     const sc = e.target.closest('[data-scroll]'); if (sc) { if (sc.dataset.tabGo) setTab(sc.dataset.tabGo); scrollToSection(sc.dataset.scroll); return; }
     const rl = e.target.closest('[data-rail]'); if (rl) { railLock = Date.now() + 1200; $$('[data-rail]').forEach(b => b.classList.toggle('is-active', b === rl)); scrollToSection(rl.dataset.rail); return; }
     const hd = e.target.closest('[data-hide]'); if (hd) { state.hidden.add(hd.dataset.hide); renderChips(); railSpy(); return; }
     const sh = e.target.closest('[data-show]'); if (sh) { state.hidden.delete(sh.dataset.show); renderChips(); return; }
     const pg = e.target.closest('[data-page]'); if (pg) { const o = ORDER(), i = (o.indexOf(state.client) + +pg.dataset.page + o.length) % o.length; focusClient(o[i]); return; }
     const os = e.target.closest('[data-open-sources]'); if (os) { openDrawer('Data sources', sourcesHtml()); return; }
-    const rs = e.target.closest('[data-resync]'); if (rs) { CLIENTS.forEach(c => c.sync = { ok: true, ago: 'just now' }); renderSources(); renderHero(); $('#drawerBody').innerHTML = sourcesHtml(); audit.push({ t: now(), who: 'Dana Reyes', what: 'Manual sync of all data sources' }); toast('All 7 sources synced'); return; }
-    const ex = e.target.closest('[data-export]'); if (ex) { audit.push({ t: now(), who: 'Dana Reyes', what: `Exported report: ${ex.dataset.export} (de-identified)` }); toast('Report exported · logged to audit trail'); return; }
-    const rp = e.target.closest('[data-report]'); if (rp) { e.stopPropagation(); openDrawer('Client report', reportHtml(rp.dataset.report)); return; }
+    const rs = e.target.closest('[data-resync]'); if (rs) { CLIENTS.forEach(c => c.sync = { ok: true, ago: 'just now' }); renderSources(); renderHero(); $('#drawerBody').innerHTML = sourcesHtml(); logAudit('Dana Reyes', 'Manual sync of all data sources'); toast('All 7 sources synced'); return; }
     const fc = e.target.closest('[data-focus]'); if (fc) { state.client = state.client === fc.dataset.focus ? 'all' : fc.dataset.focus; $('#clientSelect').value = state.client; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     const jp = e.target.closest('[data-jump]'); if (jp) { state.client = jp.dataset.jumpClient; $('#clientSelect').value = state.client; renderAll(); setTab(jp.dataset.jump); $('#queue').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (e.target.closest('button, a, input, label, .detail')) return;
     const qr = e.target.closest('tr[data-q]'); if (qr) { state.openQ = state.openQ === qr.dataset.q ? null : qr.dataset.q; renderQueue(); document.querySelector(`tr[data-q="${qr.dataset.q}"]`)?.focus({ preventScroll: true }); return; }
     const row = e.target.closest('tr[data-client]'); if (row) { state.openC = state.openC === row.dataset.client ? null : row.dataset.client; renderClients(); document.querySelector(`tr[data-client="${row.dataset.client}"]`)?.focus({ preventScroll: true }); }
   });
-  document.addEventListener('keydown', e => { const row = e.target.closest?.('tr[data-client], tr[data-q]'); if (row && e.target !== row) return; if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); } });
-  $('#queueAll').addEventListener('click', () => toast('Opening full queue…'));
+  document.addEventListener('keydown', e => { const row = e.target.closest?.('tr[data-client], tr[data-q], tr[data-act]'); if (row && e.target !== row) return; if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); } });
+  $('#queueAll').addEventListener('click', () => { location.href = `queue.html?tab=${state.tab}&client=${state.client}${state.q ? '&q=' + encodeURIComponent(state.q) : ''}`; });
   $('#search').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); state.openQ = null; renderQueue(); });
   addEventListener('scroll', () => requestAnimationFrame(railSpy), { passive: true });
 
@@ -1412,13 +1333,15 @@
 
   // session auto-lock countdown (resets on activity)
   let left = 15 * 60;
-  ['mousemove', 'keydown', 'click', 'scroll'].forEach(ev => addEventListener(ev, () => left = 15 * 60, { passive: true }));
-  setInterval(() => { left = Math.max(0, left - 1); $('#session').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; }, 1000);
+  ['mousemove', 'keydown', 'click', 'scroll'].forEach(ev => addEventListener(ev, () => { if (!$('#lock').classList.contains('on')) left = sessionMins * 60; }, { passive: true }));
+  setInterval(() => { if ($('#lock').classList.contains('on')) return; left = Math.max(0, left - 1); if (left === 0) lockScreen(`Locked after ${sessionMins} minutes without activity.`); $('#session').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; }, 1000);
 
   $('#dateLine').textContent = new Date(2026, 9, 19).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderRevenue(); renderDenials(); }, 150); });
   renderSources(); renderClientSelect(); renderAll(); railSpy();
+  const deep = location.hash.match(/claim=([\w-]+)/), dq = deep && findClaim(deep[1]);
+  if (dq) { setTab(dq.type); state.openQ = dq.id; renderQueue(); setTimeout(() => document.querySelector(`tr[data-q="${dq.id}"]`)?.scrollIntoView({ block: 'center' }), 300); }
 })();
 </script>
 </body>
