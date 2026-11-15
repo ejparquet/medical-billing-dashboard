@@ -1,0 +1,1425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ledgerline Glass</title>
+<meta name="description" content="Multi-client revenue cycle dashboard for independent medical billers and RCM firms — frosted glass edition.">
+<script>try { const t = localStorage.getItem('ll-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Urbanist', 'system-ui', 'sans-serif'],
+          sans: ['Figtree', 'system-ui', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+        },
+      },
+    },
+  };
+</script>
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    color-scheme: light;
+    --canvas: #dde3eb;            /* frosted slate */
+    --glass: rgba(255, 255, 255, .44);
+    --glass-strong: rgba(255, 255, 255, .68);
+    --glass-line: rgba(255, 255, 255, .72);
+    --glass-hi: rgba(255, 255, 255, .85);
+    --surface: #f4f7fb;
+    --elevated: #ffffff;
+    --sunken: rgba(26, 44, 72, .06);
+    --line: rgba(26, 44, 72, .09);
+    --line-strong: rgba(26, 44, 72, .17);
+    --ink: #1a2230;
+    --ink-2: #556071;
+    --ink-3: #8590a0;
+    --hl: #2f6bd8;                /* highlight blue */
+    --hl-2: #a9c5f2;              /* gradient tail */
+    --hl-soft: rgba(47, 107, 216, .12);
+    --brand: #163a6b;             /* navy, for filled controls */
+    --brand-hover: #0f2c55;
+    --brand-soft: #dde7f5;
+    --brand-ink: #ffffff;
+    --accent: var(--hl);
+    --orb-1: #9ec4f5; --orb-2: #c9dcf7; --orb-3: #7fa8e6;
+
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4;
+    --seq1: #86b6ef; --seq2: #5598e7; --seq3: #2a78d6; --seq4: #1c5cab; --seq5: #104281;
+
+    --good: #0ca30c; --good-ink: #0b6e1f; --good-bg: rgba(12, 163, 12, .12);
+    --warn: #fab219; --warn-ink: #8a5a00; --warn-bg: rgba(250, 178, 25, .18);
+    --serious: #ec835a; --serious-ink: #9a4220; --serious-bg: rgba(236, 131, 90, .16);
+    --crit: #d03b3b; --crit-ink: #a42828; --crit-bg: rgba(208, 59, 59, .12);
+
+    --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 1px 2px rgba(26, 44, 72, .05), 0 24px 48px -30px rgba(26, 52, 96, .38);
+    --float-shadow: inset 0 1px 0 var(--glass-hi), 0 10px 24px -10px rgba(26, 52, 96, .22), 0 40px 70px -30px rgba(26, 52, 96, .40);
+    --spring: cubic-bezier(.34, 1.36, .64, 1);
+    --ease-out: cubic-bezier(.22, 1, .36, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --canvas: #0c111a; --glass: rgba(30, 40, 56, .46); --glass-strong: rgba(36, 47, 64, .74); --glass-line: rgba(255, 255, 255, .08); --glass-hi: rgba(255, 255, 255, .07);
+      --surface: #1a2230; --elevated: #222b3a; --sunken: rgba(255, 255, 255, .05); --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .15);
+      --ink: #e8edf4; --ink-2: #a9b4c3; --ink-3: #7d8899;
+      --hl: #6ea0f0; --hl-2: #24457c; --hl-soft: rgba(110, 160, 240, .16);
+      --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
+      --orb-1: #1d4a8c; --orb-2: #16304f; --orb-3: #2a5fb0;
+      --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+      --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
+      --good-ink: #5fd35f; --good-bg: rgba(95, 211, 95, .13); --warn-ink: #fac458; --warn-bg: rgba(250, 196, 88, .14);
+      --serious-ink: #f2a281; --serious-bg: rgba(242, 162, 129, .14); --crit-ink: #f08080; --crit-bg: rgba(240, 128, 128, .14);
+      --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 50px -28px rgba(0, 0, 0, .8);
+      --float-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -24px rgba(0, 0, 0, .85);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --canvas: #0c111a; --glass: rgba(30, 40, 56, .46); --glass-strong: rgba(36, 47, 64, .74); --glass-line: rgba(255, 255, 255, .08); --glass-hi: rgba(255, 255, 255, .07);
+    --surface: #1a2230; --elevated: #222b3a; --sunken: rgba(255, 255, 255, .05); --line: rgba(255, 255, 255, .08); --line-strong: rgba(255, 255, 255, .15);
+    --ink: #e8edf4; --ink-2: #a9b4c3; --ink-3: #7d8899;
+    --hl: #6ea0f0; --hl-2: #24457c; --hl-soft: rgba(110, 160, 240, .16);
+    --brand: #7aa9e6; --brand-hover: #97bdee; --brand-soft: #1a2a42; --brand-ink: #081a33;
+    --orb-1: #1d4a8c; --orb-2: #16304f; --orb-3: #2a5fb0;
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70; --s4: #c98500; --s5: #d55181;
+    --seq1: #9ec5f4; --seq2: #6da7ec; --seq3: #3987e5; --seq4: #256abf; --seq5: #184f95;
+    --good-ink: #5fd35f; --good-bg: rgba(95, 211, 95, .13); --warn-ink: #fac458; --warn-bg: rgba(250, 196, 88, .14);
+    --serious-ink: #f2a281; --serious-bg: rgba(242, 162, 129, .14); --crit-ink: #f08080; --crit-bg: rgba(240, 128, 128, .14);
+    --glass-shadow: inset 0 1px 0 var(--glass-hi), 0 24px 50px -28px rgba(0, 0, 0, .8);
+    --float-shadow: inset 0 1px 0 var(--glass-hi), 0 30px 70px -24px rgba(0, 0, 0, .85);
+  }
+
+  /* ---------- Base ---------- */
+  html, body { background: var(--canvas); color: var(--ink); }
+  body { font-family: 'Figtree', system-ui, sans-serif; line-height: 1.6; font-feature-settings: "tnum" 1; -webkit-font-smoothing: antialiased; }
+  .canvas-bg { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(70rem 40rem at 85% -10%, color-mix(in oklab, var(--orb-2) 70%, transparent), transparent 60%),
+      radial-gradient(50rem 40rem at -10% 110%, color-mix(in oklab, var(--orb-1) 40%, transparent), transparent 60%),
+      var(--canvas); }
+  .grain { position: fixed; inset: 0; pointer-events: none; z-index: 1; opacity: .28; mix-blend-mode: multiply; }
+  :root[data-theme="dark"] .grain { mix-blend-mode: overlay; opacity: .2; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .grain { mix-blend-mode: overlay; opacity: .2; } }
+
+  .font-display { font-family: 'Urbanist', system-ui, sans-serif; font-weight: 300; letter-spacing: -0.03em; line-height: 1.05; }
+  .num { font-variant-numeric: tabular-nums; }
+  .eyebrow { font-size: 12.5px; font-weight: 600; color: var(--ink-3); line-height: 1.4; }
+  .muted { color: var(--ink-2); }
+  .faint { color: var(--ink-3); }
+
+  /* ---------- Shell: the big frosted window ---------- */
+  .shell { position: relative; z-index: 2; min-height: 100vh; overflow: hidden; isolation: isolate; }
+  @media (min-width: 1024px) {
+    .shell { margin: 20px; min-height: calc(100vh - 40px); border-radius: 36px; background: color-mix(in oklab, var(--glass) 55%, transparent); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi), 0 40px 90px -50px rgba(20, 40, 80, .45); }
+  }
+  .orb { position: absolute; z-index: -1; border-radius: 50%; pointer-events: none; filter: blur(8px); }
+  .orb-a { width: 620px; height: 620px; right: -120px; top: -160px; background: radial-gradient(circle at 35% 35%, var(--orb-1), color-mix(in oklab, var(--orb-3) 70%, transparent) 45%, transparent 70%); opacity: .9; }
+  .orb-b { width: 460px; height: 460px; left: 22%; top: 640px; background: radial-gradient(circle, var(--orb-2), transparent 70%); opacity: .9; }
+  .orb-c { width: 520px; height: 520px; right: 8%; top: 1500px; background: radial-gradient(circle, var(--orb-3), transparent 68%); opacity: .45; }
+  .stripes { position: absolute; z-index: -1; right: 40px; top: 70px; width: 420px; height: 380px; pointer-events: none; opacity: .5;
+    background: repeating-linear-gradient(90deg, color-mix(in oklab, var(--hl) 22%, transparent) 0 2px, transparent 2px 26px);
+    -webkit-mask: radial-gradient(closest-side, #000, transparent); mask: radial-gradient(closest-side, #000, transparent); }
+
+  /* ---------- Glass surfaces ---------- */
+  .card, .card-raised, .floating, .float-card, .detail-panel, .glass {
+    -webkit-backdrop-filter: blur(24px) saturate(150%); backdrop-filter: blur(24px) saturate(150%);
+    border: 1px solid var(--glass-line);
+  }
+  .card { background: var(--glass); border-radius: 26px; box-shadow: var(--glass-shadow); }
+  .card-raised { background: var(--glass); border-radius: 26px; box-shadow: var(--glass-shadow); }
+  .floating, .float-card { background: var(--glass-strong); border-radius: 20px; box-shadow: var(--float-shadow); }
+  .glass { background: var(--glass); }
+
+  /* ---------- Controls ---------- */
+  .round-btn { position: relative; display: inline-grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 999px; color: var(--ink-2);
+    background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi), 0 6px 14px -8px rgba(26, 52, 96, .3);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: transform .4s var(--spring), color .2s, background-color .2s; cursor: pointer; }
+  .round-btn svg { width: 18px; height: 18px; }
+  .round-btn.sm { width: 34px; height: 34px; }
+  .round-btn.sm svg { width: 15px; height: 15px; }
+  .round-btn:hover { color: var(--ink); transform: translateY(-1px) scale(1.04); }
+  .round-btn:active { transform: scale(.94); }
+  .round-btn:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .round-btn.is-active { background: var(--hl); color: #fff; border-color: transparent; box-shadow: 0 10px 22px -8px color-mix(in oklab, var(--hl) 70%, transparent), inset 0 1px 0 rgba(255,255,255,.3); }
+  .round-btn .dot { position: absolute; top: 9px; right: 10px; width: 7px; height: 7px; border-radius: 99px; background: var(--hl); box-shadow: 0 0 0 2px var(--glass-strong); }
+  .round-btn .badge { position: absolute; top: -4px; right: -6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 99px; background: var(--brand); color: var(--brand-ink); font-size: 10.5px; font-weight: 700; line-height: 18px; text-align: center; }
+
+  .pill { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink-2);
+    background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi);
+    -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: transform .4s var(--spring), color .2s; white-space: nowrap; }
+  button.pill { cursor: pointer; }
+  button.pill:hover { color: var(--ink); transform: translateY(-1px); }
+  button.pill:active { transform: scale(.97); }
+  button.pill:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .pill svg { width: 16px; height: 16px; flex: none; }
+  .avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 99px; font-size: 12px; font-weight: 700; color: #fff; background: linear-gradient(135deg, var(--hl), var(--brand)); }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: 999px; font-size: 13.5px; font-weight: 600; line-height: 1;
+    transition: transform .4s var(--spring), background-color .2s, color .2s, border-color .2s; cursor: pointer; white-space: nowrap; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0) scale(.96); }
+  .btn:focus-visible, .focus-ring:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .btn-primary { background: var(--hl); color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 22px -10px color-mix(in oklab, var(--hl) 80%, transparent); }
+  .btn-primary:hover { background: color-mix(in oklab, var(--hl) 88%, #000); }
+  .btn-ghost { background: var(--glass-strong); color: var(--ink); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); }
+  .btn-ghost:hover { border-color: var(--line-strong); }
+  .btn-sm { height: 32px; padding: 0 12px; font-size: 12.5px; }
+
+  .seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--sunken); border: 1px solid var(--line); }
+  .seg button { height: 30px; padding: 0 14px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); transition: transform .3s var(--spring), background-color .2s, color .2s; }
+  .seg button:hover { color: var(--ink); }
+  .seg button:active { transform: scale(.95); }
+  .seg button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
+  .seg button[aria-pressed="true"], .seg button[aria-selected="true"] { background: var(--hl); color: #fff; box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 70%, transparent); }
+
+  .theme-switch { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; padding: 4px; height: 42px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .theme-switch .thumb { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 999px; background: var(--hl); box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 70%, transparent); transition: transform .5s var(--spring); }
+  .theme-switch[data-on="dark"] .thumb { transform: translateX(100%); }
+  .theme-switch button { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; transition: transform .3s var(--spring), color .2s; }
+  .theme-switch button:hover { color: var(--ink); }
+  .theme-switch button:active { transform: scale(.94); }
+  .theme-switch button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
+  .theme-switch button[aria-checked="true"] { color: #fff; }
+  .theme-switch button svg { width: 15px; height: 15px; }
+
+  /* ---------- Rail ---------- */
+  .rail { display: flex; gap: 10px; z-index: 40; }
+  @media (min-width: 1024px) { .rail { flex-direction: column; position: sticky; top: 140px; align-self: start; padding-left: 22px; } }
+  @media (max-width: 1023px) { .rail { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 8px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: var(--float-shadow); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+    .rail .round-btn { width: 38px; height: 38px; } }
+
+  /* ---------- Hero ---------- */
+  .hero-title { font-size: clamp(44px, 6vw, 76px); margin-top: 14px; }
+  .hero-sub { margin-top: 14px; font-size: 15px; color: var(--ink-2); line-height: 1.55; }
+  .hdot { width: 14px; height: 14px; border-radius: 99px; border: 2px solid var(--glass-line); cursor: pointer; transition: transform .35s var(--spring); }
+  .hdot:hover { transform: scale(1.25); }
+  .hdot:active { transform: scale(.9); }
+  .hdot:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .hdot-good { background: var(--good); } .hdot-warn { background: var(--warn); } .hdot-crit { background: var(--crit); }
+  .due-wrap { position: relative; max-width: 470px; }
+  .due-stack { position: absolute; left: 16px; right: 16px; bottom: -11px; height: 14px; border-radius: 0 0 18px 18px; background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  .due-card { position: relative; border-radius: 26px; }
+  .due-blob { position: relative; display: grid; place-items: center; width: 92px; height: 64px; flex: none; border-radius: 99px;
+    background: radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--hl) 22%, transparent), transparent 70%); }
+  .due-pill { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 99px; background: var(--hl); color: #fff; font-size: 12px; font-weight: 600; box-shadow: 0 6px 14px -6px color-mix(in oklab, var(--hl) 80%, transparent); }
+  .due-item { text-align: left; padding: 6px 8px; border-radius: 12px; line-height: 1.35; transition: transform .35s var(--spring), background-color .2s; min-width: 0; }
+  .due-item:hover { background: var(--hl-soft); transform: translateY(-1px); }
+  .due-item:active { transform: scale(.97); }
+  .due-item:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
+  .due-item b { display: block; font-size: 13px; font-weight: 600; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .due-item span { display: block; font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+
+  .float-card { position: relative; margin-bottom: 18px; padding: 18px; }
+  @media (min-width: 1280px) { .float-card { position: absolute; z-index: 3; top: -8px; right: 26px; width: 262px; margin: 0; } }
+  .ring-list li { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink-2); line-height: 1.35; }
+  .ring-list li + li { margin-top: 8px; }
+  .ring { width: 11px; height: 11px; flex: none; border-radius: 99px; border: 2px solid currentColor; }
+  .ring-hl { color: var(--hl); } .ring-good { color: var(--good); } .ring-warn { color: var(--warn); } .ring-crit { color: var(--crit); }
+
+  /* ---------- Filter row ---------- */
+  .search-pill { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 14px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); box-shadow: inset 0 1px 0 var(--glass-hi); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: var(--ink-3); }
+  .search-pill:focus-within { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .search-pill input { width: 150px; background: transparent; border: 0; outline: 0; font-size: 13.5px; color: var(--ink); }
+  .search-pill input::placeholder { color: var(--ink-3); }
+  .fchip { display: inline-flex; align-items: center; gap: 4px; height: 34px; padding: 0 6px 0 14px; border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--ink-2); background: var(--glass); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  .fchip button { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 99px; color: var(--ink-3); transition: transform .3s var(--spring), background-color .2s, color .2s; }
+  .fchip button:hover { background: var(--sunken); color: var(--ink); }
+  .fchip button:active { transform: scale(.88); }
+  .fchip button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
+  .fchip-off { padding: 0 14px; border-style: dashed; border-color: var(--line-strong); background: transparent; cursor: pointer; transition: transform .3s var(--spring), color .2s; }
+  .fchip-off:hover { color: var(--ink); transform: translateY(-1px); }
+  .fchip-off:active { transform: scale(.96); }
+  .fchip-off:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .fchip-select { appearance: none; height: 34px; padding: 0 32px 0 14px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer;
+    background: var(--glass-strong) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%238590a0' stroke-width='1.8'%3E%3Cpath d='M3 4.5 6 7.5 9 4.5'/%3E%3C/svg%3E") no-repeat right 12px center;
+    border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: border-color .2s; }
+  .fchip-select:hover { border-color: var(--line-strong); }
+  .fchip-select:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
+  .pager { display: inline-flex; align-items: center; gap: 2px; height: 42px; padding: 0 4px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-line); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font-size: 13px; font-weight: 600; color: var(--ink-2); }
+  .pager button { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 99px; transition: transform .3s var(--spring), background-color .2s, color .2s; }
+  .pager button:hover { background: var(--sunken); color: var(--ink); }
+  .pager button:active { transform: scale(.88); }
+  .pager button:focus-visible { outline: 2px solid var(--hl); outline-offset: 1px; }
+  .pager span { min-width: 54px; text-align: center; }
+
+  /* ---------- Cards: header + KPI ---------- */
+  .card-head { display: flex; align-items: center; gap: 12px; }
+  .icon-circle { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 99px; color: var(--ink-2); border: 1px solid var(--line-strong); background: var(--glass-strong); }
+  .icon-circle svg { width: 17px; height: 17px; }
+  .card-title { font-size: 16px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+  .kpi-line { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px; margin-top: 16px; font-size: 12.5px; }
+  .kpi-value { font-family: 'Urbanist', sans-serif; font-weight: 400; font-size: 34px; letter-spacing: -0.03em; line-height: 1; color: var(--ink); margin-right: 4px; }
+  .delta { font-weight: 600; }
+  .delta.good { color: var(--good-ink); } .delta.bad { color: var(--crit-ink); }
+  .viz { position: relative; margin-top: 18px; }
+  .viz svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .g-track { fill: none; stroke: var(--sunken); stroke-width: 16; stroke-linecap: round; }
+  .g-track.thin { stroke-width: 12; }
+  .g-fill { fill: none; stroke-width: 16; stroke-linecap: round; }
+  .g-fill.thin { stroke-width: 12; }
+  .g-center { position: absolute; left: 0; right: 0; text-align: center; line-height: 1.25; pointer-events: none; }
+  .g-center b { display: block; font-family: 'Urbanist', sans-serif; font-weight: 500; font-size: 24px; letter-spacing: -0.02em; color: var(--ink); }
+  .g-center span { font-size: 12px; color: var(--ink-3); }
+  .kleg { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 16px; margin-top: 12px; font-size: 11.5px; color: var(--ink-3); }
+  .kleg span { display: inline-flex; align-items: center; gap: 6px; }
+  .kleg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .slider-hit { fill: transparent; cursor: crosshair; }
+
+  /* ---------- Generic bits reused by the renderers ---------- */
+  .chip { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 99px; font-size: 11.5px; font-weight: 600; line-height: 1; white-space: nowrap; }
+  .chip svg { width: 11px; height: 11px; flex: none; }
+  .chip-good { background: var(--good-bg); color: var(--good-ink); }
+  .chip-warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .chip-serious { background: var(--serious-bg); color: var(--serious-ink); }
+  .chip-crit { background: var(--crit-bg); color: var(--crit-ink); }
+  .chip-neutral { background: var(--sunken); color: var(--ink-2); }
+  .solves { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--ink-3); line-height: 1.4; }
+  .solves b { color: var(--hl); font-weight: 600; }
+
+  .tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
+  .tbl th { text-align: left; font-size: 12px; font-weight: 600; color: var(--ink-3); padding: 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  .tbl td { white-space: nowrap; padding: 12px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; line-height: 1.4; }
+  .tbl tr:last-child td { border-bottom: 0; }
+  .tbl .r { text-align: right; }
+  .tbl tbody tr { transition: background-color .15s; }
+  .tbl tbody tr:hover { background: var(--hl-soft); }
+  .tbl tbody tr.expandable { cursor: pointer; }
+  .tbl tbody tr.expandable:focus-visible { outline: 2px solid var(--hl); outline-offset: -2px; }
+  .tbl tbody tr.expandable:active { background: color-mix(in oklab, var(--hl) 18%, transparent); }
+  .tbl tbody tr.is-open, .tbl tbody tr.is-open:hover, .tbl tbody tr.detail, .tbl tbody tr.detail:hover { background: var(--hl-soft); }
+  .tbl tbody tr.is-open td { border-bottom-color: transparent; }
+  .tbl tbody tr.detail > td { padding: 0 12px 16px; white-space: normal; }
+  .chev { flex: none; color: var(--ink-3); transition: transform .4s var(--spring), color .2s; }
+  tr.expandable:hover .chev { color: var(--ink); }
+  tr.is-open .chev { transform: rotate(90deg); color: var(--hl); }
+  .detail-panel { background: var(--glass-strong); border-radius: 20px; box-shadow: var(--float-shadow); animation: reveal .5s var(--spring) both; }
+  @keyframes reveal { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+  @media (max-width: 1023px) { .detail-panel { position: sticky; left: 12px; width: calc(100vw - 60px); } }
+  .tl { display: flex; flex-direction: column; gap: 14px; }
+  .tl li { position: relative; display: flex; gap: 12px; line-height: 1.4; }
+  .tl li:not(:last-child)::before { content: ''; position: absolute; left: 5px; top: 18px; bottom: -14px; width: 2px; background: var(--line-strong); }
+  .tl-dot { flex: none; width: 12px; height: 12px; margin-top: 3px; border-radius: 99px; background: var(--surface); border: 2px solid var(--line-strong); }
+  .tl li.done .tl-dot { background: var(--hl); border-color: var(--hl); }
+  .tl li.bad .tl-dot { background: var(--crit); border-color: var(--crit); }
+  .tl li.next .tl-dot { background: var(--warn-bg); border-color: var(--warn); }
+  .check-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; line-height: 1.5; }
+  .check-list li + li { margin-top: 8px; }
+  .check-list .n { flex: none; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 99px; font-size: 11px; font-weight: 700; background: var(--hl-soft); color: var(--hl); }
+  .tile-btn { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 16px; border: 1px solid var(--glass-line); background: var(--glass); text-align: left; transition: transform .35s var(--spring), border-color .2s; }
+  .tile-btn:hover { border-color: var(--line-strong); transform: translateX(2px); }
+  .tile-btn:active { transform: scale(.98); }
+  .tile-btn:hover .chev { color: var(--hl); }
+  .mini-bar { height: 6px; border-radius: 99px; background: var(--sunken); overflow: hidden; }
+  .mini-bar > i { display: block; height: 100%; border-radius: 99px; transform-origin: left; animation: growx .7s var(--ease-out) both; }
+
+  .phi { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; }
+  .claim-id { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--ink-3); }
+
+  #tip { position: fixed; z-index: 60; pointer-events: none; opacity: 0; transform: translateY(4px); transition: opacity .15s, transform .25s var(--spring); min-width: 160px; padding: 10px 12px; font-size: 12.5px; line-height: 1.5; border-radius: 14px; }
+  #tip.on { opacity: 1; transform: translateY(0); }
+  #tip .tt-row { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  #tip .tt-key { display: inline-flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  #tip .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .grid line { stroke: var(--line); stroke-width: 1; }
+  .chart .axis text { fill: var(--ink-3); font-size: 11px; font-family: 'Figtree', sans-serif; }
+  .chart .hit { fill: transparent; cursor: crosshair; }
+  .chart .hl { fill: var(--hl-soft); opacity: 0; transition: opacity .15s; pointer-events: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  .rise { animation: rise .8s var(--ease-out) both; }
+  @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+  .bar-anim { transform-box: fill-box; transform-origin: bottom; animation: grow .8s var(--ease-out) both; }
+  @keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+  .barx-anim { transform-origin: left; animation: growx .9s var(--ease-out) both; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+  .scrim { position: fixed; inset: 0; z-index: 50; background: rgba(12, 22, 40, .28); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .scrim.on { opacity: 1; pointer-events: auto; }
+  .drawer { position: fixed; z-index: 55; top: 12px; right: 12px; bottom: 12px; width: min(440px, calc(100vw - 24px)); transform: translateX(110%); transition: transform .5s var(--spring); display: flex; flex-direction: column; border-radius: 26px; }
+  .drawer.on { transform: none; }
+  .modal { position: fixed; z-index: 56; left: 50%; top: 50%; width: min(460px, calc(100vw - 32px)); transform: translate(-50%, -46%) scale(.96); opacity: 0; pointer-events: none; transition: transform .45s var(--spring), opacity .2s; border-radius: 26px; }
+  .modal.on { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  .toast { position: fixed; z-index: 70; left: 50%; bottom: 84px; transform: translate(-50%, 20px); opacity: 0; transition: transform .45s var(--spring), opacity .2s; pointer-events: none; border-radius: 999px; }
+  @media (min-width: 1024px) { .toast { bottom: 28px; } }
+  .toast.on { transform: translate(-50%, 0); opacity: 1; }
+  .scroll-x { overflow-x: auto; scrollbar-width: thin; }
+  .ring-sync { width: 8px; height: 8px; border-radius: 99px; display: inline-block; flex: none; }
+  input[type="search"], input[type="text"], textarea { font: inherit; }
+  .section-hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="canvas-bg" aria-hidden="true"></div>
+<svg class="grain" aria-hidden="true" width="100%" height="100%"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 .18 0"/></filter><rect width="100%" height="100%" filter="url(#n)"/></svg>
+
+<!-- SVG icon sprite -->
+<svg width="0" height="0" class="absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-grid" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="6" height="6" rx="1.5"/><rect x="11" y="3" width="6" height="6" rx="1.5"/><rect x="3" y="11" width="6" height="6" rx="1.5"/><rect x="11" y="11" width="6" height="6" rx="1.5"/></symbol>
+    <symbol id="i-file" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 2.5h6.5L15 6v11.5H5z"/><path d="M11 2.5V6.5h4M7.5 10h5M7.5 13h5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="m7.5 7.5 5 5m0-5-5 5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7.5"/><path d="M10 6v4.2l2.8 1.8"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3v14M5 17h10M3 7h14M5 7l-2.5 5a2.6 2.6 0 0 0 5 0zM15 7l-2.5 5a2.6 2.6 0 0 0 5 0z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7" r="3"/><path d="M2 16.5c.6-2.8 2.8-4.5 5.5-4.5s4.9 1.7 5.5 4.5"/><path d="M13 4.2a3 3 0 0 1 0 5.6M14.5 12.3c1.8.6 3 2.1 3.5 4.2"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 17h14M5.5 14V9M10 14V5M14.5 14v-3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5 16 5v5c0 3.8-2.6 6.5-6 7.5-3.4-1-6-3.7-6-7.5V5z"/><path d="m7.3 10 1.9 1.9 3.6-3.8"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.8 10S4.8 4.5 10 4.5 18.2 10 18.2 10 15.2 15.5 10 15.5 1.8 10 1.8 10z"/><circle cx="10" cy="10" r="2.5"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3l14 14M8.2 5a8.4 8.4 0 0 1 1.8-.5C15.2 4.5 18.2 10 18.2 10a14 14 0 0 1-2.4 3.1M12 15.2a7 7 0 0 1-2 .3C4.8 15.5 1.8 10 1.8 10a14.5 14.5 0 0 1 3.1-3.7"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="3.4"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.3 4.3l1.4 1.4M14.3 14.3l1.4 1.4M4.3 15.7l1.4-1.4M14.3 5.7l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16.5 12.2A7 7 0 0 1 7.8 3.5a7 7 0 1 0 8.7 8.7z"/></symbol>
+    <symbol id="i-download" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3v10m-4-4 4 4 4-4M4 16.5h12"/></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 10V2M2.5 5.5 6 2l3.5 3.5"/></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2v8M2.5 6.5 6 10l3.5-3.5"/></symbol>
+    <symbol id="i-check" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="m2.5 6.2 2.3 2.3 4.7-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1.5 11 10.5H1z"/><path d="M6 5v2.4M6 8.9v.1"/></symbol>
+    <symbol id="i-dot" viewBox="0 0 12 12"><circle cx="6" cy="6" r="3.2" fill="currentColor"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 1.5h6M3 10.5h6M3.5 1.5c0 3 5 3 5 4.5S3.5 7.5 3.5 10.5M8.5 1.5c0 3-5 3-5 4.5s5 1.5 5 4.5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 2.5v3M10 14.5v3M2.5 10h3M14.5 10h3M4.7 4.7l2.1 2.1M13.2 13.2l2.1 2.1M4.7 15.3l2.1-2.1M13.2 6.8l2.1-2.1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="9" r="5.5"/><path d="m13 13 4 4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m5 5 10 10M15 5 5 15"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 6h14M3 10h14M3 14h14"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="9" width="12" height="8.5" rx="2"/><path d="M6.8 9V6.5a3.2 3.2 0 0 1 6.4 0V9"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m6 3.5 4.5 4.5L6 12.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 3h3l1.5 4-2 1.3a9 9 0 0 0 5.2 5.2l1.3-2 4 1.5v3a1.5 1.5 0 0 1-1.5 1.5A14 14 0 0 1 2.5 4.5 1.5 1.5 0 0 1 4 3z"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M16 4.5v4h-4M4 15.5v-4h4"/><path d="M15.4 8.5A6 6 0 0 0 4.8 6.6M4.6 11.5a6 6 0 0 0 10.6 1.9"/></symbol>
+    <symbol id="i-arrow-ur" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 14 14 6M7.5 6H14v6.5"/></symbol>
+    <symbol id="i-dollar" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13.2 6.6c-.6-1-1.8-1.6-3.2-1.6-1.8 0-3.1 1-3.1 2.4 0 3.4 6.5 1.8 6.5 5.2 0 1.4-1.4 2.4-3.4 2.4-1.5 0-2.8-.7-3.4-1.8M10 3v14"/></symbol>
+    <symbol id="i-inbox" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 11l2.2-6.2a1.5 1.5 0 0 1 1.4-1h6.8a1.5 1.5 0 0 1 1.4 1L17 11v4.5a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 15.5z"/><path d="M3 11h4l1 2h4l1-2h4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M10 3a4.5 4.5 0 0 0-4.5 4.5c0 4-1.5 5.5-1.5 5.5h12s-1.5-1.5-1.5-5.5A4.5 4.5 0 0 0 10 3zM8.3 16a1.8 1.8 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-filter" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3.5 4.5h13l-5 6v5l-3 1.5v-6.5z"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell lg:grid lg:grid-cols-[86px_1fr]" id="top">
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+  <div class="orb orb-c" aria-hidden="true"></div>
+  <div class="stripes" aria-hidden="true"></div>
+
+  <!-- Top bar -->
+  <header class="lg:col-span-2 flex items-center gap-3 px-4 sm:px-6 lg:px-[22px] pt-4 lg:pt-[22px]">
+    <a href="#top" class="round-btn" aria-label="Ledgerline overview" style="color: var(--hl)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.5c.6 4.6 2.6 7.6 7.5 9.5-4.9 1.9-6.9 4.9-7.5 9.5-.6-4.6-2.6-7.6-7.5-9.5 4.9-1.9 6.9-4.9 7.5-9.5z"/></svg>
+    </a>
+    <span class="hidden sm:block font-display text-[22px] font-medium" style="font-weight: 500">Ledgerline</span>
+    <div class="ml-auto flex items-center gap-2">
+      <button class="pill hidden md:inline-flex" data-open-sources id="sourcesChip"></button>
+      <span class="pill hidden xl:inline-flex" title="Session locks after 15 minutes without activity"><svg><use href="#i-lock"/></svg>Locks in <span id="session" class="num">15:00</span></span>
+      <button class="pill px-3 sm:px-4" id="phiToggle" aria-pressed="false" aria-label="Reveal patient identifiers">
+        <svg id="phiIcon"><use href="#i-eye-off"/></svg><span class="hidden sm:inline" id="phiLabel">PHI masked</span>
+      </button>
+      <div class="theme-switch" id="themeSwitch" role="radiogroup" aria-label="Color theme">
+        <span class="thumb" aria-hidden="true"></span>
+        <button role="radio" data-theme-set="light" aria-checked="false" aria-label="Light mode"><svg><use href="#i-sun"/></svg><span class="hidden sm:inline">Light</span></button>
+        <button role="radio" data-theme-set="dark" aria-checked="false" aria-label="Dark mode"><svg><use href="#i-moon"/></svg><span class="hidden sm:inline">Dark</span></button>
+      </div>
+      <div class="pill hidden md:inline-flex pl-1.5 pr-4 gap-2.5">
+        <span class="avatar">DR</span>
+        <span class="leading-tight text-left"><b class="block text-[13px] font-semibold" style="color: var(--ink)">Dana Reyes</b><span class="block text-[11.5px] faint">Billing lead</span></span>
+      </div>
+      <button class="round-btn" data-open-audit aria-label="Activity and audit log"><svg><use href="#i-bell"/></svg><span class="dot"></span></button>
+    </div>
+  </header>
+
+  <!-- Icon rail -->
+  <nav class="rail" aria-label="Sections">
+    <button class="round-btn is-active" data-rail="top" data-tip="%3Cb%3EOverview%3C%2Fb%3E" aria-label="Overview"><svg><use href="#i-grid"/></svg></button>
+    <button class="round-btn" data-rail="queue" data-tip="%3Cb%3EWork%20queue%3C%2Fb%3E" aria-label="Work queue"><svg><use href="#i-inbox"/></svg><span class="badge num" id="navDenials">0</span></button>
+    <button class="round-btn" data-rail="denials" data-tip="%3Cb%3EDenial%20trends%3C%2Fb%3E" aria-label="Denial trends"><svg><use href="#i-chart"/></svg></button>
+    <button class="round-btn" data-rail="aging" data-tip="%3Cb%3EA%2FR%20aging%3C%2Fb%3E" aria-label="A/R aging"><svg><use href="#i-clock"/></svg></button>
+    <button class="round-btn" data-rail="clients" data-tip="%3Cb%3EClients%3C%2Fb%3E" aria-label="Clients"><svg><use href="#i-users"/></svg></button>
+    <button class="round-btn" data-open-report data-tip="%3Cb%3EClient%20reports%3C%2Fb%3E" aria-label="Client reports"><svg><use href="#i-file"/></svg></button>
+    <button class="round-btn hidden lg:inline-grid" data-open-audit data-tip="%3Cb%3EAudit%20log%3C%2Fb%3E" aria-label="Audit log"><svg><use href="#i-shield"/></svg></button>
+  </nav>
+
+  <main class="min-w-0 px-4 sm:px-6 lg:pl-4 lg:pr-[26px] pb-28 lg:pb-10">
+    <!-- Hero -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-6 pt-8 lg:pt-10">
+      <div class="xl:col-span-5 rise">
+        <p class="text-[13.5px] muted" id="dateLine"></p>
+        <div class="flex items-center gap-3 mt-6">
+          <div class="flex items-center gap-1.5" id="healthDots"></div>
+          <span class="text-[12.5px] faint" id="healthText"></span>
+        </div>
+        <h1 class="hero-title font-display" id="heroTitle">All practices</h1>
+        <p class="hero-sub" id="heroSub"></p>
+
+        <div class="due-wrap mt-8">
+          <div class="due-stack" aria-hidden="true"></div>
+          <div class="card due-card p-4 sm:p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="text-[14px] font-semibold">Appeals due this week</h2>
+              <button class="round-btn sm" data-scroll="queue" data-tab-go="denials" aria-label="Open the appeals queue"><svg><use href="#i-arrow-ur"/></svg></button>
+            </div>
+            <div class="flex items-center gap-3 mt-3">
+              <div class="due-blob"><span class="due-pill num" id="dueCount">0 due</span></div>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 min-w-0 flex-1" id="dueList"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="xl:col-span-7 relative rise" style="animation-delay: .08s">
+        <div class="float-card" id="heroAlert">
+          <div class="flex items-center gap-3">
+            <span class="avatar" style="width: 38px; height: 38px;">DR</span>
+            <div class="leading-tight"><b class="text-[14px] font-semibold block">Today for Dana</b><span class="text-[12px] faint" id="alertMeta">Monday morning</span></div>
+          </div>
+          <ul class="ring-list mt-4" id="alertList"></ul>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="font-display text-[30px] num" style="font-weight: 400" id="alertValue">$0</span>
+            <span class="text-[12.5px] faint">recoverable</span>
+          </div>
+        </div>
+        <div class="card p-5 sm:p-6" id="revenue">
+          <div class="grid xl:grid-cols-[1fr_270px] gap-4">
+            <div class="min-w-0">
+              <div class="card-head">
+                <span class="icon-circle"><svg><use href="#i-chart"/></svg></span>
+                <h2 class="card-title">Collections vs. allowed charges</h2>
+              </div>
+              <div class="flex flex-wrap items-center gap-3 mt-4">
+                <div class="seg" role="group" aria-label="Period">
+                  <button data-period="6" aria-pressed="false">6 months</button>
+                  <button data-period="12" aria-pressed="true">12 months</button>
+                </div>
+                <div class="legend" id="revLegend"></div>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-[12.5px] muted" id="revFoot"></div>
+            </div>
+            <div class="hidden xl:block min-h-[150px]" aria-hidden="true"></div>
+          </div>
+          <div class="chart mt-4" id="revChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filters -->
+    <section class="mt-10 flex flex-wrap items-center gap-2" aria-label="Filters">
+      <label class="search-pill"><svg width="16" height="16"><use href="#i-search"/></svg><input type="search" id="search" placeholder="Search the queue" aria-label="Search claims, payers and practices in the work queue"></label>
+      <label class="sr-only" for="clientSelect">Practice</label>
+      <select id="clientSelect" class="fchip-select"></select>
+      <div class="flex flex-wrap items-center gap-2" id="chips"></div>
+      <div class="ml-auto flex items-center gap-2">
+        <div class="pager">
+          <button data-page="-1" aria-label="Previous practice"><svg width="14" height="14" style="transform: rotate(180deg)"><use href="#i-chev"/></svg></button>
+          <span id="pagerLabel" class="num">All</span>
+          <button data-page="1" aria-label="Next practice"><svg width="14" height="14"><use href="#i-chev"/></svg></button>
+        </div>
+        <button class="pill" data-toast="Showing October 1 to 19, 2026. More ranges are coming."><span>Oct 1 – 19</span><svg><use href="#i-filter"/></svg></button>
+      </div>
+    </section>
+
+    <!-- KPI cards -->
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 mt-5" id="kpis" aria-label="Key metrics"></section>
+
+    <!-- Work queue -->
+    <section class="card mt-5 overflow-hidden" id="queue" data-section="queue">
+      <div class="p-5 sm:p-6 pb-4 flex flex-wrap items-start gap-4">
+        <div class="flex items-start gap-3 min-w-0 flex-1 basis-full md:basis-0">
+          <span class="icon-circle"><svg><use href="#i-inbox"/></svg></span>
+          <div class="min-w-0">
+            <h2 class="card-title mt-1.5">Work queue</h2>
+            <p class="text-[13px] muted mt-1 max-w-[72ch]" id="queueBlurb"></p>
+          </div>
+        </div>
+        <div class="seg" role="tablist" aria-label="Work queue">
+          <button role="tab" data-tab="denials" aria-selected="true">Appeals due</button>
+          <button role="tab" data-tab="filing" aria-selected="false">Filing limits</button>
+          <button role="tab" data-tab="under" aria-selected="false">Underpaid</button>
+        </div>
+      </div>
+      <div class="scroll-x">
+        <table class="tbl min-w-[780px]" id="queueTable"></table>
+      </div>
+      <div class="px-5 sm:px-6 py-4 border-t flex flex-wrap items-center justify-between gap-3" style="border-color: var(--line);">
+        <p class="solves" id="queueSolves"></p>
+        <button class="btn btn-ghost btn-sm" id="queueAll">View all <span class="num" id="queueCount"></span></button>
+      </div>
+    </section>
+
+    <!-- Denial trends + aging -->
+    <section class="grid grid-cols-1 xl:grid-cols-12 gap-5 mt-5" id="trendsRow" data-section="trends">
+      <div class="card p-5 sm:p-6 xl:col-span-4 flex flex-col" id="denials">
+        <div class="card-head">
+          <span class="icon-circle"><svg><use href="#i-chart"/></svg></span>
+          <h2 class="card-title">Why claims come back</h2>
+          <button class="round-btn sm ml-auto" data-scroll="queue" data-tab-go="denials" aria-label="Open the appeals queue"><svg><use href="#i-arrow-ur"/></svg></button>
+        </div>
+        <div class="legend mt-4" id="denLegend"></div>
+        <div class="chart mt-3" id="denChart"></div>
+        <div class="mt-4 rounded-[18px] p-4 border" style="background: var(--hl-soft); border-color: color-mix(in oklab, var(--hl) 22%, transparent);" id="denInsight"></div>
+        <p class="solves mt-4"><b>Solves</b> fixing denial causes upstream instead of re-working them</p>
+      </div>
+
+      <div class="card p-5 sm:p-6 xl:col-span-8 min-w-0" id="aging">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="card-head">
+            <span class="icon-circle"><svg><use href="#i-clock"/></svg></span>
+            <h2 class="card-title">Outstanding A/R by payer</h2>
+          </div>
+          <div class="legend ml-auto" id="ageLegend"></div>
+        </div>
+        <div class="mt-5">
+          <div class="flex h-10 rounded-full overflow-hidden gap-[3px]" id="ageBar"></div>
+          <div class="grid grid-cols-5 gap-[3px] mt-2 text-[12px]" id="ageBarLabels"></div>
+        </div>
+        <div class="scroll-x mt-6 -mx-5 sm:-mx-6">
+          <table class="tbl min-w-[700px]" id="ageTable"></table>
+        </div>
+        <p class="solves mt-4"><b>Solves</b> balances that go unnoticed until they pass 90 days</p>
+      </div>
+    </section>
+
+    <!-- Client performance -->
+    <section class="card p-5 sm:p-6 mt-5" id="clients" data-section="clients">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="card-head">
+          <span class="icon-circle"><svg><use href="#i-users"/></svg></span>
+          <h2 class="card-title">Billing performance by practice</h2>
+        </div>
+        <p class="text-[12.5px] faint ml-auto">Open a practice for payer mix, open work and account details</p>
+      </div>
+      <div class="scroll-x mt-4 -mx-5 sm:-mx-6">
+        <table class="tbl min-w-[920px]" id="clientTable"></table>
+      </div>
+      <p class="solves mt-4"><b>Solves</b> proving your value to each practice without building reports by hand</p>
+    </section>
+
+    <footer class="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12.5px] faint">
+      <span class="inline-flex items-center gap-2"><svg width="15" height="15" style="color: var(--hl)"><use href="#i-shield"/></svg>HIPAA mode: minimum necessary</span>
+      <span>Patient details are masked by default, and every reveal is logged</span>
+      <span>Encrypted at rest and in transit</span>
+      <span>BAA on file for <span class="num">7 of 7</span> practices</span>
+      <button class="underline underline-offset-4 decoration-dotted focus-ring rounded hover:opacity-80 active:opacity-60" style="color: var(--ink-2)" data-open-audit>Open audit log</button>
+      <span class="ml-auto">Demo data. No real patient information.</span>
+    </footer>
+  </main>
+</div>
+
+<!-- Tooltip -->
+<div id="tip" class="floating" role="tooltip"></div>
+
+<!-- Reveal-PHI modal -->
+<div class="scrim" id="modalScrim"></div>
+<div class="modal floating p-6" id="phiModal" role="dialog" aria-modal="true" aria-labelledby="phiTitle">
+  <div class="flex items-center gap-3">
+    <div class="grid place-items-center w-10 h-10 rounded-[12px]" style="background: var(--brand-soft); color: var(--brand);"><svg width="20" height="20"><use href="#i-lock"/></svg></div>
+    <div>
+      <h3 id="phiTitle" class="font-display text-[24px]">Reveal patient identifiers?</h3>
+      <p class="text-[12.5px] faint">Access is recorded to the audit log under your name.</p>
+    </div>
+  </div>
+  <fieldset class="mt-5 flex flex-col gap-2 text-[14px]">
+    <legend class="eyebrow mb-2">Reason for access</legend>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Working an appeal" checked> Working an appeal</label>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Patient balance inquiry"> Patient balance inquiry</label>
+    <label class="flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer hover:opacity-90" style="border-color: var(--line);"><input type="radio" name="reason" value="Eligibility / coverage check"> Eligibility / coverage check</label>
+  </fieldset>
+  <p class="text-[12.5px] muted mt-4">Identifiers re-mask automatically after 5 minutes.</p>
+  <div class="mt-5 flex justify-end gap-2">
+    <button class="btn btn-ghost" data-close-modal>Cancel</button>
+    <button class="btn btn-primary" id="phiConfirm">Reveal for 5 min</button>
+  </div>
+</div>
+
+<!-- Audit / report drawer -->
+<div class="scrim" id="drawerScrim"></div>
+<aside class="drawer floating" id="drawer" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
+  <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--line);">
+    <h3 class="font-display text-[24px]" id="drawerTitle">Audit log</h3>
+    <button class="btn btn-ghost btn-sm px-2 ml-auto" data-close-drawer aria-label="Close"><svg width="16" height="16"><use href="#i-close"/></svg></button>
+  </div>
+  <div class="p-5 overflow-y-auto flex-1" id="drawerBody"></div>
+</aside>
+
+<div class="toast floating px-4 py-3 text-[13.5px] font-medium flex items-center gap-2" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  /* ================= Demo data ================= */
+  let seed = 20261019;
+  const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const between = (a, b) => a + rnd() * (b - a);
+
+  const MONTHS = ['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'];
+  const YEARS  = [2025,2025,2026,2026,2026,2026,2026,2026,2026,2026,2026,2026];
+
+  const CLIENTS = [
+    { id: 'cedar',   name: 'Cedar Ridge Family Medicine', short: 'Cedar Ridge',  spec: 'Primary care',      pm: 'athenaOne',     base: 182000, den: .062, ar: 34, auth: .9 },
+    { id: 'harbor',  name: 'Harbor Orthopedics',          short: 'Harbor Ortho', spec: 'Orthopedics',       pm: 'ModMed',        base: 341000, den: .118, ar: 47, auth: 2.4 },
+    { id: 'lumen',   name: 'Lumen Pediatrics',            short: 'Lumen Peds',   spec: 'Pediatrics',        pm: 'Office Ally',   base: 126000, den: .048, ar: 29, auth: .6 },
+    { id: 'north',   name: 'Northgate Cardiology',        short: 'Northgate',    spec: 'Cardiology',        pm: 'eClinicalWorks',base: 288000, den: .094, ar: 44, auth: 2.0 },
+    { id: 'sierra',  name: 'Sierra Physical Therapy',     short: 'Sierra PT',    spec: 'Physical therapy',  pm: 'WebPT',         base: 98000,  den: .081, ar: 38, auth: 1.5 },
+    { id: 'willow',  name: 'Willow Behavioral Health',    short: 'Willow BH',    spec: 'Behavioral health', pm: 'SimplePractice',base: 74000,  den: .132, ar: 58, auth: 1.3 },
+    { id: 'bayview', name: 'Bayview Dermatology',         short: 'Bayview Derm', spec: 'Dermatology',       pm: 'ModMed',        base: 156000, den: .057, ar: 31, auth: .8 },
+  ];
+  const PAYERS = [
+    { n: 'Medicare',          tf: 365, appeal: 120, dtp: 14 },
+    { n: 'Medicaid (state)',  tf: 180, appeal: 90,  dtp: 31 },
+    { n: 'BCBS',              tf: 180, appeal: 180, dtp: 19 },
+    { n: 'UnitedHealthcare',  tf: 90,  appeal: 180, dtp: 24 },
+    { n: 'Aetna',             tf: 120, appeal: 180, dtp: 22 },
+    { n: 'Cigna',             tf: 90,  appeal: 180, dtp: 21 },
+    { n: 'Humana',            tf: 180, appeal: 60,  dtp: 27 },
+  ];
+  const REASONS = [
+    { k: 'auth',  label: 'Prior authorization', code: 'CO-197' },
+    { k: 'nec',   label: 'Medical necessity',   code: 'CO-50'  },
+    { k: 'elig',  label: 'Eligibility',         code: 'CO-27'  },
+    { k: 'code',  label: 'Coding & bundling',   code: 'CO-97'  },
+    { k: 'info',  label: 'Missing info',        code: 'CO-16'  },
+  ];
+
+  // Monthly series per client
+  CLIENTS.forEach(c => {
+    c.months = MONTHS.map((m, i) => {
+      const season = 1 + .06 * Math.sin((i + 2) / 12 * Math.PI * 2);
+      const growth = 1 + i * .008;
+      const charges = c.base * season * growth * between(.93, 1.07);
+      const allowed = charges * between(.5, .56);
+      const collected = allowed * between(.93, .985) * (i === 11 ? .62 : 1);  // Oct is month-to-date
+      const claims = Math.round(charges / between(310, 360));
+      const trend = i >= 6 ? 1 + (i - 6) * .04 * (c.auth > 1.4 ? 1 : .2) : 1;
+      const denRate = c.den * between(.88, 1.12) * trend;
+      const denied = Math.round(claims * denRate);
+      const w = { auth: c.auth * trend * (i > 7 ? 1.15 : 1), nec: 1.1, elig: 1, code: .9, info: .8 };
+      const tot = Object.values(w).reduce((a, b) => a + b, 0);
+      const byReason = {}; let used = 0;
+      REASONS.forEach((r, j) => { const v = j === REASONS.length - 1 ? denied - used : Math.round(denied * w[r.k] / tot); byReason[r.k] = Math.max(0, v); used += byReason[r.k]; });
+      return { charges, allowed, collected, claims, denied, byReason };
+    });
+    const total = c.base * c.ar / 30 * between(.95, 1.05);
+    const mix = c.ar > 45 ? [.36, .21, .14, .11, .18] : c.ar > 35 ? [.46, .22, .12, .08, .12] : [.55, .23, .1, .06, .06];
+    c.aging = mix.map(f => total * f);
+    c.payerAging = PAYERS.map(() => c.aging.map(v => v / PAYERS.length * between(.5, 1.5)));
+    c.clean = 1 - c.den * between(.7, .9) - .02;
+    c.ncr = between(.945, .985) - (c.den > .1 ? .02 : 0);
+    c.sync = c.id === 'willow' ? { ok: false, ago: '3 h' } : { ok: true, ago: Math.round(between(2, 18)) + ' min' };
+    c.underpaid = c.base * between(.008, .022);
+  });
+
+  // Work-queue items
+  const FIRST = ['Maria','James','Aisha','Robert','Linh','David','Grace','Omar','Elena','Marcus','Priya','Thomas','Hannah','Luis','Nora','Kevin','Sofia','Andre','Ruth','Felix'];
+  const LAST  = ['Alvarez','Brooks','Chen','Delgado','Evans','Fitzgerald','Garcia','Hughes','Ibrahim','Jensen','Kowalski','Lopez','Moreno','Nakamura','Okafor','Patel','Quinn','Russo','Sato','Thompson'];
+  const PROVIDERS = ['Dr. A. Okoye, MD', 'Dr. S. Lindqvist, DO', 'Dr. R. Mehta, MD', 'K. Alder, PA-C', 'Dr. J. Whitfield, MD', 'M. Torres, NP'];
+  const ICD = ['M17.11', 'I10', 'E11.9', 'F41.1', 'L57.0', 'M54.50', 'R07.9', 'Z00.129', 'M75.101', 'I48.91'];
+  const mkItem = (type, i) => {
+    const c = pick(CLIENTS), p = pick(PAYERS), r = type === 'denials' ? pick(REASONS) : null;
+    const amt = Math.round(between(180, type === 'under' ? 1400 : 6200));
+    const daysLeft = type === 'denials' ? Math.round(between(2, 55)) : type === 'filing' ? Math.round(between(3, 40)) : null;
+    const deniedAgo = type === 'denials' ? Math.max(4, p.appeal - daysLeft) : null;
+    const dosAgo = type === 'filing' ? p.tf - daysLeft : type === 'denials' ? deniedAgo + Math.round(between(18, 40)) : Math.round(between(24, 70));
+    const contracted = type === 'under' ? amt : null;
+    const paid = type === 'under' ? Math.round(amt * between(.62, .9)) : null;
+    const winByReason = { auth: .48, nec: .57, elig: .41, code: .74, info: .88 };
+    return {
+      type, client: c, payer: p, reason: r,
+      patient: pick(FIRST) + ' ' + pick(LAST),
+      dob: `${String(Math.ceil(between(0, 12))).padStart(2,'0')}/${String(Math.ceil(between(0, 28))).padStart(2,'0')}/${Math.round(between(1945, 2018))}`,
+      claim: 'CLM-' + (480000 + Math.round(rnd() * 99999)),
+      amt, daysLeft, contracted, paid,
+      win: r ? Math.min(.95, winByReason[r.k] * between(.85, 1.15)) : null,
+      status: type === 'filing' ? pick(['Rejected — not resubmitted', 'Never submitted', 'Held: missing auth #', 'Rejected — invalid NPI']) : null,
+      cpt: pick(['99214','99215','27447','93306','97110','90837','11102','29881','93000','99204']),
+      id: type + i, deniedAgo, dosAgo,
+      memberId: pick(['W', 'XJ', 'H', 'ZG', 'M']) + Math.round(between(1e8, 9e8)),
+      provider: pick(PROVIDERS), icd: pick(ICD),
+      priorAppeals: rnd() < .25 ? 1 : 0,
+      paidAgo: Math.round(between(2, 20)),
+      pattern: Math.round(between(3, 14)),
+    };
+  };
+  const CONTACTS = ['Dr. Ellen Park', 'Marisol Vega', 'Tom Haverford', 'Priscilla Moon', 'Gabe Ortiz', 'Dr. Naomi Burke', 'Ines Kowal'];
+  CLIENTS.forEach((c, i) => {
+    c.contact = CONTACTS[i]; c.contactRole = i % 2 ? 'Practice manager' : 'Owner / physician';
+    c.fee = [6.0, 5.5, 7.0, 5.0, 7.5, 8.0, 6.5][i]; c.since = [2019, 2021, 2022, 2020, 2023, 2024, 2021][i];
+    c.lastReport = ['Oct 2', 'Oct 1', 'Oct 3', 'Oct 1', 'Oct 6', 'Sep 4', 'Oct 2'][i];
+  });
+  const QUEUE = { denials: [], filing: [], under: [] };
+  for (let i = 0; i < 46; i++) QUEUE.denials.push(mkItem('denials', i));
+  for (let i = 0; i < 22; i++) QUEUE.filing.push(mkItem('filing', i));
+  for (let i = 0; i < 31; i++) QUEUE.under.push(mkItem('under', i));
+
+  /* ================= State ================= */
+  const state = { client: 'all', period: 12, tab: 'denials', phi: false, openQ: null, openC: null, q: '', hidden: new Set() };
+  const audit = [
+    { t: '08:02', who: 'Dana Reyes', what: 'Signed in (MFA: authenticator app)' },
+    { t: '08:04', who: 'System', what: 'Nightly 835/ERA import completed — 1,284 remittances' },
+    { t: '08:15', who: 'Jordan Pike', what: 'Exported Harbor Orthopedics month-end report' },
+    { t: '08:31', who: 'System', what: 'SimplePractice sync failed for Willow BH — retrying' },
+  ];
+
+  /* ================= Helpers ================= */
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const money = (v, d = 0) => '$' + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : Math.abs(v) >= 1e4 ? (v / 1e3).toFixed(d || 0) + 'K' : Math.round(v).toLocaleString());
+  const moneyFull = v => '$' + Math.round(v).toLocaleString();
+  const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const sel = () => state.client === 'all' ? CLIENTS : CLIENTS.filter(c => c.id === state.client);
+  const sumMonths = (cs, key, i) => cs.reduce((a, c) => a + (typeof key === 'function' ? key(c.months[i]) : c.months[i][key]), 0);
+  const chip = (kind, icon, text) => `<span class="chip chip-${kind}"><svg><use href="#i-${icon}"/></svg>${text}</span>`;
+  const mask = name => state.phi ? name : name.split(' ').map(w => w[0] + '•••').join(' ');
+  const maskDob = d => state.phi ? d : '••/••/' + d.slice(-4);
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+  // Tooltip
+  const tip = $('#tip');
+  const showTip = (html, e) => {
+    tip.innerHTML = html; tip.classList.add('on');
+    const r = tip.getBoundingClientRect();
+    let x = e.clientX + 14, y = e.clientY + 14;
+    if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+    if (y + r.height > innerHeight - 8) y = e.clientY - r.height - 14;
+    tip.style.left = x + 'px'; tip.style.top = y + 'px';
+  };
+  const hideTip = () => tip.classList.remove('on');
+  document.addEventListener('mousemove', e => {
+    const t = e.target.closest('[data-tip]');
+    if (t) showTip(decodeURIComponent(t.dataset.tip), e); else hideTip();
+  });
+  const tipRow = (sw, k, v) => `<div class="tt-row"><span class="tt-key">${sw ? `<i class="sw" style="background:${sw}"></i>` : ''}${k}</span><b class="num">${v}</b></div>`;
+  const enc = s => encodeURIComponent(s);
+
+  const toast = msg => { const t = $('#toast'); t.innerHTML = `<svg width="16" height="16" style="color: var(--good)"><use href="#i-check"/></svg>${msg}`; t.classList.add('on'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('on'), 2600); };
+
+  /* ================= Renderers ================= */
+  /* ================= Glass edition: shared pieces ================= */
+  const agoTxt = c => c.sync.ago === 'just now' ? 'just now' : c.sync.ago + ' ago';
+  function clientStats(c) {
+    const den = c.months[10].denied / c.months[10].claims;
+    const ar = c.aging.reduce((a, b) => a + b, 0);
+    const over90 = (c.aging[3] + c.aging[4]) / ar;
+    const days = ar / ((c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91);
+    const flags = (den > .1) + (days > 45) + (over90 > .22) + (c.clean < .88);
+    const health = flags >= 2 ? ['crit', 'alert', 'At risk'] : flags === 1 ? ['warn', 'alert', 'Watch'] : ['good', 'check', 'Healthy'];
+    return { c, den, ar, over90, days, health, flags, coll: c.months[10].collected };
+  }
+
+  function renderSources() {
+    const failed = CLIENTS.filter(c => !c.sync.ok).length;
+    $('#sourcesChip').innerHTML = `<span class="ring-sync" style="background:${failed ? 'var(--crit)' : 'var(--good)'}"></span>${failed ? `${failed} sync failed` : 'All sources synced'}`;
+    $('#sourcesChip').setAttribute('aria-label', `Data sources: ${failed ? failed + ' failed to sync' : 'all synced'}. Open details.`);
+  }
+  const sourcesHtml = () => `<p class="text-[13px] muted mb-4">Claims, remittances and payments are pulled from each practice’s system every 15 minutes.</p>
+    <ul class="flex flex-col">${CLIENTS.map(c => `<li class="flex items-center gap-3 py-3 border-b text-[13.5px]" style="border-color: var(--line)">
+      <span class="ring-sync" style="background:${c.sync.ok ? 'var(--good)' : 'var(--crit)'}"></span>
+      <span class="leading-tight"><b class="font-semibold">${c.name}</b><br><span class="faint text-[12px]">${c.pm}</span></span>
+      <span class="ml-auto text-right text-[12.5px] ${c.sync.ok ? 'faint' : ''}" ${c.sync.ok ? '' : 'style="color: var(--crit-ink)"'}>${c.sync.ok ? 'Synced ' + agoTxt(c) : 'Failed ' + agoTxt(c)}</span></li>`).join('')}</ul>
+    <button class="btn btn-primary mt-5" data-resync><svg width="15" height="15"><use href="#i-refresh"/></svg>Sync all sources</button>`;
+
+  /* ---------- KPI gauges ---------- */
+  const gradDefs = (id, x1, y1, x2, y2) => `<defs><linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"><stop offset="0" style="stop-color: var(--hl-2)"/><stop offset="1" style="stop-color: var(--hl)"/></linearGradient></defs>`;
+  const polar = (cx, cy, r, deg) => [cx + r * Math.cos(deg * Math.PI / 180), cy + r * Math.sin(deg * Math.PI / 180)];
+  const kHead = (icon, title, target, tab, label) => `<div class="card-head"><span class="icon-circle"><svg><use href="#i-${icon}"/></svg></span><h3 class="card-title">${title}</h3><button class="round-btn sm ml-auto" data-scroll="${target}"${tab ? ` data-tab-go="${tab}"` : ''} aria-label="${label}"><svg><use href="#i-arrow-ur"/></svg></button></div>`;
+  const kLine = (value, d, goodDir, note) => {
+    let delta = '';
+    if (d !== null) { const up = d >= 0, good = (goodDir === 'up') === up; delta = `<span class="delta ${good ? 'good' : 'bad'}">${up ? '+' : '−'}${pct(Math.abs(d))}</span>`; }
+    return `<div class="kpi-line"><span class="kpi-value num">${value}</span>${delta}<span class="faint">${delta ? '/ ' : ''}${note}</span></div>`;
+  };
+  const trackSwatch = 'background: var(--sunken); box-shadow: inset 0 0 0 1px var(--line-strong)';
+
+  function semiGauge(p, label, value) {
+    p = Math.max(0, Math.min(1, p));
+    const [tx, ty] = polar(130, 128, 104, 180 + 180 * p);
+    const d = 'M26 128 A104 104 0 0 1 234 128';
+    return `<div class="viz"><svg viewBox="0 0 260 142" aria-hidden="true">${gradDefs('gColl', 26, 128, Math.max(tx, 70), ty)}
+      <path d="${d}" class="g-track" pathLength="100"/>
+      <path d="${d}" class="g-fill" stroke="url(#gColl)" pathLength="100" stroke-dasharray="${(p * 100).toFixed(2)} 100"/></svg>
+      <div class="g-center" style="bottom: 8px"><span>${label}</span><b class="num">${value}</b></div></div>`;
+  }
+
+  // Rounded "stadium" track that fills clockwise from the bottom-left, like a running track.
+  function stadium(p, label, value) {
+    const W = 260, H = 108, sw = 12, x = sw / 2 + 2, y = sw / 2 + 2, w = W - 2 * x, h = H - 2 * y, r = h / 2;
+    const d = `M${x + r} ${y + h} A${r} ${r} 0 0 1 ${x + r} ${y} H${x + w - r} A${r} ${r} 0 0 1 ${x + w - r} ${y + h} Z`;
+    return `<div class="viz"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true">${gradDefs('gDen', x, y + h, x + w * .7, y)}
+      <path d="${d}" class="g-track thin" pathLength="100"/>
+      <path d="${d}" class="g-fill thin" stroke="url(#gDen)" pathLength="100" stroke-dasharray="${(p * 100).toFixed(2)} 100"/></svg>
+      <div class="g-center" style="top: 50%; transform: translateY(-50%)"><span>${label}</span><b class="num">${value}</b></div></div>`;
+  }
+
+  const DAYS = ['Oct 7', 'Oct 8', 'Oct 9', 'Oct 12', 'Oct 13', 'Oct 14', 'Oct 15', 'Oct 16', 'Oct 19'];
+  function sliders(vals) {
+    const W = 260, H = 154, top = 12, bot = H - 30, n = vals.length, max = Math.max(...vals) * 1.08;
+    const x = i => 14 + i * (W - 28) / (n - 1), y = v => bot - (bot - top) * v / max;
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Claims submitted per business day">${gradDefs('gSl', 0, bot, 0, top)}`;
+    vals.forEach((v, i) => {
+      const last = i === n - 1;
+      s += `<line x1="${x(i)}" x2="${x(i)}" y1="${top}" y2="${bot}" style="stroke: var(--sunken)" stroke-width="4" stroke-linecap="round"/>`;
+      s += `<circle cx="${x(i)}" cy="${top}" r="3" style="fill: var(--line-strong)"/><circle cx="${x(i)}" cy="${bot}" r="3" style="fill: var(--line-strong)"/>`;
+      s += `<line x1="${x(i)}" x2="${x(i)}" y1="${bot}" y2="${y(v)}" style="stroke: ${last ? 'url(#gSl)' : 'color-mix(in oklab, var(--hl) 38%, transparent)'}" stroke-width="${last ? 6 : 4}" stroke-linecap="round"/>`;
+      s += `<circle cx="${x(i)}" cy="${y(v)}" r="${last ? 6 : 4}" style="fill: ${last ? 'var(--hl)' : 'var(--elevated)'}; stroke: var(--hl)" stroke-width="2"/>`;
+    });
+    [[0, 'Oct 7'], [4, 'Oct 13'], [n - 1, 'Today']].forEach(([i, t]) => s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" font-size="11" style="fill: var(--ink-3)">${t}</text>`);
+    vals.forEach((v, i) => s += `<rect class="slider-hit" x="${x(i) - 13}" y="0" width="26" height="${bot + 8}" data-tip="${enc(`<b>${i === n - 1 ? 'Today' : DAYS[i]}</b>${tipRow('', 'Claims submitted', v.toLocaleString())}`)}"/>`);
+    return `<div class="viz">${s}</svg></div>`;
+  }
+
+  // 240° dial with day ticks, like a timer face; navy notch marks the target.
+  function dial(val, max, target, label, value) {
+    const cx = 130, cy = 134, r = 92, a = t => 150 + 240 * t, f = n => n.toFixed(1);
+    const [sx, sy] = polar(cx, cy, r, a(0)), [ex, ey] = polar(cx, cy, r, a(1)), p = Math.min(1, val / max), [tx, ty] = polar(cx, cy, r, a(p));
+    const d = `M${f(sx)} ${f(sy)} A${r} ${r} 0 1 1 ${f(ex)} ${f(ey)}`;
+    let s = `<svg viewBox="0 0 260 206" aria-hidden="true">${gradDefs('gDays', f(sx), f(sy), f(tx), f(ty))}<path d="${d}" class="g-track thin" pathLength="100"/><path d="${d}" class="g-fill thin" stroke="url(#gDays)" pathLength="100" stroke-dasharray="${(p * 100).toFixed(2)} 100"/>`;
+    for (let v = 0; v <= max; v += 2.5) {
+      const major = v % 15 === 0, [x1, y1] = polar(cx, cy, r + 13, a(v / max)), [x2, y2] = polar(cx, cy, r + (major ? 21 : 17), a(v / max));
+      s += `<line x1="${f(x1)}" y1="${f(y1)}" x2="${f(x2)}" y2="${f(y2)}" style="stroke: ${major ? 'var(--ink-3)' : 'var(--line-strong)'}" stroke-width="${major ? 1.6 : 1.2}" stroke-linecap="round"/>`;
+      if (major) { const [lx, ly] = polar(cx, cy, r + 32, a(v / max)); s += `<text x="${f(lx)}" y="${f(ly + 4)}" text-anchor="middle" font-size="10.5" style="fill: var(--ink-3)">${v}</text>`; }
+    }
+    const [m1x, m1y] = polar(cx, cy, r - 11, a(target / max)), [m2x, m2y] = polar(cx, cy, r + 11, a(target / max));
+    s += `<line x1="${f(m1x)}" y1="${f(m1y)}" x2="${f(m2x)}" y2="${f(m2y)}" style="stroke: var(--brand)" stroke-width="3" stroke-linecap="round"/>`;
+    return `<div class="viz">${s}</svg><div class="g-center" style="top: 52%; transform: translateY(-50%)"><span>${label}</span><b class="num">${value}</b></div></div>`;
+  }
+
+  function renderKpis() {
+    const cs = sel(), L = 11, P = 10, ids = cs.map(c => c.id);
+    const coll = sumMonths(cs, 'collected', L), collPrev = sumMonths(cs, 'collected', P) * .62, lastMonth = sumMonths(cs, 'collected', P);
+    const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
+    const daily = cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
+    const days = ar / daily, daysPrev = days * 1.06;
+    const den = sumMonths(cs, 'denied', L) / sumMonths(cs, 'claims', L), denPrev = sumMonths(cs, 'denied', P) / sumMonths(cs, 'claims', P);
+    const clean = cs.reduce((a, c) => a + c.clean * c.base, 0) / cs.reduce((a, c) => a + c.base, 0);
+    const sub = sumMonths(cs, 'claims', L), subPrev = sumMonths(cs, 'claims', P), denied = sumMonths(cs, 'denied', L);
+    const paid = Math.round(sub * .63), pend = sub - paid - denied;
+    const vals = DAYS.map((_, i) => Math.round(sub / 13 * (1 + .2 * Math.sin(i * 1.7 + cs.length))));
+    const rec = QUEUE.denials.filter(q => ids.includes(q.client.id)).reduce((a, q) => a + q.amt * q.win, 0);
+    const worked = .59, dtp = Math.round(cs.reduce((a, c) => a + c.ar, 0) / cs.length * .55);
+
+    const cards = [
+      kHead('dollar', 'Collections', 'revenue', null, 'Open the revenue chart') + kLine(money(coll, 1), coll / collPrev - 1, 'up', 'vs. last month') +
+        `<div class="mt-auto">${semiGauge(coll / lastMonth, 'Last month', money(lastMonth, 1))}<div class="kleg"><span><i style="background: var(--hl)"></i>Collected ${pct(coll / lastMonth, 0)}</span><span><i style="${trackSwatch}"></i>Left to match</span></div></div>`,
+      kHead('file', 'Claims submitted', 'queue', 'filing', 'Open claims near their filing limit') + kLine(sub.toLocaleString(), sub / subPrev - 1, 'up', `${pct(clean, 0)} clean first pass`) +
+        `<div class="mt-auto">${sliders(vals)}<div class="kleg"><span><i style="background: var(--good)"></i>Paid ${paid.toLocaleString()}</span><span><i style="background: var(--warn)"></i>Pending ${pend.toLocaleString()}</span><span><i style="background: var(--crit)"></i>Denied ${denied}</span></div></div>`,
+      kHead('x', 'Denials', 'queue', 'denials', 'Open the appeals queue') + kLine(pct(den), den / denPrev - 1, 'down', 'vs. last month') +
+        `<div class="mt-auto">${stadium(worked, 'Recoverable', moneyFull(rec))}<div class="kleg"><span><i style="background: var(--hl)"></i>Worked ${pct(worked, 0)}</span><span><i style="${trackSwatch}"></i>Not yet worked</span></div></div>`,
+      kHead('clock', 'Days in A/R', 'aging', null, 'Open the aging report') + kLine(days.toFixed(1), days / daysPrev - 1, 'down', 'target 40') +
+        `<div class="mt-auto">${dial(days, 60, 40, 'Avg. days to pay', dtp + ' days')}<div class="kleg"><span><i style="background: var(--hl)"></i>Current ${days.toFixed(0)} days</span><span><i style="background: var(--brand); width: 4px"></i>Target 40</span></div></div>`,
+    ];
+    $('#kpis').innerHTML = cards.map((c, i) => `<article class="card p-5 sm:p-6 flex flex-col rise" style="animation-delay:${.14 + i * .06}s">${c}</article>`).join('');
+  }
+
+  /* ---------- Hero ---------- */
+  function renderHero() {
+    const cs = sel(), ids = cs.map(c => c.id), one = CLIENTS.find(c => c.id === state.client);
+    $('#heroTitle').textContent = one ? one.name : 'All practices';
+    $('#heroSub').innerHTML = one
+      ? `${one.spec} on ${one.pm}<br>${one.sync.ok ? 'Synced ' + agoTxt(one) : 'Sync failed ' + agoTxt(one)}, client since ${one.since}`
+      : `Seven practices billed through one queue<br>October 1 to 19, 2026`;
+    const stats = cs.map(clientStats);
+    $('#healthDots').innerHTML = stats.map(st => `<button class="hdot hdot-${st.health[0]}" data-focus="${st.c.id}" aria-label="${st.c.name}: ${st.health[2]}" data-tip="${enc(`<b>${st.c.name}</b><div class="faint">${st.health[2]}</div>`)}"></button>`).join('');
+    const risk = stats.filter(s => s.health[0] === 'crit').length, watch = stats.filter(s => s.health[0] === 'warn').length;
+    $('#healthText').textContent = one ? stats[0].health[2] : [risk && `${risk} at risk`, watch && `${watch} to watch`].filter(Boolean).join(', ') || 'All practices healthy';
+
+    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7).sort((a, b) => a.daysLeft - b.daysLeft);
+    $('#dueCount').textContent = `${due.length} due`;
+    $('#dueList').innerHTML = due.slice(0, 3).map(q => `<button class="due-item" data-open-q="${q.id}"><b>${q.client.short}</b><span class="num">${money(q.amt)}, ${q.daysLeft}d left</span></button>`).join('')
+      || '<p class="faint text-[13px]">Nothing due in the next 7 days.</p>';
+
+    const failed = cs.filter(c => !c.sync.ok);
+    const rej = Math.round(sumMonths(cs, 'claims', 11) * .031);
+    const rec = QUEUE.denials.filter(q => ids.includes(q.client.id)).reduce((a, q) => a + q.amt * q.win, 0);
+    $('#alertMeta').textContent = one ? one.short : 'Monday, October 19';
+    $('#alertList').innerHTML = [
+      failed.length ? ['crit', `${failed.map(c => c.short).join(', ')} sync failed`] : ['good', 'All data sources synced'],
+      ['hl', `${due.length} appeal${due.length === 1 ? '' : 's'} due in 7 days`],
+      ['warn', `${rej} clearinghouse rejects`],
+    ].map(([k, t]) => `<li><span class="ring ring-${k}"></span>${t}</li>`).join('');
+    $('#alertValue').textContent = moneyFull(rec);
+  }
+
+  /* ---------- Filters ---------- */
+  const SECTIONS = [['queue', 'Work queue'], ['trends', 'Denials and aging'], ['clients', 'Practices']];
+  function renderChips() {
+    $('#chips').innerHTML = SECTIONS.map(([k, l]) => state.hidden.has(k)
+      ? `<button class="fchip fchip-off" data-show="${k}">+ ${l}</button>`
+      : `<span class="fchip">${l}<button data-hide="${k}" aria-label="Hide ${l}"><svg width="12" height="12"><use href="#i-close"/></svg></button></span>`).join('');
+    $$('[data-section]').forEach(el => el.classList.toggle('section-hidden', state.hidden.has(el.dataset.section)));
+  }
+  const ORDER = () => ['all', ...CLIENTS.map(c => c.id)];
+  function renderPager() {
+    const i = ORDER().indexOf(state.client);
+    $('#pagerLabel').textContent = i === 0 ? 'All' : `${String(i).padStart(2, '0')}/${String(CLIENTS.length).padStart(2, '0')}`;
+  }
+
+  const focusClient = id => { state.client = id; state.openQ = null; $('#clientSelect').value = id; renderAll(); };
+  const scrollToSection = id => {
+    const el = document.getElementById(id); if (!el) return;
+    const sec = el.closest('[data-section]'); if (sec && state.hidden.has(sec.dataset.section)) { state.hidden.delete(sec.dataset.section); renderChips(); }
+    id === 'top' ? window.scrollTo({ top: 0, behavior: 'smooth' }) : el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  let railLock = 0;
+  const railSpy = () => {
+    if (Date.now() < railLock) return;
+    let cur = 'top', lastTop = -Infinity;
+    ['queue', 'denials', 'aging', 'clients'].forEach(id => {
+      const el = document.getElementById(id); if (!el || el.closest('.section-hidden')) return;
+      const t = el.getBoundingClientRect().top;
+      if (t < innerHeight * .4 && t > lastTop + 20) { cur = id; lastTop = t; }
+    });
+    $$('[data-rail]').forEach(b => b.classList.toggle('is-active', b.dataset.rail === cur));
+  };
+
+  function renderRevenue() {
+    const cs = sel(), n = state.period, start = 12 - n;
+    const idx = [...Array(n)].map((_, i) => start + i);
+    const coll = idx.map(i => sumMonths(cs, 'collected', i));
+    const chg = idx.map(i => sumMonths(cs, 'allowed', i));
+    const W = Math.max(340, $('#revChart').clientWidth || 760), H = W < 600 ? 220 : 250, pl = 44, pr = 8, pt = 10, pb = 28;
+    const max = Math.max(...chg, ...coll) * 1.1;
+    const step = niceStep(max / 4), top = step * 4;
+    const x = i => pl + (W - pl - pr) * (i + .5) / n, bw = Math.min(30, (W - pl - pr) / n * .5);
+    const y = v => pt + (H - pt - pb) * (1 - v / top);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Monthly collections and allowed charges"><defs><linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color: var(--hl)"/><stop offset="1" style="stop-color: var(--hl-2)"/></linearGradient></defs><g class="grid">`;
+    for (let k = 0; k <= 4; k++) s += `<line x1="${pl}" x2="${W - pr}" y1="${y(step * k)}" y2="${y(step * k)}"/>`;
+    s += `</g><g class="axis">`;
+    for (let k = 0; k <= 4; k++) s += `<text x="${pl - 8}" y="${y(step * k) + 4}" text-anchor="end">${money(step * k)}</text>`;
+    idx.forEach((m, i) => s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${MONTHS[m]}</text>`);
+    s += `</g>`;
+    // hover highlight bands sit beneath the marks
+    const cw = (W - pl - pr) / n;
+    idx.forEach((m, i) => s += `<rect class="hl" data-i="${i}" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" rx="6"/>`);
+    // bars
+    idx.forEach((m, i) => {
+      const h = H - pb - y(coll[i]), r = Math.min(4, h);
+      const mtd = m === 11;
+      s += `<path class="bar-anim" style="animation-delay:${i * .03}s" d="M${x(i) - bw/2},${H - pb} V${y(coll[i]) + r} q0,-${r} ${r},-${r} H${x(i) + bw/2 - r} q${r},0 ${r},${r} V${H - pb} Z" fill="url(#revGrad)" ${mtd ? 'fill-opacity=".45"' : ''}/>`;
+    });
+    // line (allowed charges, same $ axis)
+    s += `<path d="${chg.map((v, i) => (i ? 'L' : 'M') + x(i) + ',' + y(v)).join(' ')}" fill="none" style="stroke: var(--brand)" stroke-width="2" stroke-linejoin="round"/>`;
+    chg.forEach((v, i) => s += `<circle cx="${x(i)}" cy="${y(v)}" r="4" style="fill: var(--brand); stroke: var(--elevated)" stroke-width="2"/>`);
+    // hover columns
+    idx.forEach((m, i) => {
+      const t = `<b>${MONTHS[m]} ${YEARS[m]}${m === 11 ? ' · MTD' : ''}</b>${tipRow('var(--hl)', 'Collections', moneyFull(coll[i]))}${tipRow('var(--brand)', 'Allowed charges', moneyFull(chg[i]))}${tipRow('', 'Collected / allowed', pct(coll[i] / chg[i]))}`;
+      s += `<rect class="hit" data-i="${i}" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" data-tip="${enc(t)}"/>`;
+    });
+    s += `</svg>`;
+    $('#revChart').innerHTML = s;
+    const svg = $('#revChart svg');
+    svg.querySelectorAll('.hit').forEach(h => h.addEventListener('mouseenter', () => svg.querySelectorAll('.hl').forEach(b => b.style.opacity = b.dataset.i === h.dataset.i ? 1 : 0)));
+    svg.addEventListener('mouseleave', () => svg.querySelectorAll('.hl').forEach(h => h.style.opacity = 0));
+
+    $('#revLegend').innerHTML = `<span><i style="background: linear-gradient(var(--hl), var(--hl-2))"></i>Collections</span><span><i style="background: var(--brand); height: 3px; border-radius: 2px;"></i>Allowed charges</span>`;
+    const full = coll.slice(0, -1), ytd = idx.reduce((a, m, i) => a + (YEARS[m] === 2026 ? coll[i] : 0), 0);
+    const ncr = full.reduce((a, b) => a + b, 0) / chg.slice(0, -1).reduce((a, b) => a + b, 0);
+    $('#revFoot').innerHTML = `<span>2026 YTD <b class="num" style="color: var(--ink)">${money(ytd, 2)}</b></span><span>Net collection rate <b class="num" style="color: var(--ink)">${pct(ncr)}</b></span><span>Best month <b style="color: var(--ink)">${MONTHS[idx[full.indexOf(Math.max(...full))]]}</b></span><span class="faint">October is month-to-date</span>`;
+  }
+
+  function niceStep(raw) {
+    const p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p;
+  }
+
+  function renderDenials() {
+    const cs = sel(), n = 6, idx = [6,7,8,9,10,11];
+    const data = idx.map(m => REASONS.map(r => cs.reduce((a, c) => a + c.months[m].byReason[r.k], 0)));
+    const totals = data.map(d => d.reduce((a, b) => a + b, 0));
+    const W = Math.max(300, $('#denChart').clientWidth || 360), H = 210, pl = 30, pr = 4, pt = 8, pb = 26;
+    const step = niceStep(Math.max(...totals) * 1.1 / 4), top = step * 4;
+    const y = v => pt + (H - pt - pb) * (1 - v / top);
+    const cw = (W - pl - pr) / n, bw = Math.min(30, cw * .52);
+    let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Denials by root cause, last six months"><g class="grid">`;
+    for (let k = 0; k <= 4; k++) s += `<line x1="${pl}" x2="${W - pr}" y1="${y(step * k)}" y2="${y(step * k)}"/>`;
+    s += `</g><g class="axis">`;
+    for (let k = 0; k <= 4; k++) s += `<text x="${pl - 6}" y="${y(step * k) + 4}" text-anchor="end">${step * k}</text>`;
+    idx.forEach((m, i) => s += `<text x="${pl + cw * (i + .5)}" y="${H - 8}" text-anchor="middle">${MONTHS[m]}</text>`);
+    s += `</g>`;
+    data.forEach((d, i) => {
+      const cx = pl + cw * (i + .5);
+      let acc = 0;
+      s += `<g class="bar-anim" style="animation-delay:${i * .05}s">`;
+      d.forEach((v, j) => {
+        if (!v) return;
+        const y0 = y(acc), y1 = y(acc + v); acc += v;
+        const isTop = d.slice(j + 1).every(z => !z), h = y0 - y1 - (isTop ? 0 : 2), r = isTop ? Math.min(4, h) : 0;
+        s += `<path d="M${cx - bw/2},${y0} V${y1 + r + (isTop ? 0 : 2)} ${r ? `q0,-${r} ${r},-${r} H${cx + bw/2 - r} q${r},0 ${r},${r}` : `H${cx + bw/2}`} V${y0} Z" fill="var(--s${j + 1})" transform="translate(0,${isTop ? 0 : 0})"/>`;
+      });
+      s += `</g>`;
+      const t = `<b>${MONTHS[idx[i]]} ${YEARS[idx[i]]} · ${totals[i]} denials</b>` + REASONS.map((r, j) => tipRow(`var(--s${j + 1})`, r.label, d[j])).reverse().join('');
+      s += `<rect class="hit" x="${pl + cw * i}" y="${pt}" width="${cw}" height="${H - pt - pb}" data-tip="${enc(t)}"/>`;
+    });
+    s += `</svg>`;
+    $('#denChart').innerHTML = s;
+    $('#denLegend').innerHTML = REASONS.map((r, j) => `<span><i style="background: var(--s${j + 1})"></i>${r.label}</span>`).join('');
+
+    // insight: biggest growing cause
+    const first = data.slice(0, 3).reduce((a, d) => a.map((v, j) => v + d[j]), REASONS.map(() => 0));
+    const last = data.slice(3).reduce((a, d) => a.map((v, j) => v + d[j]), REASONS.map(() => 0));
+    const growth = REASONS.map((r, j) => ({ r, g: last[j] / Math.max(1, first[j]) - 1, j }));
+    const worst = growth.sort((a, b) => b.g - a.g)[0];
+    const driver = cs.slice().sort((a, b) => b.months[11].byReason[worst.r.k] - a.months[11].byReason[worst.r.k])[0];
+    const fix = { auth: 'Turn on the pre-submission auth check for MRI, surgery and DME codes', nec: 'Attach LCD/NCD diagnosis crosswalk to high-risk CPTs', elig: 'Run real-time eligibility 48h before every visit', code: 'Add NCCI edit scrub before claims leave the queue', info: 'Block submission when NPI, modifier or referral is missing' }[worst.r.k];
+    $('#denInsight').innerHTML = `
+      <div class="flex items-center gap-2 text-[12px] font-semibold" style="color: var(--accent)"><svg width="14" height="14"><use href="#i-spark"/></svg>Root-cause alert</div>
+      <p class="text-[13.5px] mt-2 leading-[1.55]"><b>${worst.r.label}</b> denials are ${worst.g >= 0 ? 'up' : 'down'} <b class="num">${pct(Math.abs(worst.g), 0)}</b> quarter over quarter${cs.length > 1 ? `, led by <b>${driver.short}</b>` : ''} (${worst.r.code}).</p>
+      <p class="text-[12.5px] muted mt-1.5 leading-[1.55]">${fix}.</p>
+      <button class="btn btn-ghost btn-sm mt-3" data-toast="Prevention rule queued for review">Create prevention rule</button>`;
+  }
+
+  const QUEUE_META = {
+    denials: { blurb: 'Denied claims sorted by expected recovery (amount × likelihood to overturn). Payer appeal windows are tracked per contract, so nothing quietly expires.', solves: '<b>Solves</b> the majority of denied claims that are never resubmitted' },
+    filing:  { blurb: 'Rejected, held or never-sent claims approaching each payer\'s timely filing limit. Once a limit passes, that revenue is almost never recoverable.', solves: '<b>Solves</b> write-offs from missed timely filing limits that vary by payer' },
+    under:   { blurb: 'Payments posted below the contracted rate. Variances are flagged when the ERA posts, before they flow through to the patient\'s statement.', solves: '<b>Solves</b> underpayments that go undetected and get billed wrong to patients' },
+  };
+
+  function deadlineChip(d) {
+    if (d <= 7) return chip('crit', 'alert', `${d}d left`);
+    if (d <= 21) return chip('serious', 'clock', `${d}d left`);
+    if (d <= 35) return chip('warn', 'clock', `${d}d left`);
+    return chip('neutral', 'clock', `${d}d left`);
+  }
+
+  /* ---------- Expandable row details ---------- */
+  const TODAY = new Date(2026, 9, 19);
+  const dayStr = off => { const d = new Date(TODAY); d.setDate(d.getDate() + off); return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+  const sec = (title, body) => `<div class="eyebrow mb-3">${title}</div>${body}`;
+  const kv = pairs => `<dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-[13px] leading-[1.45]">${pairs.map(([k, v]) => `<dt class="faint">${k}</dt><dd class="text-right num font-medium min-w-0">${v}</dd>`).join('')}</dl>`;
+  const timeline = steps => `<ol class="tl">${steps.map(st => `<li class="${st.state || ''}"><span class="tl-dot"></span><div><div class="text-[13px] font-medium">${st.label}</div><div class="text-[12px] faint num">${st.date}${st.note ? ' · ' + st.note : ''}</div></div></li>`).join('')}</ol>`;
+  const steps = list => `<ol class="check-list">${list.map((t, i) => `<li><span class="n">${i + 1}</span><span>${t}</span></li>`).join('')}</ol>`;
+  const panel = (cols, actions) => `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">${cols.map(c => `<div class="min-w-0">${c}</div>`).join('')}</div>${actions ? `<div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">${actions}</div>` : ''}</div>`;
+  const patientBlock = q => sec('Patient &amp; encounter', kv([
+    ['Patient', `<span class="phi">${esc(mask(q.patient))}</span>`],
+    ['Member ID', `<span class="phi">${state.phi ? q.memberId : '•••••' + q.memberId.slice(-4)}</span>`],
+    ['Rendering', q.provider],
+    ['Diagnosis', `<span class="phi">${state.phi ? q.icd : '•••'}</span>`],
+    ['CPT', `<span class="phi">${q.cpt}</span>`],
+    ['Practice', q.client.short],
+  ]) + (state.phi ? '' : `<p class="text-[11.5px] faint mt-3 flex items-center gap-1.5"><svg width="12" height="12"><use href="#i-lock"/></svg>Identifiers masked. Use “PHI masked” in the top bar to reveal.</p>`));
+
+  const DENIAL_INFO = {
+    auth: { why: 'Service required prior authorization and none was on file with the payer.', fix: ['Request retro-authorization, or pull proof the auth was obtained', 'Attach clinical notes for the date of service', 'Include a letter of medical necessity from the provider'] },
+    nec:  { why: 'Payer considers the service not medically necessary for the diagnosis billed.', fix: ['Attach progress notes that support the diagnosis', 'Cite the payer’s coverage policy (LCD/NCD or medical policy)', 'Document prior conservative treatment'] },
+    elig: { why: 'Coverage was inactive or terminated on the date of service.', fix: ['Re-run eligibility (270/271) for the date of service', 'If other coverage is found, bill the correct payer', 'Otherwise move balance to patient with a coverage update form'] },
+    code: { why: 'Procedure was bundled into another service paid on the same date.', fix: ['Check the NCCI edit for this CPT pair', 'Add modifier 59/XS if the service was distinct', 'Attach the procedure note showing a separate site or session'] },
+    info: { why: 'Claim was missing information needed to adjudicate it. Usually fixable without an appeal.', fix: ['Add the missing referring NPI, modifier or units', 'Send a corrected claim (frequency code 7)', 'No appeal letter needed'] },
+  };
+  const FILING_INFO = {
+    'Rejected — not resubmitted': { why: 'Payer front-end rejection (277CA): subscriber ID not found. A correction was never resubmitted.', fix: ['Verify member ID against the card or a 270 eligibility check', 'Correct the subscriber ID on the claim', 'Resubmit electronically today and keep the acceptance report'] },
+    'Never submitted': { why: 'Charge exists in the PM system, but no claim was created: the encounter note is unsigned.', fix: ['Ask the provider to sign the encounter note', 'Generate the claim from the signed encounter', 'Submit in today’s batch'] },
+    'Held: missing auth #': { why: 'Held by the claim scrubber: this CPT requires an authorization number for this payer.', fix: ['Pull the auth number from the payer portal', 'Add it to the claim (Box 23 / REF*G1)', 'Release the hold and submit'] },
+    'Rejected — invalid NPI': { why: 'Clearinghouse rejection: rendering NPI is not enrolled with this payer.', fix: ['Confirm the provider’s enrollment status with the payer', 'Bill under the enrolled group NPI if the contract allows', 'Resubmit and keep proof of timely filing'] },
+  };
+
+  function queueDetail(q) {
+    if (q.type === 'denials') {
+      const info = DENIAL_INFO[q.reason.k];
+      const expected = q.amt * .56;
+      return panel([
+        sec('Claim timeline', timeline([
+          { state: 'done', label: 'Date of service', date: dayStr(-q.dosAgo) },
+          { state: 'done', label: 'Submitted to ' + q.payer.n, date: dayStr(-q.dosAgo + 3), note: 'accepted by clearinghouse' },
+          { state: 'bad', label: `Denied ${q.reason.code}`, date: dayStr(-q.deniedAgo), note: 'via 835 remittance' },
+          ...(q.priorAppeals ? [{ state: 'bad', label: 'Level 1 appeal upheld', date: dayStr(-Math.round(q.deniedAgo / 2)) }] : []),
+          { state: 'next', label: `${q.priorAppeals ? 'Level 2' : 'Level 1'} appeal deadline`, date: dayStr(q.daysLeft), note: `${q.payer.appeal}-day window` },
+        ])),
+        sec('Why it was denied', `<p class="text-[13px] leading-[1.55]"><b>${q.reason.label}.</b> ${info.why}</p>`) +
+          `<div class="mt-4">${sec('To overturn', steps(info.fix))}</div>`,
+        sec('Recovery', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(expected)], ['Win odds', pct(q.win, 0)], ['Expected recovery', `<b>${moneyFull(expected * q.win)}</b>`]])) +
+          `<div class="mt-5">${patientBlock(q)}</div>`,
+      ], `<button class="btn btn-primary btn-sm" data-toast="Appeal draft for ${q.claim} started with ${q.payer.n} template">Draft appeal</button>
+          <button class="btn btn-ghost btn-sm" data-toast="Call logged to ${q.claim}"><svg width="14" height="14"><use href="#i-phone"/></svg>Log payer call</button>
+          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+          <span class="claim-id ml-auto">${q.claim}</span>`);
+    }
+    if (q.type === 'filing') {
+      const info = FILING_INFO[q.status];
+      return panel([
+        sec('Filing clock', timeline([
+          { state: 'done', label: 'Date of service', date: dayStr(-q.dosAgo) },
+          { state: 'bad', label: q.status, date: dayStr(-Math.max(1, q.dosAgo - 6)) },
+          { state: 'next', label: `${q.payer.n} filing limit`, date: dayStr(q.daysLeft), note: `${q.payer.tf} days from service` },
+        ])) + `<div class="mt-4">${deadlineChip(q.daysLeft)}</div>`,
+        sec('What’s blocking it', `<p class="text-[13px] leading-[1.55]">${info.why}</p>`) +
+          `<div class="mt-4">${sec('Fix', steps(info.fix))}</div>`,
+        sec('Amount at risk', kv([['Billed', moneyFull(q.amt)], ['Expected allowed', moneyFull(q.amt * .56)], ['Recoverable after limit', '<span style="color: var(--crit-ink)">≈ $0</span>']])) +
+          `<div class="mt-5">${patientBlock(q)}</div>`,
+      ], `<button class="btn btn-primary btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button>
+          <button class="btn btn-ghost btn-sm" data-toast="Provider sign-off requested for ${q.claim}">Request sign-off</button>
+          <button class="btn btn-ghost btn-sm" data-toast="${q.claim} assigned to Jordan Pike">Assign</button>
+          <span class="claim-id ml-auto">${q.claim}</span>`);
+    }
+    // underpayment
+    const variance = q.contracted - q.paid;
+    const same = Math.round(variance * q.pattern * .9);
+    return panel([
+      sec('Line detail', kv([
+        ['CPT · units', `${q.cpt} · 1`],
+        ['Contract rate', moneyFull(q.contracted)],
+        ['Allowed on ERA', moneyFull(q.paid)],
+        ['Paid', moneyFull(q.paid)],
+        ['Adjustment', 'CO-45'],
+        ['Variance', `<span style="color: var(--crit-ink)">−${moneyFull(variance)} (${pct(variance / q.contracted, 0)})</span>`],
+      ])) + `<p class="text-[12px] faint mt-3">Paid ${dayStr(-q.paidAgo)} · ${q.payer.n} 2026 fee schedule</p>`,
+      sec('Pattern', `<p class="text-[13px] leading-[1.55]"><b>${q.payer.n}</b> also underpaid CPT ${q.cpt} on <b class="num">${q.pattern}</b> other claims this quarter, about <b class="num">${moneyFull(same)}</b> in total. That usually means the payer loaded an outdated fee schedule.</p>
+        <div class="mt-4 flex items-center gap-3 text-[12px]"><span class="faint w-16">This claim</span><div class="mini-bar flex-1"><i style="width:${Math.max(4, 100 / (q.pattern + 1))}%; background: var(--s2)"></i></div></div>
+        <div class="mt-2 flex items-center gap-3 text-[12px]"><span class="faint w-16">Same CPT</span><div class="mini-bar flex-1"><i style="width:100%; background: var(--s2); opacity:.55"></i></div></div>`) +
+        `<div class="mt-4">${chip('warn', 'hourglass', 'Patient statement on hold')}</div><p class="text-[12px] faint mt-2">Held so the patient isn’t billed from the wrong amount.</p>`,
+      patientBlock(q),
+    ], `<button class="btn btn-primary btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button>
+        <button class="btn btn-ghost btn-sm" data-toast="${q.pattern + 1} claims bundled into one ${q.payer.n} dispute">Bundle ${q.pattern + 1} claims</button>
+        <button class="btn btn-ghost btn-sm" data-toast="Variance report exported (de-identified)"><svg width="14" height="14"><use href="#i-download"/></svg>Export</button>
+        <span class="claim-id ml-auto">${q.claim}</span>`);
+  }
+
+  function clientDetail(r) {
+    const c = r.c, ci = CLIENTS.indexOf(c);
+    const mix = PAYERS.map((p, pi) => ({ n: p.n, v: c.payerAging[pi].reduce((a, b) => a + b, 0) })).sort((a, b) => b.v - a.v);
+    const mixTot = mix.reduce((a, m) => a + m.v, 0);
+    const reasons = REASONS.map((rs, j) => ({ rs, j, n: c.months[10].byReason[rs.k] })).sort((a, b) => b.n - a.n);
+    const maxR = Math.max(1, ...reasons.map(x => x.n));
+    const mine = k => QUEUE[k].filter(q => q.client === c);
+    const work = [
+      ['Appeals due', mine('denials').length, moneyFull(mine('denials').reduce((a, q) => a + q.amt * q.win, 0)), 'denials'],
+      ['Filing limits', mine('filing').length, moneyFull(mine('filing').reduce((a, q) => a + q.amt, 0)), 'filing'],
+      ['Underpaid', mine('under').length, moneyFull(mine('under').reduce((a, q) => a + q.contracted - q.paid, 0)), 'under'],
+    ];
+    return `<div class="detail-panel p-4 sm:p-5"><div class="grid gap-6 lg:grid-cols-3">
+      <div class="min-w-0">${sec('A/R by payer', mix.slice(0, 5).map(m => `<div class="flex items-center gap-3 text-[12.5px] mb-2"><span class="w-32 truncate">${m.n}</span><div class="mini-bar flex-1"><i style="width:${m.v / mix[0].v * 100}%; background: var(--seq3)"></i></div><span class="num w-14 text-right">${money(m.v)}</span><span class="num faint w-9 text-right">${pct(m.v / mixTot, 0)}</span></div>`).join(''))}
+        <div class="mt-4">${sec('Sep denials by cause', reasons.map(x => `<div class="flex items-center gap-3 text-[12.5px] mb-2"><span class="w-32 truncate">${x.rs.label}</span><div class="mini-bar flex-1"><i style="width:${x.n / maxR * 100}%; background: var(--s${x.j + 1})"></i></div><span class="num w-9 text-right">${x.n}</span></div>`).join(''))}</div></div>
+      <div class="min-w-0">${sec('Open work', `<ul class="flex flex-col gap-2">${work.map(([l, n, v, tab]) => `<li><button class="tile-btn focus-ring" data-jump="${tab}" data-jump-client="${c.id}"><span class="text-[13px] font-medium">${l}</span><span class="ml-auto text-right leading-tight"><b class="num text-[14px]">${n}</b><br><span class="num text-[11.5px] faint">${v}</span></span><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg></button></li>`).join('')}</ul>`)}
+        <p class="text-[12px] faint mt-3">Opens the work queue filtered to this practice.</p></div>
+      <div class="min-w-0">${sec('Account', kv([
+        ['Contact', `${c.contact}`], ['Role', c.contactRole], ['Client since', c.since], ['Fee', `${c.fee.toFixed(1)}% of collections`],
+        ['PM system', c.pm], ['Last sync', c.sync.ok ? c.sync.ago + ' ago' : `<span style="color: var(--crit-ink)">failed ${c.sync.ago} ago</span>`],
+        ['BAA', `on file · ${c.since}`], ['Last report sent', c.lastReport],
+      ]))}</div>
+    </div>
+    <div class="mt-5 pt-4 border-t flex flex-wrap items-center gap-2" style="border-color: var(--line)">
+      <button class="btn btn-primary btn-sm" data-focus="${c.id}">${state.client === c.id ? 'Show all clients' : 'Focus dashboard'}</button>
+      <button class="btn btn-ghost btn-sm" data-report="${c.id}"><svg width="14" height="14"><use href="#i-download"/></svg>Month-end report</button>
+      <button class="btn btn-ghost btn-sm" data-toast="Secure message to ${c.contact} drafted">Message ${c.contact.split(' ').slice(-2).join(' ')}</button>
+    </div></div>`;
+  }
+
+  function renderQueue() {
+    const ids = sel().map(c => c.id);
+    const items = QUEUE[state.tab].filter(q => ids.includes(q.client.id) && (!state.q || [q.claim, q.client.name, q.payer.n, q.reason?.label, q.status, q.cpt].join(' ').toLowerCase().includes(state.q)));
+    const top7 = () => { const v = items.slice(0, 7), x = items.find(q => q.id === state.openQ); if (x && !v.includes(x)) v.unshift(x); return v; };
+    let rows, head;
+    const patientCell = q => `<td class="pl-5 sm:pl-6"><div class="flex items-center gap-3"><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg><div><div class="phi">${esc(mask(q.patient))}</div><div class="text-[11.5px] faint phi">DOB ${maskDob(q.dob)}</div></div></div></td>`;
+    const rowOpen = q => `<tr class="expandable ${state.openQ === q.id ? 'is-open' : ''}" tabindex="0" aria-expanded="${state.openQ === q.id}" data-q="${q.id}">`;
+    const withDetail = (q, html) => html + (state.openQ === q.id ? `<tr class="detail"><td colspan="7">${queueDetail(q)}</td></tr>` : '');
+    const clientCell = q => `<td><div class="font-medium">${q.client.short}</div><div class="text-[12px] faint">${q.payer.n}</div></td>`;
+    if (state.tab === 'denials') {
+      items.sort((a, b) => b.amt * b.win - a.amt * a.win);
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Denial</th><th class="r">Billed</th><th>Win odds</th><th>Appeal window</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = top7().map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="font-medium">${q.reason.label}</div><div class="claim-id">${q.reason.code} · ${q.claim} · ${q.cpt}</div></td>
+        <td class="r num font-semibold">${moneyFull(q.amt)}</td>
+        <td><div class="flex items-center gap-2"><div class="w-14 h-1.5 rounded-full overflow-hidden" style="background: var(--sunken)"><div class="h-full rounded-full" style="width:${q.win * 100}%; background: var(--brand)"></div></div><span class="num text-[12.5px] muted">${pct(q.win, 0)}</span></div></td>
+        <td>${deadlineChip(q.daysLeft)}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Appeal draft for ${q.claim} started with payer template">Draft appeal</button></td>
+      </tr>`));
+    } else if (state.tab === 'filing') {
+      items.sort((a, b) => a.daysLeft - b.daysLeft);
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Status</th><th class="r">Billed</th><th>Payer limit</th><th>Time left</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = top7().map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="font-medium">${q.status}</div><div class="claim-id">${q.claim} · ${q.cpt}</div></td>
+        <td class="r num font-semibold">${moneyFull(q.amt)}</td>
+        <td class="num muted">${q.payer.tf} days</td>
+        <td>${deadlineChip(q.daysLeft)}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="${q.claim} moved to resubmission batch">Fix &amp; resubmit</button></td>
+      </tr>`));
+    } else {
+      items.sort((a, b) => (b.contracted - b.paid) - (a.contracted - a.paid));
+      head = `<tr><th class="pl-5 sm:pl-6">Patient</th><th>Practice / payer</th><th>Claim</th><th class="r">Contracted</th><th class="r">Paid</th><th class="r">Variance</th><th class="pr-5 sm:pr-6"></th></tr>`;
+      rows = top7().map(q => withDetail(q, `${rowOpen(q)}
+        ${patientCell(q)}
+        ${clientCell(q)}
+        <td><div class="claim-id">${q.claim}</div><div class="text-[12px] faint">CPT ${q.cpt}</div></td>
+        <td class="r num">${moneyFull(q.contracted)}</td>
+        <td class="r num muted">${moneyFull(q.paid)}</td>
+        <td class="r"><span class="chip chip-serious num"><svg><use href="#i-arrow-down"/></svg>${moneyFull(q.contracted - q.paid)}</span></td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-toast="Underpayment dispute for ${q.claim} queued with contract attached">Dispute</button></td>
+      </tr>`));
+    }
+    $('#queueTable').innerHTML = `<thead>${head}</thead><tbody>${rows.join('') || `<tr><td colspan="7" class="text-center py-10 faint">Nothing matches. Clear the search or pick another practice.</td></tr>`}</tbody>`;
+    const value = state.tab === 'denials' ? items.reduce((a, q) => a + q.amt * q.win, 0) : state.tab === 'filing' ? items.reduce((a, q) => a + q.amt, 0) : items.reduce((a, q) => a + q.contracted - q.paid, 0);
+    const lbl = { denials: 'expected recovery', filing: 'at risk', under: 'recoverable variance' }[state.tab];
+    $('#queueBlurb').innerHTML = `<b class="num" style="color: var(--ink)">${moneyFull(value)}</b> ${lbl} across ${items.length} claims. ${QUEUE_META[state.tab].blurb}`;
+    $('#queueSolves').innerHTML = QUEUE_META[state.tab].solves;
+    $('#queueCount').textContent = `(${items.length})`;
+    $('#navDenials').textContent = QUEUE.denials.filter(q => ids.includes(q.client.id)).length;
+  }
+
+  const BUCKETS = ['0–30', '31–60', '61–90', '91–120', '120+'];
+  function renderAging() {
+    const cs = sel();
+    const tot = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.aging[b], 0));
+    const all = tot.reduce((a, b) => a + b, 0);
+    $('#ageBar').innerHTML = tot.map((v, b) => `<div class="barx-anim h-full" style="flex:${v}; background: var(--seq${b + 1}); animation-delay:${b * .06}s" data-tip="${enc(`<b>${BUCKETS[b]} days</b>${tipRow(`var(--seq${b + 1})`, 'Balance', moneyFull(v))}${tipRow('', 'Share of A/R', pct(v / all))}`)}"></div>`).join('');
+    $('#ageBarLabels').style.gridTemplateColumns = tot.map(v => `${v}fr`).join(' ');
+    $('#ageBarLabels').innerHTML = tot.map((v, b) => `<div class="min-w-0 truncate"><b class="num">${money(v)}</b><span class="faint hidden sm:inline"> · ${pct(v / all, 0)}</span></div>`).join('');
+    $('#ageLegend').innerHTML = BUCKETS.map((l, b) => `<span><i style="background: var(--seq${b + 1})"></i>${l} days</span>`).join('');
+
+    const rows = PAYERS.map((p, pi) => {
+      const v = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.payerAging[pi][b], 0));
+      return { p, v, t: v.reduce((a, b) => a + b, 0), over: (v[3] + v[4]) };
+    }).sort((a, b) => b.t - a.t);
+    const maxCell = Math.max(...rows.flatMap(r => r.v));
+    $('#ageTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b}</th>`).join('')}<th class="r">Total</th><th class="r">Days to pay</th><th class="pr-5 sm:pr-6">90+ share</th></tr></thead><tbody>${rows.map(r => {
+      const share = r.over / r.t;
+      return `<tr><td class="pl-5 sm:pl-6 font-medium">${r.p.n}</td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${money(v)}</span></td>`).join('')}<td class="r num font-semibold">${money(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
+    }).join('')}</tbody>`;
+  }
+
+  function sparkline(vals, color) {
+    const W = 76, H = 26, mn = Math.min(...vals), mx = Math.max(...vals);
+    const pts = vals.map((v, i) => [i / (vals.length - 1) * (W - 4) + 2, H - 3 - (v - mn) / (mx - mn || 1) * (H - 6)]);
+    return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="${pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ')}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${pts.at(-1)[0]}" cy="${pts.at(-1)[1]}" r="2.5" fill="${color}"/></svg>`;
+  }
+
+  function renderClients() {
+    const rows = CLIENTS.map(clientStats).sort((a, b) => b.flags - a.flags || b.coll - a.coll);
+    const cell = (v, bad, fmt) => `<td class="r num ${bad ? 'font-semibold' : ''}" ${bad ? 'style="color: var(--crit-ink)"' : ''}>${fmt(v)}</td>`;
+    $('#clientTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Practice</th><th>Health</th><th class="r">Sep collected</th><th>Trend</th><th class="r">Net coll.</th><th class="r">Denial rate</th><th class="r">A/R days</th><th class="r">A/R 90+</th><th class="r">Clean</th><th class="pr-5 sm:pr-6"></th></tr></thead><tbody>${rows.map(r => `
+      <tr class="expandable ${state.openC === r.c.id ? 'is-open' : ''}" tabindex="0" aria-expanded="${state.openC === r.c.id}" data-client="${r.c.id}">
+        <td class="pl-5 sm:pl-6"><div class="flex items-center gap-3"><svg class="chev" width="14" height="14"><use href="#i-chev"/></svg><div><div class="font-semibold">${r.c.name}${state.client === r.c.id ? ' <span class="chip chip-neutral ml-1">Focused</span>' : ''}</div><div class="text-[12px] faint">${r.c.spec} · ${r.c.pm}</div></div></div></td>
+        <td>${chip(...r.health)}</td>
+        <td class="r num font-semibold">${moneyFull(r.coll)}</td>
+        <td>${sparkline(r.c.months.slice(0, 11).map(m => m.collected), 'var(--s1)')}</td>
+        ${cell(r.c.ncr, r.c.ncr < .95, v => pct(v))}
+        ${cell(r.den, r.den > .1, v => pct(v))}
+        ${cell(r.days, r.days > 45, v => v.toFixed(0))}
+        ${cell(r.over90, r.over90 > .22, v => pct(v, 0))}
+        ${cell(r.c.clean, r.c.clean < .88, v => pct(v, 0))}
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-report="${r.c.id}">Report</button></td>
+      </tr>${state.openC === r.c.id ? `<tr class="detail"><td colspan="10">${clientDetail(r)}</td></tr>` : ''}`).join('')}</tbody>`;
+  }
+
+  function renderClientSelect() {
+    $('#clientSelect').innerHTML = `<option value="all">All practices</option>` + CLIENTS.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    $('#clientSelect').value = state.client;
+  }
+
+  function renderHeader() { renderHero(); }
+
+  function renderAll() { renderHero(); renderKpis(); renderRevenue(); renderDenials(); renderQueue(); renderAging(); renderClients(); renderPager(); renderChips(); }
+
+  /* ================= Drawers & modals ================= */
+  const openDrawer = (title, html) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer [data-close-drawer]').focus(); };
+  const closeDrawer = () => { $('#drawer').classList.remove('on'); $('#drawerScrim').classList.remove('on'); };
+  const auditHtml = () => `<p class="text-[13px] muted mb-4">Every PHI reveal, export and sign-in is recorded. Retained for 6 years.</p><ol class="flex flex-col">${audit.slice().reverse().map(a => `<li class="flex gap-4 py-3 border-b text-[13.5px]" style="border-color: var(--line)"><span class="num faint w-12 shrink-0">${a.t}</span><span><b>${a.who}</b><br><span class="muted">${esc(a.what)}</span></span></li>`).join('')}</ol>`;
+  const reportHtml = id => {
+    const c = CLIENTS.find(x => x.id === id) || null;
+    const name = c ? c.name : 'All clients';
+    return `<p class="text-[13px] muted">Month-end performance report for <b style="color: var(--ink)">${name}</b>, ready to send. Patient identifiers are excluded.</p>
+      <div class="card p-4 mt-4 flex flex-col gap-2 text-[13.5px]">${['Collections & net collection rate', 'Denials by root cause + what we fixed', 'A/R aging by payer', 'Recovered from appeals & underpayments', 'Next month’s focus'].map(s => `<label class="flex items-center gap-3"><input type="checkbox" checked> ${s}</label>`).join('')}</div>
+      <div class="mt-4 rounded-[14px] p-4 border text-[13px]" style="border-color: var(--line); background: var(--sunken)"><div class="eyebrow">Recovered for this client in Sep</div><div class="font-display text-[34px] num mt-1">${moneyFull((c ? c.underpaid : CLIENTS.reduce((a, x) => a + x.underpaid, 0)) * 2.4)}</div><div class="faint">From overturned denials and underpayment disputes</div></div>
+      <div class="mt-5 flex gap-2"><button class="btn btn-primary" data-export="${name}"><svg width="16" height="16"><use href="#i-download"/></svg>Export PDF</button><button class="btn btn-ghost" data-toast="Scheduled: first business day of each month">Schedule monthly</button></div>`;
+  };
+
+  const openModal = () => { $('#phiModal').classList.add('on'); $('#modalScrim').classList.add('on'); $('#phiConfirm').focus(); };
+  const closeModal = () => { $('#phiModal').classList.remove('on'); $('#modalScrim').classList.remove('on'); };
+  const now = () => new Date().toTimeString().slice(0, 5);
+
+  let remaskTimer;
+  function setPhi(on) {
+    state.phi = on;
+    $('#phiToggle').setAttribute('aria-pressed', on);
+    $('#phiIcon').innerHTML = `<use href="#i-${on ? 'eye' : 'eye-off'}"/>`;
+    $('#phiLabel').textContent = on ? 'PHI visible' : 'PHI masked';
+    $('#phiToggle').style.cssText = on ? 'background: var(--warn-bg); color: var(--warn-ink); border-color: transparent' : '';
+    clearTimeout(remaskTimer);
+    if (on) remaskTimer = setTimeout(() => { setPhi(false); audit.push({ t: now(), who: 'System', what: 'PHI auto re-masked after 5 minutes' }); }, 5 * 60 * 1000);
+    renderQueue();
+  }
+
+  /* ================= Events ================= */
+  $('#clientSelect').addEventListener('change', e => { state.client = e.target.value; state.openQ = null; renderAll(); });
+  $$('[data-period]').forEach(b => b.addEventListener('click', () => { state.period = +b.dataset.period; $$('[data-period]').forEach(x => x.setAttribute('aria-pressed', x === b)); renderRevenue(); }));
+  const setTab = tab => { state.tab = tab; state.openQ = null; $$('[data-tab]').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === tab)); renderQueue(); };
+  $$('[data-tab]').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+  $('#phiToggle').addEventListener('click', () => state.phi ? (setPhi(false), audit.push({ t: now(), who: 'Dana Reyes', what: 'Re-masked PHI' })) : openModal());
+  $('#phiConfirm').addEventListener('click', () => {
+    const reason = document.querySelector('input[name="reason"]:checked').value;
+    audit.push({ t: now(), who: 'Dana Reyes', what: `Revealed PHI in work queue — reason: ${reason}` });
+    closeModal(); setPhi(true); toast('Identifiers visible for 5 minutes · access logged');
+  });
+  $('#modalScrim').addEventListener('click', closeModal);
+  $$('[data-close-modal]').forEach(b => b.addEventListener('click', closeModal));
+  $$('[data-open-audit]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Audit log', auditHtml()); }));
+  $$('[data-open-report]').forEach(b => b.addEventListener('click', e => { e.preventDefault(); openDrawer('Client report', reportHtml(state.client)); }));
+  $('#drawerScrim').addEventListener('click', closeDrawer);
+  $('[data-close-drawer]').addEventListener('click', closeDrawer);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeDrawer(); closeModal(); } });
+
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-toast]'); if (t) { toast(t.dataset.toast); return; }
+    const oq = e.target.closest('[data-open-q]'); if (oq) { setTab('denials'); state.openQ = oq.dataset.openQ; renderQueue(); scrollToSection('queue'); return; }
+    const sc = e.target.closest('[data-scroll]'); if (sc) { if (sc.dataset.tabGo) setTab(sc.dataset.tabGo); scrollToSection(sc.dataset.scroll); return; }
+    const rl = e.target.closest('[data-rail]'); if (rl) { railLock = Date.now() + 1200; $$('[data-rail]').forEach(b => b.classList.toggle('is-active', b === rl)); scrollToSection(rl.dataset.rail); return; }
+    const hd = e.target.closest('[data-hide]'); if (hd) { state.hidden.add(hd.dataset.hide); renderChips(); railSpy(); return; }
+    const sh = e.target.closest('[data-show]'); if (sh) { state.hidden.delete(sh.dataset.show); renderChips(); return; }
+    const pg = e.target.closest('[data-page]'); if (pg) { const o = ORDER(), i = (o.indexOf(state.client) + +pg.dataset.page + o.length) % o.length; focusClient(o[i]); return; }
+    const os = e.target.closest('[data-open-sources]'); if (os) { openDrawer('Data sources', sourcesHtml()); return; }
+    const rs = e.target.closest('[data-resync]'); if (rs) { CLIENTS.forEach(c => c.sync = { ok: true, ago: 'just now' }); renderSources(); renderHero(); $('#drawerBody').innerHTML = sourcesHtml(); audit.push({ t: now(), who: 'Dana Reyes', what: 'Manual sync of all data sources' }); toast('All 7 sources synced'); return; }
+    const ex = e.target.closest('[data-export]'); if (ex) { audit.push({ t: now(), who: 'Dana Reyes', what: `Exported report: ${ex.dataset.export} (de-identified)` }); toast('Report exported · logged to audit trail'); return; }
+    const rp = e.target.closest('[data-report]'); if (rp) { e.stopPropagation(); openDrawer('Client report', reportHtml(rp.dataset.report)); return; }
+    const fc = e.target.closest('[data-focus]'); if (fc) { state.client = state.client === fc.dataset.focus ? 'all' : fc.dataset.focus; $('#clientSelect').value = state.client; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    const jp = e.target.closest('[data-jump]'); if (jp) { state.client = jp.dataset.jumpClient; $('#clientSelect').value = state.client; renderAll(); setTab(jp.dataset.jump); $('#queue').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (e.target.closest('button, a, input, label, .detail')) return;
+    const qr = e.target.closest('tr[data-q]'); if (qr) { state.openQ = state.openQ === qr.dataset.q ? null : qr.dataset.q; renderQueue(); document.querySelector(`tr[data-q="${qr.dataset.q}"]`)?.focus({ preventScroll: true }); return; }
+    const row = e.target.closest('tr[data-client]'); if (row) { state.openC = state.openC === row.dataset.client ? null : row.dataset.client; renderClients(); document.querySelector(`tr[data-client="${row.dataset.client}"]`)?.focus({ preventScroll: true }); }
+  });
+  document.addEventListener('keydown', e => { const row = e.target.closest?.('tr[data-client], tr[data-q]'); if (row && e.target !== row) return; if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); } });
+  $('#queueAll').addEventListener('click', () => toast('Opening full queue…'));
+  $('#search').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); state.openQ = null; renderQueue(); });
+  addEventListener('scroll', () => requestAnimationFrame(railSpy), { passive: true });
+
+  // theme
+  // Follows the OS setting until the viewer picks one; the choice is remembered per browser.
+  const sysDark = matchMedia('(prefers-color-scheme: dark)');
+  const currentTheme = () => document.documentElement.dataset.theme || (sysDark.matches ? 'dark' : 'light');
+  const syncThemeSwitch = () => {
+    const t = currentTheme();
+    $('#themeSwitch').dataset.on = t;
+    $$('[data-theme-set]').forEach(b => b.setAttribute('aria-checked', b.dataset.themeSet === t));
+  };
+  const setTheme = t => {
+    document.documentElement.dataset.theme = t;
+    try { localStorage.setItem('ll-theme', t); } catch {}
+    syncThemeSwitch();
+  };
+  $$('[data-theme-set]').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.themeSet)));
+  $('#themeSwitch').addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) return;
+    e.preventDefault();
+    setTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+    $(`[data-theme-set="${currentTheme()}"]`).focus();
+  });
+  addEventListener('keydown', e => { if (e.key.toLowerCase() === 'd' && e.shiftKey && (e.metaKey || e.ctrlKey)) { e.preventDefault(); setTheme(currentTheme() === 'dark' ? 'light' : 'dark'); } });
+  sysDark.addEventListener('change', syncThemeSwitch);
+  syncThemeSwitch();
+
+  // session auto-lock countdown (resets on activity)
+  let left = 15 * 60;
+  ['mousemove', 'keydown', 'click', 'scroll'].forEach(ev => addEventListener(ev, () => left = 15 * 60, { passive: true }));
+  setInterval(() => { left = Math.max(0, left - 1); $('#session').textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`; }, 1000);
+
+  $('#dateLine').textContent = new Date(2026, 9, 19).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+
+  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderRevenue(); renderDenials(); }, 150); });
+  renderSources(); renderClientSelect(); renderAll(); railSpy();
+})();
+</script>
+</body>
+</html>
