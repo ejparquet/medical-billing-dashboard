@@ -4,6 +4,8 @@ window.UI = (() => {
   const $$ = s => [...document.querySelectorAll(s)];
   const money = (v, d = 0) => '$' + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : Math.abs(v) >= 1e4 ? (v / 1e3).toFixed(d || 0) + 'K' : Math.round(v).toLocaleString());
   const moneyFull = v => '$' + Math.round(v).toLocaleString();
+  // Table amounts: always in thousands so a column reads consistently ($5.6K, $11K, $1.2M).
+  const moneyK = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + (v / 1e3).toFixed(v < 1e4 ? 1 : 0) + 'K';
   const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
   const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
   const chip = (kind, icon, text) => `<span class="chip chip-${kind}"><svg><use href="#i-${icon}"/></svg>${text}</span>`;
@@ -41,5 +43,5 @@ window.UI = (() => {
     <button role="radio" data-theme-set="light" aria-checked="false" aria-label="Light mode"><svg><use href="#i-sun"/></svg><span class="hidden sm:inline">Light</span></button>
     <button role="radio" data-theme-set="dark" aria-checked="false" aria-label="Dark mode"><svg><use href="#i-moon"/></svg><span class="hidden sm:inline">Dark</span></button></div>`;
 
-  return { $, $$, money, moneyFull, pct, esc, chip, dayStr, mask, param, toast, download, initTheme, themeSwitchHtml };
+  return { $, $$, money, moneyK, moneyFull, pct, esc, chip, dayStr, mask, param, toast, download, initTheme, themeSwitchHtml };
 })();

@@ -22,6 +22,8 @@
   .work-stat:active { transform: scale(.98); }
   .work-stat:focus-visible { outline: 2px solid var(--hl); outline-offset: 2px; }
   .work-stat .chev { position: absolute; top: 14px; right: 12px; }
+  .work-stat > span { display: block; padding-right: 16px; }
+  @media (max-width: 639px) { .send-bar .btn { flex: 1 1 100%; justify-content: center; } }
   .focus-list .n { flex: none; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 99px; font-size: 12px; font-weight: 700; background: var(--hl-soft); color: var(--hl); }
 </style>
 </head>
@@ -40,7 +42,7 @@
     </div>
   </header>
 
-  <div class="card p-4 sm:p-5 mt-6 flex flex-wrap items-center gap-3 no-print">
+  <div class="card p-4 sm:p-5 mt-6 flex flex-wrap items-center gap-3 no-print send-bar">
     <p class="text-[13.5px] muted mr-auto" id="sendState"></p>
     <label class="check-row py-2"><input type="checkbox" id="schedule">Send automatically on the 2nd of each month</label>
     <button class="btn btn-ghost" id="print"><svg width="15" height="15"><use href="#i-printer"/></svg>Print or save PDF</button>
@@ -58,7 +60,7 @@
 <script>
 (() => {
   const { CLIENTS, PAYERS, REASONS, MONTHS, YEARS, QUEUE, logAudit } = window.LEDGER;
-  const { $, money, moneyFull, pct, chip, esc, dayStr, param, toast, initTheme, themeSwitchHtml } = window.UI;
+  const { $, money, moneyK, moneyFull, pct, chip, esc, dayStr, param, toast, initTheme, themeSwitchHtml } = window.UI;
   const { open: openDrawer, close: closeDrawer, claimDrawer, deadlineChip, statePill } = window.CLAIMS;
   $('#themeSlot').innerHTML = themeSwitchHtml; initTheme();
 
@@ -89,8 +91,10 @@
     const stat = (label, value, extra = '') => `<div class="card r-stat p-5"><span>${label}</span><b class="num">${value}</b>${extra}</div>`;
 
     // Collections trend: bars, one series, labels on the axis only.
-    const W = 640, H = 170, bw = 30, gap = (W - 11 * bw) / 10;
-    const bars = trend.map((t, i) => { const h = Math.max(4, t.v / maxT * (H - 30)), x = i * (bw + gap); return `<rect x="${x}" y="${H - 22 - h}" width="${bw}" height="${h}" rx="6" style="fill: ${i === 10 ? 'var(--hl)' : 'color-mix(in oklab, var(--hl) 40%, transparent)'}"><title>${t.m} ${YEARS[i]}: ${moneyFull(t.v)}</title></rect><text x="${x + bw / 2}" y="${H - 4}" text-anchor="middle" font-size="11" style="fill: var(--ink-3)">${t.m}</text>`; }).join('');
+    const small = innerWidth < 640;
+    const pad = small ? 36 : 22;
+    const W = 640, H = small ? 190 : 170, bw = 30, gap = (W - 11 * bw) / 10;
+    const bars = trend.map((t, i) => { const h = Math.max(4, t.v / maxT * (H - pad - 8)), x = i * (bw + gap); return `<rect x="${x}" y="${H - pad - h}" width="${bw}" height="${h}" rx="6" style="fill: ${i === 10 ? 'var(--hl)' : 'color-mix(in oklab, var(--hl) 40%, transparent)'}"><title>${t.m} ${YEARS[i]}: ${moneyFull(t.v)}</title></rect>${small && i % 2 ? '' : `<text x="${x + bw / 2}" y="${H - 4}" text-anchor="middle" font-size="${small ? 22 : 11}" style="fill: var(--ink-3)">${t.m}</text>`}`; }).join('');
 
     const aging = PAYERS.map((p, pi) => { const v = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.payerAging[pi][b], 0)); return { p, v, t: v.reduce((a, b) => a + b, 0) }; }).sort((a, b) => b.t - a.t);
 
@@ -109,7 +113,7 @@
           <h1 class="font-display text-[44px] sm:text-[64px] mt-2">${name}</h1>
           <p class="muted mt-3 text-[14px]">${one ? `${one.spec}. Prepared by Ledgerline for ${one.contact}.` : `${CLIENTS.length} practices combined.`} Prepared October 19, 2026.</p>
         </div>
-        <div class="ml-auto text-right text-[12.5px] faint leading-relaxed"><b class="font-display text-[22px] block" style="font-weight:500; color: var(--ink)">Ledgerline</b>Revenue cycle management</div>
+        <div class="sm:ml-auto sm:text-right text-[12.5px] faint leading-relaxed"><b class="font-display text-[22px] block" style="font-weight:500; color: var(--ink)">Ledgerline</b>Revenue cycle management</div>
       </header>
 
       <section class="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-8">
@@ -124,7 +128,7 @@
       <section class="grid grid-cols-1 lg:grid-cols-5 gap-4 mt-4">
         <div class="card p-5 sm:p-6 lg:col-span-3">
           <h2 class="card-title">Collections, last 11 months</h2>
-          <svg viewBox="0 0 ${W} ${H}" class="w-full h-auto mt-5" role="img" aria-label="Monthly collections from November 2025 to September 2026">${bars}</svg>
+          <svg viewBox="-18 0 ${W + 36} ${H}" class="w-full h-auto mt-5" role="img" aria-label="Monthly collections from November 2025 to September 2026">${bars}</svg>
         </div>
         <div class="card p-5 sm:p-6 lg:col-span-2">
           <h2 class="card-title">Why claims were denied in September</h2>
@@ -136,8 +140,8 @@
       <section class="card p-5 sm:p-6 mt-4">
         <h2 class="card-title">Money still owed, by payer</h2>
         <div class="scroll-x mt-4 -mx-5 sm:-mx-6"><table class="tbl min-w-[640px]"><thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b} days</th>`).join('')}<th class="r pr-5 sm:pr-6">Total</th></tr></thead>
-          <tbody>${aging.map(a => `<tr><td class="pl-5 sm:pl-6 font-medium">${a.p.n}</td>${a.v.map(v => `<td class="r num">${money(v)}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${money(a.t)}</td></tr>`).join('')}
-          <tr><td class="pl-5 sm:pl-6 font-semibold">Total</td>${BUCKETS.map((_, b) => `<td class="r num font-semibold">${money(aging.reduce((s, a) => s + a.v[b], 0))}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${money(ar)}</td></tr></tbody></table></div>
+          <tbody>${aging.map(a => `<tr><td class="pl-5 sm:pl-6 font-medium">${a.p.n}</td>${a.v.map(v => `<td class="r num">${moneyK(v)}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${moneyK(a.t)}</td></tr>`).join('')}
+          <tr><td class="pl-5 sm:pl-6 font-semibold">Total</td>${BUCKETS.map((_, b) => `<td class="r num font-semibold">${moneyK(aging.reduce((s, a) => s + a.v[b], 0))}</td>`).join('')}<td class="r num font-semibold pr-5 sm:pr-6">${moneyK(ar)}</td></tr></tbody></table></div>
       </section>
 
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
@@ -220,6 +224,7 @@ Ledgerline</textarea></label>
     toast(e.target.checked ? 'Scheduled for the 2nd of each month' : 'Monthly sending turned off');
   });
 
+  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(render, 150); });
   render();
 })();
 </script>

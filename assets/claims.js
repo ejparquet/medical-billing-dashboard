@@ -8,7 +8,7 @@ window.CLAIMS = (() => {
   // ---------- Drawer shell ----------
   document.body.insertAdjacentHTML('beforeend', `
     <div class="scrim" id="drawerScrim"></div>
-    <aside class="drawer floating" id="drawer" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
+    <aside class="drawer floating" id="drawer" tabindex="-1" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
       <div class="flex items-center gap-3 px-5 py-4 border-b" style="border-color: var(--line)">
         <button class="btn btn-ghost btn-sm px-2" id="drawerBack" aria-label="Back to the claim" hidden><svg width="16" height="16"><use href="#i-back"/></svg></button>
         <h3 class="font-display text-[24px]" id="drawerTitle"></h3>
@@ -25,7 +25,7 @@ window.CLAIMS = (() => {
     const f = $('#drawerFoot'); f.innerHTML = opts.foot || ''; f.hidden = !opts.foot;
     backTo = opts.back || null; $('#drawerBack').hidden = !backTo;
     $('#drawer').classList.toggle('wide', !!opts.wide); $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on');
-    $('#drawer [data-close-drawer]').focus();
+    $('#drawer').focus({ preventScroll: true });
   };
   const close = () => { $('#drawer').classList.remove('on'); $('#drawerScrim').classList.remove('on'); lastFocus?.focus?.({ preventScroll: true }); };
   $('#drawerScrim').addEventListener('click', close);

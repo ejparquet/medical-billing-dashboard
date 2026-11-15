@@ -266,7 +266,7 @@
 
 <!-- Audit / report drawer -->
 <div class="scrim" id="drawerScrim"></div>
-<aside class="drawer floating" id="drawer" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
+<aside class="drawer floating" id="drawer" tabindex="-1" aria-labelledby="drawerTitle" role="dialog" aria-modal="true">
   <div class="p-5 border-b flex items-center gap-3" style="border-color: var(--line);">
     <h3 class="font-display text-[24px]" id="drawerTitle">Audit log</h3>
     <button class="btn btn-ghost btn-sm px-2 ml-auto" data-close-drawer aria-label="Close"><svg width="16" height="16"><use href="#i-close"/></svg></button>
@@ -301,6 +301,7 @@
   const $$ = s => [...document.querySelectorAll(s)];
   const money = (v, d = 0) => '$' + (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(2) + 'M' : Math.abs(v) >= 1e4 ? (v / 1e3).toFixed(d || 0) + 'K' : Math.round(v).toLocaleString());
   const moneyFull = v => '$' + Math.round(v).toLocaleString();
+  const moneyK = v => v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + (v / 1e3).toFixed(v < 1e4 ? 1 : 0) + 'K';
   const pct = (v, d = 1) => (v * 100).toFixed(d) + '%';
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const sel = () => state.client === 'all' ? CLIENTS : CLIENTS.filter(c => c.id === state.client);
@@ -807,8 +808,8 @@
     const tot = BUCKETS.map((_, b) => cs.reduce((a, c) => a + c.aging[b], 0));
     const all = tot.reduce((a, b) => a + b, 0);
     $('#ageBar').innerHTML = tot.map((v, b) => `<div class="barx-anim h-full" style="flex:${v}; background: var(--seq${b + 1}); animation-delay:${b * .06}s" data-tip="${enc(`<b>${BUCKETS[b]} days</b>${tipRow(`var(--seq${b + 1})`, 'Balance', moneyFull(v))}${tipRow('', 'Share of A/R', pct(v / all))}`)}"></div>`).join('');
-    $('#ageBarLabels').style.gridTemplateColumns = tot.map(v => `${v}fr`).join(' ');
-    $('#ageBarLabels').innerHTML = tot.map((v, b) => `<div class="min-w-0 truncate"><b class="num">${money(v)}</b><span class="faint hidden sm:inline"> · ${pct(v / all, 0)}</span></div>`).join('');
+    $('#ageBarLabels').style.gridTemplateColumns = innerWidth < 640 ? '' : tot.map(v => `${v}fr`).join(' ');
+    $('#ageBarLabels').innerHTML = tot.map((v, b) => `<div class="min-w-0 truncate"><i class="sm:hidden inline-block w-2 h-2 rounded-full mr-1" style="background: var(--seq${b + 1})"></i><b class="num">${money(v)}</b><span class="faint hidden sm:inline"> · ${pct(v / all, 0)}</span></div>`).join('');
     $('#ageLegend').innerHTML = BUCKETS.map((l, b) => `<span><i style="background: var(--seq${b + 1})"></i>${l} days</span>`).join('');
 
     const rows = PAYERS.map((p, pi) => {
@@ -818,7 +819,7 @@
     const maxCell = Math.max(...rows.flatMap(r => r.v));
     $('#ageTable').innerHTML = `<thead><tr><th class="pl-5 sm:pl-6">Payer</th>${BUCKETS.map(b => `<th class="r">${b}</th>`).join('')}<th class="r">Total</th><th class="r">Days to pay</th><th class="pr-5 sm:pr-6">90+ share</th></tr></thead><tbody>${rows.map(r => {
       const share = r.over / r.t;
-      return `<tr class="expandable" tabindex="0" data-act="payer" data-payer="${r.p.n}" aria-label="${r.p.n} details"><td class="pl-5 sm:pl-6 font-medium"><span class="inline-flex items-center gap-2"><svg class="chev" width="13" height="13"><use href="#i-chev"/></svg>${r.p.n}</span></td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${money(v)}</span></td>`).join('')}<td class="r num font-semibold">${money(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
+      return `<tr class="expandable" tabindex="0" data-act="payer" data-payer="${r.p.n}" aria-label="${r.p.n} details"><td class="pl-5 sm:pl-6 font-medium"><span class="inline-flex items-center gap-2"><svg class="chev" width="13" height="13"><use href="#i-chev"/></svg>${r.p.n}</span></td>${r.v.map((v, b) => `<td class="r num"><span class="inline-block px-1.5 py-0.5 rounded-md" style="background: color-mix(in oklab, var(--seq${b + 1}) ${Math.round(8 + 30 * v / maxCell)}%, transparent)">${moneyK(v)}</span></td>`).join('')}<td class="r num font-semibold">${moneyK(r.t)}</td><td class="r num muted">${r.p.dtp}</td><td class="pr-5 sm:pr-6">${share > .25 ? chip('crit', 'alert', pct(share, 0)) : share > .15 ? chip('warn', 'alert', pct(share, 0)) : chip('good', 'check', pct(share, 0))}</td></tr>`;
     }).join('')}</tbody>`;
   }
 
@@ -856,7 +857,7 @@
   function renderAll() { renderHero(); renderKpis(); renderRevenue(); renderDenials(); renderQueue(); renderAging(); renderClients(); renderPager(); renderChips(); }
 
   /* ================= Drawers & modals ================= */
-  const openDrawer = (title, html, opts = {}) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawerBody').scrollTop = 0; const f = $('#drawerFoot'); f.innerHTML = opts.foot || ''; f.hidden = !opts.foot; $('#drawer').classList.toggle('wide', !!opts.wide); $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer [data-close-drawer]').focus(); };
+  const openDrawer = (title, html, opts = {}) => { $('#drawerTitle').textContent = title; $('#drawerBody').innerHTML = html; $('#drawerBody').scrollTop = 0; const f = $('#drawerFoot'); f.innerHTML = opts.foot || ''; f.hidden = !opts.foot; $('#drawer').classList.toggle('wide', !!opts.wide); $('#drawer').classList.add('on'); $('#drawerScrim').classList.add('on'); $('#drawer').focus({ preventScroll: true }); };
   const closeDrawer = () => { $('#drawer').classList.remove('on'); $('#drawerScrim').classList.remove('on'); };
   const auditHtml = () => `<p class="text-[13px] muted mb-4">Every PHI reveal, export and sign-in is recorded. Retained for 6 years.</p><ol class="flex flex-col">${audit.slice().reverse().map(a => `<li class="flex gap-4 py-3 border-b text-[13.5px]" style="border-color: var(--line)"><span class="num faint w-12 shrink-0">${a.t}</span><span><b>${a.who}</b><br><span class="muted">${esc(a.what)}</span></span></li>`).join('')}</ol>`;
 
@@ -1087,7 +1088,7 @@ Ledgerline`;
         <div class="stat"><span>Timely filing limit</span><b class="num">${p.tf} days</b></div>
         <div class="stat"><span>Appeal window</span><b class="num">${p.appeal} days</b></div>
         <div class="stat"><span>Practices</span><b class="num">${cs.length}</b></div></div></div>
-      <div class="d-sec"><h4>Aging</h4>${barRows(BUCKETS.map((b, i) => [b + ' days', v[i]]), x => money(x), i => `var(--seq${i + 1})`)}</div>
+      <div class="d-sec"><h4>Aging</h4>${barRows(BUCKETS.map((b, i) => [b + ' days', v[i]]), x => moneyK(x), i => `var(--seq${i + 1})`)}</div>
       <div class="d-sec"><h4>Open work with ${p.n}</h4>${work.map(([k, l, list]) => list.length
         ? `<div class="pw"><button class="list-btn" data-pw-toggle="${k}" aria-expanded="false" aria-controls="pw-${k}"><span>${l}</span><b class="num ml-auto">${list.length}</b><svg class="chev pw-chev" width="14" height="14"><use href="#i-chev"/></svg></button>${workPanel(k, l, list)}</div>`
         : `<div class="pw"><div class="list-btn is-empty"><span>${l}</span><span class="faint ml-auto">None open</span></div></div>`).join('')}</div>`,
@@ -1338,7 +1339,7 @@ Ledgerline`;
 
   $('#dateLine').textContent = new Date(2026, 9, 19).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
-  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderRevenue(); renderDenials(); }, 150); });
+  let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { renderRevenue(); renderDenials(); renderAging(); }, 150); });
   renderSources(); renderClientSelect(); renderAll(); railSpy();
   const deep = location.hash.match(/claim=([\w-]+)/), dq = deep && findClaim(deep[1]);
   if (dq) { setTab(dq.type); state.openQ = dq.id; renderQueue(); setTimeout(() => document.querySelector(`tr[data-q="${dq.id}"]`)?.scrollIntoView({ block: 'center' }), 300); }

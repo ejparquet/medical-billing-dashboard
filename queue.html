@@ -33,7 +33,7 @@
     </div>
   </section>
 
-  <section class="mt-6 flex flex-wrap items-center gap-2" aria-label="Filters">
+  <section class="mt-6 flex flex-wrap items-center gap-2 filters-full" aria-label="Filters">
     <div class="seg" role="tablist" aria-label="Queue">
       <button role="tab" data-tab="denials">Appeals due</button>
       <button role="tab" data-tab="filing">Filing limits</button>
@@ -48,8 +48,9 @@
   </section>
 
   <section class="card mt-5 overflow-hidden">
-    <div class="scroll-x"><table class="tbl min-w-[980px]" id="table"></table></div>
-    <p class="px-5 sm:px-6 py-4 border-t text-[12.5px] faint flex items-center gap-2" style="border-color: var(--line)"><svg width="13" height="13"><use href="#i-lock"/></svg>Patient details stay masked on this page. Open a claim to work it here: appeals and disputes fill patient details in when they are sent.</p>
+    <div class="scroll-x hidden sm:block"><table class="tbl min-w-[980px]" id="table"></table></div>
+    <ul class="q-cards sm:hidden" id="cards"></ul>
+    <p class="px-5 sm:px-6 py-4 border-t text-[12.5px] faint flex items-start gap-2 leading-[1.5]" style="border-color: var(--line)"><svg width="13" height="13" class="flex-none mt-[3px]"><use href="#i-lock"/></svg>Patient details stay masked on this page. Open a claim to work it here: appeals and disputes fill patient details in when they are sent.</p>
   </section>
 
   <div class="bulk-bar floating" id="bulk" role="region" aria-label="Bulk actions">
@@ -133,20 +134,29 @@
     $('#summary').innerHTML = `<b class="num" style="color: var(--ink)">${list.length}</b> ${TITLES[state.tab]}, worth <b class="num" style="color: var(--ink)">${moneyFull(value)}</b>${state.tab === 'denials' ? ' in expected recovery' : state.tab === 'filing' ? ' at risk' : ' in recoverable variance'}.`;
     const allOn = list.length && list.every(q => state.picked.has(q.id));
     $('#table').innerHTML = `<thead><tr>
-        <th class="pl-5 sm:pl-6 w-10"><input type="checkbox" id="pickAll" aria-label="Select all" ${allOn ? 'checked' : ''}></th>
+        <th class="pick-cell"><input type="checkbox" id="pickAll" aria-label="Select all" ${allOn ? 'checked' : ''}></th>
         <th>Claim</th><th>Patient</th><th>Practice / payer</th>
         ${cols.map(([h, , , al], i) => `<th class="${al || ''}"><button class="th-sort" data-sort="${i}" ${i === ci ? `aria-sort="${state.dir > 0 ? 'ascending' : 'descending'}"` : ''}>${h}</button></th>`).join('')}
         <th>Owner</th><th>Status</th><th class="pr-5 sm:pr-6"></th></tr></thead>
       <tbody>${list.map(q => `<tr class="expandable" tabindex="0" data-row="${q.id}" aria-label="Open claim ${q.claim}">
-        <td class="pl-5 sm:pl-6"><input type="checkbox" data-pick="${q.id}" aria-label="Select ${q.claim}" ${state.picked.has(q.id) ? 'checked' : ''}></td>
+        <td class="pick-cell"><input type="checkbox" data-pick="${q.id}" aria-label="Select ${q.claim}" ${state.picked.has(q.id) ? 'checked' : ''}></td>
         <td class="claim-id">${q.claim}</td>
         <td class="phi">${esc(mask(q.patient))}</td>
         <td><div class="font-medium">${q.client.short}</div><div class="text-[12px] faint">${q.payer.n}</div></td>
         ${cols.map(([, cell, , al]) => `<td class="${al || ''}">${cell(q)}</td>`).join('')}
         <td>${q.assignee ? `<span class="assignee"><i>${initials(q.assignee)}</i>${q.assignee.split(' ')[0]}</span>` : '<span class="assignee faint">Unassigned</span>'}</td>
-        <td>${STATE_LABEL[q.state] ? `<span class="state-pill">${STATE_LABEL[q.state]}</span>` : '<span class="faint text-[12.5px]">Open</span>'}</td>
-        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-claim-act="open" data-id="${q.id}">Open</button></td>
+        <td>${STATE_LABEL[q.state] ? `<span class="state-pill">${STATE_LABEL[q.state]}</span>` : '<span class="faint text-[12.5px]">Not started</span>'}</td>
+        <td class="pr-5 sm:pr-6 r"><button class="btn btn-ghost btn-sm" data-claim-act="open" data-id="${q.id}">View claim</button></td>
       </tr>`).join('') || `<tr><td colspan="${cols.length + 7}" class="text-center py-12 faint">No claims match these filters. Try “Everything” under status, or clear the search.</td></tr>`}</tbody>`;
+    const key = q => state.tab === 'denials' ? `<b class="num">${moneyFull(q.amt * .56 * q.win)}</b><span class="faint"> expected</span>` : state.tab === 'filing' ? `<b class="num">${moneyFull(q.amt)}</b><span class="faint"> at risk</span>` : `<b class="num" style="color: var(--crit-ink)">${moneyFull(q.contracted - q.paid)}</b><span class="faint"> short</span>`;
+    $('#cards').innerHTML = list.map(q => `<li class="q-card">
+        <label class="q-pick"><input type="checkbox" data-pick="${q.id}" aria-label="Select ${q.claim}" ${state.picked.has(q.id) ? 'checked' : ''}></label>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-baseline gap-2"><b class="font-semibold text-[14px] truncate">${q.client.short}</b><span class="text-[12.5px] faint truncate">${q.payer.n}</span></div>
+          <div class="text-[12.5px] muted mt-0.5 truncate">${state.tab === 'denials' ? q.reason.label : state.tab === 'filing' ? q.status : 'CPT ' + q.cpt} <span class="claim-id">${q.claim}</span></div>
+          <div class="flex flex-wrap items-center gap-2 mt-2 text-[13px]">${key(q)}${STATE_LABEL[q.state] ? `<span class="state-pill">${STATE_LABEL[q.state]}</span>` : state.tab === 'under' ? '' : deadline(q.daysLeft)}</div>
+          <div class="flex items-center gap-2 mt-3">${q.assignee ? `<span class="assignee"><i>${initials(q.assignee)}</i>${q.assignee.split(' ')[0]}</span>` : '<span class="assignee faint">Unassigned</span>'}<button class="btn btn-ghost btn-sm ml-auto" data-claim-act="open" data-id="${q.id}">View claim</button></div>
+        </div></li>`).join('') || `<li class="px-5 py-10 text-center faint text-[13.5px]">No claims match these filters. Try “Everything” under status, or clear the search.</li>`;
     $('#bulk').classList.toggle('on', state.picked.size > 0);
     $('#bulkCount').textContent = `${state.picked.size} selected`;
   }
@@ -154,7 +164,7 @@
   const exportRows = list => {
     const cols = COLS[state.tab];
     return [['Claim', 'Practice', 'Payer', ...cols.map(c => c[0]), 'Owner', 'Status'],
-      ...list.map(q => [q.claim, q.client.name, q.payer.n, ...cols.map(c => String(c[1](q)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()), q.assignee || 'Unassigned', STATE_LABEL[q.state] || 'Open'])];
+      ...list.map(q => [q.claim, q.client.name, q.payer.n, ...cols.map(c => String(c[1](q)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()), q.assignee || 'Unassigned', STATE_LABEL[q.state] || 'Not started'])];
   };
 
   document.addEventListener('click', e => {
