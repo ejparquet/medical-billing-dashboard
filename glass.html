@@ -78,25 +78,19 @@
     <section class="grid grid-cols-1 xl:grid-cols-12 gap-8 xl:gap-6 pt-8 lg:pt-10">
       <div class="xl:col-span-5 rise">
         <p class="text-[13.5px] muted" id="dateLine"></p>
-        <div class="flex items-center gap-3 mt-6">
-          <div class="flex items-center gap-1.5" id="healthDots"></div>
-          <span class="text-[12.5px] faint" id="healthText"></span>
-        </div>
         <h1 class="hero-title font-display" id="heroTitle">All practices</h1>
         <p class="hero-sub" id="heroSub"></p>
 
-        <div class="due-wrap mt-8">
-          <div class="due-stack" aria-hidden="true"></div>
-          <div class="card due-card p-4 sm:p-5">
-            <div class="flex items-center justify-between gap-3">
-              <h2 class="text-[14px] font-semibold">Appeals due this week</h2>
-              <button class="round-btn sm" data-scroll="queue" data-tab-go="denials" aria-label="Open the appeals queue"><svg><use href="#i-arrow-ur"/></svg></button>
-            </div>
-            <div class="flex items-center gap-3 mt-3">
-              <div class="due-blob"><span class="due-pill num" id="dueCount">0 due</span></div>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-1 min-w-0 flex-1" id="dueList"></div>
-            </div>
-          </div>
+        <div class="deck mt-8" id="deck" tabindex="0" role="group" aria-roledescription="carousel" aria-label="Practices. Use the left and right arrow keys to flip through them.">
+          <div class="deck-stack deck-stack-2" aria-hidden="true"></div>
+          <div class="deck-stack deck-stack-1" aria-hidden="true"></div>
+          <article class="card deck-card p-5" id="deckCard" aria-live="polite"></article>
+        </div>
+        <div class="deck-nav mt-6">
+          <button class="round-btn sm" data-flip="-1" aria-label="Previous practice"><svg style="transform: rotate(180deg)"><use href="#i-chev"/></svg></button>
+          <span class="num text-[12.5px] muted" id="deckCount"></span>
+          <button class="round-btn sm" data-flip="1" aria-label="Next practice"><svg><use href="#i-chev"/></svg></button>
+          <span class="text-[12.5px] faint truncate" id="deckNext"></span>
         </div>
       </div>
 
@@ -455,16 +449,8 @@
     $('#heroSub').innerHTML = one
       ? `${one.spec} on ${one.pm}<br>${one.sync.ok ? 'Synced ' + agoTxt(one) : 'Sync failed ' + agoTxt(one)}, client since ${one.since}`
       : `Seven practices billed through one queue<br>${periodLabel()}`;
-    const stats = cs.map(clientStats);
-    $('#healthDots').innerHTML = stats.map(st => `<button class="hdot hdot-${st.health[0]}" data-focus="${st.c.id}" aria-label="${st.c.name}: ${st.health[2]}" data-tip="${enc(`<b>${st.c.name}</b><div class="faint">${st.health[2]}</div>`)}"></button>`).join('');
-    const risk = stats.filter(s => s.health[0] === 'crit').length, watch = stats.filter(s => s.health[0] === 'warn').length;
-    $('#healthText').textContent = one ? stats[0].health[2] : [risk && `${risk} at risk`, watch && `${watch} to watch`].filter(Boolean).join(', ') || 'All practices healthy';
-
-    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7 && q.state === 'open').sort((a, b) => a.daysLeft - b.daysLeft);
-    $('#dueCount').textContent = `${due.length} due`;
-    $('#dueList').innerHTML = due.slice(0, 3).map(q => `<button class="due-item" data-open-q="${q.id}"><b>${q.client.short}</b><span class="num">${money(q.amt)}, ${q.daysLeft}d left</span></button>`).join('')
-      || '<p class="faint text-[13px]">Nothing due in the next 7 days.</p>';
-
+    renderDeck(cs, ids, one);
+    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7 && q.state === 'open');
     const failed = cs.filter(c => !c.sync.ok);
     const rej = Math.round(sumMonths(cs, 'claims', 11) * .031);
     const rec = QUEUE.denials.filter(q => ids.includes(q.client.id)).reduce((a, q) => a + q.amt * q.win, 0);
@@ -475,6 +461,53 @@
       ['warn', `${rej} clearinghouse rejects`, 'data-act="rejects"'],
     ].map(([k, t, attr]) => `<li><button class="ring-btn" ${attr}><span class="ring ring-${k}"></span>${t}<svg class="chev ml-auto" width="12" height="12"><use href="#i-chev"/></svg></button></li>`).join('');
     $('#alertValue').textContent = moneyFull(rec);
+  }
+
+  /* ---------- Practice deck (flip through practices) ---------- */
+  function renderDeck(cs, ids, one) {
+    const all = CLIENTS.map(clientStats), st = one ? clientStats(one) : null;
+    const risk = all.filter(x => x.health[0] === 'crit').length, watch = all.filter(x => x.health[0] === 'warn').length;
+    const health = st ? st.health : risk ? ['crit', 'alert', `${risk} at risk`] : watch ? ['warn', 'alert', `${watch} to watch`] : ['good', 'check', 'All healthy'];
+    const coll = sumMonths(cs, 'collected', 10), den = sumMonths(cs, 'denied', 10) / sumMonths(cs, 'claims', 10);
+    const ar = cs.reduce((a, c) => a + c.aging.reduce((x, y) => x + y, 0), 0);
+    const days = ar / cs.reduce((a, c) => a + (c.months[8].charges + c.months[9].charges + c.months[10].charges) / 91, 0);
+    const due = QUEUE.denials.filter(q => ids.includes(q.client.id) && q.daysLeft <= 7 && q.state === 'open').sort((a, b) => a.daysLeft - b.daysLeft);
+    const stat = (label, value, bad) => `<div class="deck-stat"><span>${label}</span><b class="num" ${bad ? 'style="color: var(--crit-ink)"' : ''}>${value}</b></div>`;
+    const sub = one ? `${one.contact}, ${one.contactRole.toLowerCase()}` : `${CLIENTS.length} practices${risk || watch ? `, ${[risk && `${risk} at risk`, watch && `${watch} to watch`].filter(Boolean).join(', ')}` : ''}`;
+    $('#deckCard').innerHTML = `
+      <div class="flex items-start gap-3">
+        <div class="min-w-0 flex-1">
+          <h2 class="deck-name">${one ? one.name : 'All practices'}</h2>
+          <p class="text-[12.5px] faint mt-1 truncate">${sub}</p>
+        </div>
+        ${one ? chip(...st.health) : chip(...health)}
+      </div>
+      <div class="deck-stats mt-4">
+        ${stat('Sep collected', money(coll, 1))}
+        ${stat('Denial rate', pct(den), den > .1)}
+        ${stat('A/R days', days.toFixed(0), days > 45)}
+        ${stat('Due in 7 days', due.length, due.length > 0)}
+      </div>
+      <div class="flex flex-wrap items-center gap-2 mt-4">
+        ${due[0] ? `<button class="due-item flex-1" data-open-q="${due[0].id}"><b>Next appeal: ${due[0].client.short}, ${due[0].payer.n}</b><span class="num">${moneyFull(due[0].amt)} billed, due in ${due[0].daysLeft} day${due[0].daysLeft === 1 ? '' : 's'}</span></button>` : '<p class="text-[12.5px] faint flex-1">No appeals due in the next 7 days.</p>'}
+        <a class="btn btn-ghost btn-sm" href="report.html?client=${one ? one.id : 'all'}"><svg width="14" height="14"><use href="#i-file"/></svg>Report</a>
+      </div>`;
+    const o = ORDER(), i = o.indexOf(state.client), nx = o[(i + 1) % o.length];
+    $('#deckCount').textContent = `${i + 1} of ${o.length}`;
+    $('#deckNext').textContent = `Next: ${nx === 'all' ? 'All practices' : CLIENTS.find(c => c.id === nx).short}`;
+  }
+  let flipping = false;
+  const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  function flip(dir) {
+    if (flipping) return;
+    const o = ORDER(), id = o[(o.indexOf(state.client) + dir + o.length) % o.length], card = $('#deckCard');
+    if (reduceMotion.matches || !card.animate) return focusClient(id);
+    flipping = true;
+    const ease = 'cubic-bezier(.2, .8, .2, 1)';
+    card.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 48}px) rotate(${-dir * 3}deg)`, opacity: 0 }], { duration: 180, easing: 'ease-in', fill: 'forwards' }).onfinish = () => {
+      focusClient(id);
+      card.animate([{ transform: `translateX(${dir * 48}px) rotate(${dir * 3}deg)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 420, easing: ease, fill: 'forwards' }).onfinish = () => { flipping = false; };
+    };
   }
 
   /* ---------- Filters ---------- */
@@ -1296,6 +1329,7 @@ Ledgerline`;
     const pg = e.target.closest('[data-page]'); if (pg) { const o = ORDER(), i = (o.indexOf(state.client) + +pg.dataset.page + o.length) % o.length; focusClient(o[i]); return; }
     const os = e.target.closest('[data-open-sources]'); if (os) { openDrawer('Data sources', sourcesHtml()); return; }
     const rs = e.target.closest('[data-resync]'); if (rs) { CLIENTS.forEach(c => c.sync = { ok: true, ago: 'just now' }); renderSources(); renderHero(); $('#drawerBody').innerHTML = sourcesHtml(); logAudit('Dana Reyes', 'Manual sync of all data sources'); toast('All 7 sources synced'); return; }
+    const fl = e.target.closest('[data-flip]'); if (fl) { flip(+fl.dataset.flip); return; }
     const fc = e.target.closest('[data-focus]'); if (fc) { state.client = state.client === fc.dataset.focus ? 'all' : fc.dataset.focus; $('#clientSelect').value = state.client; renderAll(); window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     const jp = e.target.closest('[data-jump]'); if (jp) { state.client = jp.dataset.jumpClient; $('#clientSelect').value = state.client; renderAll(); setTab(jp.dataset.jump); $('#queue').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (e.target.closest('button, a, input, label, .detail')) return;
@@ -1303,6 +1337,11 @@ Ledgerline`;
     const row = e.target.closest('tr[data-client]'); if (row) { state.openC = state.openC === row.dataset.client ? null : row.dataset.client; renderClients(); document.querySelector(`tr[data-client="${row.dataset.client}"]`)?.focus({ preventScroll: true }); }
   });
   document.addEventListener('keydown', e => { const row = e.target.closest?.('tr[data-client], tr[data-q], tr[data-act]'); if (row && e.target !== row) return; if (row && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); row.click(); } });
+  $('#deck').addEventListener('keydown', e => { if (e.target.id !== 'deck') return; if (e.key === 'ArrowRight') { e.preventDefault(); flip(1); } if (e.key === 'ArrowLeft') { e.preventDefault(); flip(-1); } });
+  let swipeX = null;
+  $('#deck').addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') swipeX = e.clientX; });
+  $('#deck').addEventListener('pointerup', e => { if (swipeX === null) return; const dx = e.clientX - swipeX; swipeX = null; if (Math.abs(dx) > 50) flip(dx < 0 ? 1 : -1); });
+  $('#deck').addEventListener('pointercancel', () => { swipeX = null; });
   $('#queueAll').addEventListener('click', () => { location.href = `queue.html?tab=${state.tab}&client=${state.client}${state.q ? '&q=' + encodeURIComponent(state.q) : ''}`; });
   $('#search').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); state.openQ = null; renderQueue(); });
   addEventListener('scroll', () => requestAnimationFrame(railSpy), { passive: true });
